@@ -1,0 +1,1155 @@
+/* ==========================================================================
+   game.css — Widyatika | Arena Numerasi Siswa
+   Style Guide: Neubrutalism / Pop-Art
+   Font: Nunito (Google Fonts)
+   Versi: 1.0.0
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. IMPORT FONT
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. CSS CUSTOM PROPERTIES (DESIGN TOKENS)
+   -------------------------------------------------------------------------- */
+:root {
+  /* Warna Utama */
+  --color-bg:          #FFFBEB;
+  --color-card-number: #FCD34D;
+  --color-operator:    #34D399;
+  --color-action:      #FB7185;
+  --color-delete:      #FDA4AF;
+  --color-reset:       #C4B5FD;
+  --color-submit:      #4ADE80;
+  --color-display-bg:  #FFFFFF;
+  --color-ink:         #1E1E1E;
+  --color-white:       #FFFFFF;
+  --color-muted:       #6B7280;
+  --color-correct:     #22C55E;
+  --color-wrong:       #EF4444;
+  --color-target-bg:   #DBEAFE;
+  --color-potion-fill: #A78BFA;
+  --color-potion-bg:   #EDE9FE;
+  --color-score-bg:    #FEF3C7;
+
+  /* Neubrutalism Border & Shadow */
+  --neu-border:        2.5px solid #1E1E1E;
+  --neu-shadow:        4px 4px 0px #1E1E1E;
+  --neu-shadow-sm:     3px 3px 0px #1E1E1E;
+  --neu-shadow-lg:     6px 6px 0px #1E1E1E;
+  --neu-radius:        12px;
+  --neu-radius-sm:     8px;
+  --neu-radius-lg:     16px;
+
+  /* Tipografi */
+  --font-main:   'Nunito', sans-serif;
+  --font-accent: 'Fredoka One', cursive;
+
+  /* Spacing */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-2xl: 48px;
+
+  /* Transition */
+  --transition-fast:   0.12s ease;
+  --transition-normal: 0.2s ease;
+}
+
+/* --------------------------------------------------------------------------
+   2. RESET & BASE
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Pola titik latar belakang (Pop-Art dots) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(30,30,30,0.06) 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --------------------------------------------------------------------------
+   3. TOPBAR — Header Sesi
+   -------------------------------------------------------------------------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--color-card-number);
+  border-bottom: var(--neu-border);
+  padding: var(--space-sm) var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.topbar__logo {
+  font-family: var(--font-accent);
+  font-size: 1.6rem;
+  color: var(--color-ink);
+  letter-spacing: -0.5px;
+  text-decoration: none;
+}
+
+.topbar__logo span {
+  display: inline-block;
+  background: var(--color-action);
+  border: var(--neu-border);
+  border-radius: var(--neu-radius-sm);
+  padding: 0 6px;
+  box-shadow: var(--neu-shadow-sm);
+  color: var(--color-white);
+  margin-right: 2px;
+}
+
+.topbar__session-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.topbar__badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--color-white);
+  border: var(--neu-border);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: var(--neu-shadow-sm);
+}
+
+.topbar__badge .badge-icon {
+  font-size: 1rem;
+}
+
+.topbar__badge--student {
+  background: var(--color-operator);
+}
+
+.topbar__badge--score {
+  background: var(--color-score-bg);
+}
+
+.topbar__badge--level {
+  background: var(--color-action);
+  color: var(--color-white);
+}
+
+/* --------------------------------------------------------------------------
+   4. LAYOUT UTAMA
+   -------------------------------------------------------------------------- */
+.game-layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  grid-template-rows: auto 1fr;
+  gap: var(--space-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-lg);
+  min-height: calc(100vh - 64px);
+}
+
+.game-layout__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.game-layout__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* --------------------------------------------------------------------------
+   5. KARTU TARGET ANGKA
+   -------------------------------------------------------------------------- */
+.target-card {
+  background: var(--color-target-bg);
+  border: var(--neu-border);
+  border-radius: var(--neu-radius-lg);
+  box-shadow: var(--neu-shadow-lg);
+  padding: var(--space-lg) var(--space-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.target-card__label {
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-muted);
+}
+
+.target-card__number {
+  font-family: var(--font-accent);
+  font-size: 4.5rem;
+  line-height: 1;
+  color: var(--color-ink);
+  background: var(--color-card-number);
+  border: var(--neu-border);
+  border-radius: var(--neu-radius);
+  padding: 4px 28px;
+  box-shadow: var(--neu-shadow);
+  transition: transform var(--transition-fast);
+}
+
+.target-card__hint {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  max-width: 200px;
+  text-align: right;
+  line-height: 1.4;
+}
+
+/* Animasi bounce target saat muat */
+@keyframes bounceIn {
+  0%   { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+  60%  { transform: scale(1.1) rotate(3deg);  opacity: 1; }
+  80%  { transform: scale(0.95); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.target-card__number.animate-in {
+  animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* --------------------------------------------------------------------------
+   6. WORKSPACE — Area Formula Input
+   -------------------------------------------------------------------------- */
+.workspace {
+  background: var(--color-white);
+  border: var(--neu-border);
+  border-radius: var(--neu-radius-lg);
+  box-shadow: var(--neu-shadow-lg);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  flex: 1;
+}
+
+.workspace__formula-display {
+  background: var(--color-display-bg);
+  border: var(--neu-border);
+  border-radius: var(--neu-radius);
+  box-shadow: inset 2px 2px 0px rgba(30,30,30,0.08);
+  min-height: 72px;
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  position: relative;
+  overflow: hidden;
+}
+
+.workspace__formula-display.state--empty::before {
+  content: 'Tekan angka dan operator di bawah...';
+  color: #CBD5E1;
+  font-weight: 700;
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.workspace__formula-display.state--error {
+  background: #FEF2F2;
+  border-color: var(--color-wrong);
+  animation: shake 0.35s ease;
+}
+
+.workspace__formula-display.state--correct {
+  background: #F0FDF4;
+  border-color: var(--color-correct);
+  animation: correctPulse 0.4s ease;
+}
+
+/* Token/Chip pada display formula */
+.formula-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border: var(--neu-border);
+  border-radius: var(--neu-radius-sm);
+  font-weight: 800;
+  font-size: 1.1rem;
+  min-width: 36px;
+  transition: transform var(--transition-fast);
+}
+
+.formula-token--number {
+  background: var(--color-card-number);
+  box-shadow: var(--neu-shadow-sm);
+}
+
+.formula-token--operator {
+  background: var(--color-operator);
+  box-shadow: var(--neu-shadow-sm);
+  font-size: 1.3rem;
+}
+
+.formula-token--paren {
+  background: var(--color-reset);
+  box-shadow: var(--neu-shadow-sm);
+}
+
+.formula-token--cursor {
+  width: 3px;
+  min-width: 3px;
+  background: var(--color-ink);
+  border: none;
+  border-radius: 2px;
+  box-shadow: none;
+  animation: blink 1s step-end infinite;
+}
+
+/* Tampilkan hasil kalkulasi */
+.workspace__result-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  min-height: 32px;
+}
+
+.result-preview__equals {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--color-ink);
+}
+
+.result-preview__value {
+  font-family: var(--font-accent);
+  font-size: 1.5rem;
+  color: var(--color-ink);
+  transition: color var(--transition-normal);
+}
+
+.result-preview__value.state--match {
+  color: var(--color-correct);
+}
+
+.result-preview__value.state--mismatch {
+  color: var(--color-wrong);
+}
+
+/* --------------------------------------------------------------------------
+   7. KARTU ANGKA YANG TERSEDIA (Number Cards)
+   -------------------------------------------------------------------------- */
+.number-bank {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.number-bank__label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.number-bank__cards {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.num-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: var(--color-card-number);
+  border: var(--neu-border);
+  border-radius: var(--neu-radius);
+  box-shadow: var(--neu-shadow);
+  font-family: var(--font-accent);
+  font-size: 1.5rem;
+  color: var(--color-ink);
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  position: relative;
+}
+
+.num-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--color-ink);
+}
+
+.num-card:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--color-ink);
+}
+
+.num-card.state--used {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--neu-shadow);
+}
+
+/* --------------------------------------------------------------------------
+   8. VIRTUAL KEYPAD
+   -------------------------------------------------------------------------- */
+.keypad {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+/* Baris operator */
+.keypad__operators {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-sm);
+}
+
+/* Baris angka 3x3 + 0 */
+.keypad__digits {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+/* Baris aksi: hapus, reset, kirim */
+.keypad__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: var(--space-sm);
+}
+
+/* Tombol Keypad Dasar */
+.key-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  border: var(--neu-border);
+  border-radius: var(--neu-radius);
+  box-shadow: var(--neu-shadow);
+  font-family: var(--font-main);
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+  background: var(--color-white);
+  color: var(--color-ink);
+}
+
+.key-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.3);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  border-radius: inherit;
+}
+
+.key-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--color-ink);
+}
+
+.key-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--color-ink);
+}
+
+.key-btn:active::after {
+  opacity: 1;
+}
+
+.key-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--neu-shadow);
+}
+
+/* Tombol Digit */
+.key-btn--digit {
+  background: var(--color-white);
+  font-family: var(--font-accent);
+  font-size: 1.4rem;
+}
+
+/* Tombol Operator */
+.key-btn--operator {
+  background: var(--color-operator);
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+/* Tombol Kurung */
+.key-btn--paren {
+  background: var(--color-reset);
+  font-size: 1.1rem;
+}
+
+/* Tombol Hapus (Backspace) */
+.key-btn--delete {
+  background: var(--color-delete);
+  font-size: 1rem;
+}
+
+/* Tombol Reset Formula */
+.key-btn--reset {
+  background: var(--color-reset);
+  font-size: 0.85rem;
+}
+
+/* Tombol Kirim */
+.key-btn--submit {
+  background: var(--color-submit);
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.key-btn--submit:not(:disabled):hover {
+  background: #16A34A;
+  color: var(--color-white);
+}
+
+/* --------------------------------------------------------------------------
+   9. SIDEBAR — Tabung Ramuan & Riwayat
+   -------------------------------------------------------------------------- */
+
+/* 9.1 Kartu Tabung Ramuan Ajaib */
+.potion-card {
+  background: var(--color-white);
+  border: var(--neu-border);
+  border-radius: var(--neu-radius-lg);
+  box-shadow: var(--neu-shadow-lg);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.potion-card__title {
+  font-family: var(--font-accent);
+  font-size: 1.05rem;
+  color: var(--color-ink);
+  text-align: center;
+}
+
+.potion-card__tube-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+}
+
+/* Tabung SVG / CSS */
+.potion-tube {
+  position: relative;
+  width: 72px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.potion-tube__glass {
+  width: 72px;
+  height: 180px;
+  border: 3px solid var(--color-ink);
+  border-radius: 0 0 36px 36px;
+  border-top: none;
+  position: relative;
+  overflow: hidden;
+  background: var(--color-potion-bg);
+  box-shadow: var(--neu-shadow);
+}
+
+.potion-tube__liquid {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, #7C3AED, #A78BFA, #C4B5FD);
+  height: 0%;
+  transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: 0 0 33px 33px;
+}
+
+.potion-tube__liquid::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+}
+
+/* Bubble animasi dalam cairan */
+@keyframes bubbleFloat {
+  0%   { transform: translateY(0) scale(1); opacity: 0.6; }
+  100% { transform: translateY(-140px) scale(0.5); opacity: 0; }
+}
+
+.potion-tube__bubble {
+  position: absolute;
+  bottom: 4px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  animation: bubbleFloat 2.5s ease-in infinite;
+}
+
+.potion-tube__bubble:nth-child(1) { width: 8px; height: 8px; left: 15px; animation-delay: 0s; }
+.potion-tube__bubble:nth-child(2) { width: 5px; height: 5px; left: 38px; animation-delay: 0.8s; }
+.potion-tube__bubble:nth-child(3) { width: 6px; height: 6px; left: 25px; animation-delay: 1.5s; }
+
+.potion-tube__cap {
+  width: 84px;
+  height: 12px;
+  background: var(--color-ink);
+  border-radius: 4px 4px 0 0;
+  margin-top: -1px;
+}
+
+.potion-tube__stopper {
+  width: 28px;
+  height: 20px;
+  background: #92400E;
+  border: 2.5px solid var(--color-ink);
+  border-radius: 4px 4px 8px 8px;
+  margin-top: -1px;
+}
+
+.potion-card__progress-label {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.potion-card__count {
+  font-family: var(--font-accent);
+  font-size: 2rem;
+  color: var(--color-ink);
+  line-height: 1;
+  text-align: center;
+}
+
+.potion-card__count span {
+  font-size: 1rem;
+  color: var(--color-muted);
+  font-family: var(--font-main);
+  font-weight: 700;
+}
+
+/* Stars / bintang reward */
+.potion-card__stars {
+  display: flex;
+  gap: var(--space-xs);
+  font-size: 1.4rem;
+}
+
+/* --------------------------------------------------------------------------
+   10. RIWAYAT STRATEGI (Strategy History List)
+   -------------------------------------------------------------------------- */
+.strategy-history {
+  background: var(--color-white);
+  border: var(--neu-border);
+  border-radius: var(--neu-radius-lg);
+  box-shadow: var(--neu-shadow-lg);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  flex: 1;
+  overflow: hidden;
+}
+
+.strategy-history__title {
+  font-family: var(--font-accent);
+  font-size: 1rem;
+  color: var(--color-ink);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.strategy-history__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  overflow-y: auto;
+  max-height: 240px;
+  padding-right: 2px;
+}
+
+.strategy-history__list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.strategy-history__list::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 99px;
+}
+
+.strategy-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: var(--color-bg);
+  border: var(--neu-border);
+  border-radius: var(--neu-radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  box-shadow: var(--neu-shadow-sm);
+  animation: slideInRight 0.3s ease forwards;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(20px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+.strategy-item__index {
+  font-family: var(--font-accent);
+  font-size: 0.85rem;
+  width: 22px;
+  height: 22px;
+  background: var(--color-card-number);
+  border: 2px solid var(--color-ink);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.strategy-item__formula {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--color-ink);
+  flex: 1;
+  word-break: break-all;
+}
+
+.strategy-item__points {
+  font-family: var(--font-accent);
+  font-size: 0.88rem;
+  background: var(--color-operator);
+  border: 2px solid var(--color-ink);
+  border-radius: 999px;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
+.strategy-history__empty {
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: var(--space-md) 0;
+}
+
+/* --------------------------------------------------------------------------
+   11. POPUP / MODAL SISTEM
+   -------------------------------------------------------------------------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 30, 30, 0.55);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.modal-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-box {
+  background: var(--color-white);
+  border: var(--neu-border);
+  border-radius: var(--neu-radius-lg);
+  box-shadow: var(--neu-shadow-lg);
+  padding: var(--space-xl);
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  transform: scale(0.85) translateY(20px);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.modal-overlay.is-open .modal-box {
+  transform: scale(1) translateY(0);
+}
+
+/* Jenis Modal */
+.modal-box--duplicate {
+  border-color: var(--color-card-number);
+  background: #FFFBEB;
+}
+
+.modal-box--success {
+  border-color: var(--color-correct);
+  background: #F0FDF4;
+}
+
+.modal-box--finish {
+  border-color: var(--color-action);
+  background: #FFF1F2;
+}
+
+.modal-box--error {
+  border-color: var(--color-wrong);
+  background: #FEF2F2;
+}
+
+.modal__emoji {
+  font-size: 4rem;
+  line-height: 1;
+  animation: bounceIn 0.4s ease;
+}
+
+.modal__title {
+  font-family: var(--font-accent);
+  font-size: 1.5rem;
+  color: var(--color-ink);
+  line-height: 1.2;
+}
+
+.modal__body {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.modal__points-badge {
+  background: var(--color-operator);
+  border: var(--neu-border);
+  border-radius: 999px;
+  box-shadow: var(--neu-shadow-sm);
+  padding: 6px 20px;
+  font-family: var(--font-accent);
+  font-size: 1.3rem;
+  color: var(--color-ink);
+}
+
+.modal__btn {
+  padding: 12px 32px;
+  border: var(--neu-border);
+  border-radius: var(--neu-radius);
+  box-shadow: var(--neu-shadow);
+  font-family: var(--font-main);
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  background: var(--color-action);
+  color: var(--color-white);
+}
+
+.modal__btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--color-ink);
+}
+
+.modal__btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--color-ink);
+}
+
+.modal__btn--secondary {
+  background: var(--color-white);
+  color: var(--color-ink);
+}
+
+.modal__btn-group {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   12. LOADING SCREEN
+   -------------------------------------------------------------------------- */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.loading-screen.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loading-screen__logo {
+  font-family: var(--font-accent);
+  font-size: 2.5rem;
+  color: var(--color-ink);
+}
+
+.loading-screen__spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(30,30,30,0.15);
+  border-top-color: var(--color-action);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-screen__text {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-muted);
+}
+
+/* --------------------------------------------------------------------------
+   13. TOAST NOTIFIKASI
+   -------------------------------------------------------------------------- */
+.toast-container {
+  position: fixed;
+  bottom: var(--space-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--color-ink);
+  color: var(--color-white);
+  border-radius: var(--neu-radius);
+  border: var(--neu-border);
+  box-shadow: var(--neu-shadow);
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: toastIn 0.25s ease forwards, toastOut 0.25s ease 2.5s forwards;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.toast--success { background: var(--color-correct); }
+.toast--error   { background: var(--color-wrong); }
+.toast--warn    { background: var(--color-card-number); color: var(--color-ink); }
+
+/* --------------------------------------------------------------------------
+   14. ANIMASI GLOBAL
+   -------------------------------------------------------------------------- */
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+@keyframes correctPulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes toastIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastOut {
+  to { opacity: 0; transform: translateY(10px); }
+}
+
+/* Efek konfeti teks skor */
+@keyframes scorePopUp {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-40px) scale(1.3); opacity: 0; }
+}
+
+.score-popup {
+  position: fixed;
+  font-family: var(--font-accent);
+  font-size: 1.5rem;
+  color: var(--color-correct);
+  pointer-events: none;
+  z-index: 1200;
+  animation: scorePopUp 0.8s ease forwards;
+  text-shadow: 2px 2px 0 var(--color-ink);
+}
+
+/* --------------------------------------------------------------------------
+   15. RESPONSIVE — Tablet & Mobile
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+    padding: var(--space-md);
+    gap: var(--space-md);
+  }
+
+  .game-layout__sidebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+  }
+
+  .potion-card {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .potion-tube {
+    height: 140px;
+  }
+
+  .potion-tube__glass {
+    height: 120px;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding: var(--space-xs) var(--space-md);
+  }
+
+  .topbar__logo {
+    font-size: 1.3rem;
+  }
+
+  .topbar__badge {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+  }
+
+  .game-layout {
+    padding: var(--space-sm);
+  }
+
+  .game-layout__sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .target-card__number {
+    font-size: 3.5rem;
+    padding: 4px 20px;
+  }
+
+  .key-btn {
+    height: 46px;
+    font-size: 1rem;
+  }
+
+  .num-card {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .keypad__operators {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .key-btn {
+    height: 42px;
+    font-size: 0.9rem;
+  }
+}

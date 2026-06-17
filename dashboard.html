@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Widyatika — Dashboard Guru: Pantau statistik kelas, sesi aktif, dan progres siswa." />
+  <title>Dashboard — Widyatika</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+
+  <style>
+    /* ============================================================
+       GEMINI FAB & CHAT WIDGET — Dashboard Exclusive
+    ============================================================ */
+
+    /* FAB Button */
+    .gemini-fab {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 500;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 60%, #A855F7 100%);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(124, 58, 237, 0.45), 0 2px 8px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease;
+      color: #FFFFFF;
+      user-select: none;
+      outline: none;
+    }
+
+    .gemini-fab:hover {
+      transform: scale(1.1) translateY(-2px);
+      box-shadow: 0 8px 28px rgba(124, 58, 237, 0.55), 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .gemini-fab:active {
+      transform: scale(0.96);
+    }
+
+    .gemini-fab.is-open {
+      background: linear-gradient(135deg, #DC2626, #EF4444);
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Pulse halo saat tertutup */
+    .gemini-fab::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: rgba(124, 58, 237, 0.2);
+      animation: fabPulse 2.5s ease-out infinite;
+      pointer-events: none;
+    }
+
+    .gemini-fab.is-open::before { display: none; }
+
+    @keyframes fabPulse {
+      0%   { transform: scale(1);   opacity: 0.7; }
+      70%  { transform: scale(1.5); opacity: 0; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    /* Tooltip label */
+    .gemini-fab__tooltip {
+      position: absolute;
+      right: 64px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #1E293B;
+      color: #FFFFFF;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+      padding: 5px 10px;
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .gemini-fab:hover .gemini-fab__tooltip { opacity: 1; }
+
+    /* Chat Widget Container */
+    .gemini-chat {
+      position: fixed;
+      bottom: 96px;
+      right: 28px;
+      z-index: 499;
+      width: 360px;
+      max-height: 520px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(15,23,42,0.18), 0 4px 16px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(16px) scale(0.95);
+      transform-origin: bottom right;
+      transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .gemini-chat.is-open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Chat Header */
+    .gemini-chat__header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: linear-gradient(135deg, #4F46E5, #7C3AED);
+      flex-shrink: 0;
+    }
+
+    .gemini-chat__avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      flex-shrink: 0;
+    }
+
+    .gemini-chat__info { flex: 1; }
+
+    .gemini-chat__name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .gemini-chat__status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.75);
+      margin-top: 1px;
+    }
+
+    .gemini-chat__status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ADE80;
+      flex-shrink: 0;
+      animation: statusBlink 2s ease-in-out infinite;
+    }
+
+    @keyframes statusBlink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    .gemini-chat__close-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: #FFFFFF;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .gemini-chat__close-btn:hover { background: rgba(255,255,255,0.25); }
+
+    /* API Key Notice */
+    .gemini-chat__api-notice {
+      background: #FFFBEB;
+      border-bottom: 1px solid #FDE68A;
+      padding: 8px 14px;
+      font-size: 0.72rem;
+      color: #92400E;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* Messages Area */
+    .gemini-chat__messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 200px;
+    }
+
+    .gemini-chat__messages::-webkit-scrollbar { width: 4px; }
+    .gemini-chat__messages::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 99px; }
+
+    /* Message Bubbles */
+    .msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 85%;
+      animation: msgSlideIn 0.2s ease forwards;
+    }
+
+    @keyframes msgSlideIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg--ai   { align-self: flex-start; }
+    .msg--user { align-self: flex-end; }
+
+    .msg__bubble {
+      padding: 9px 13px;
+      border-radius: 14px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .msg--ai .msg__bubble {
+      background: #F1F5F9;
+      color: #0F172A;
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg--user .msg__bubble {
+      background: linear-gradient(135deg, #4F46E5, #7C3AED);
+      color: #FFFFFF;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg__time {
+      font-size: 0.65rem;
+      color: #94A3B8;
+      margin-top: 3px;
+      padding: 0 4px;
+    }
+
+    .msg--user .msg__time { text-align: right; }
+
+    /* Typing Indicator */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 14px;
+      background: #F1F5F9;
+      border-radius: 14px;
+      border-bottom-left-radius: 4px;
+      width: fit-content;
+    }
+
+    .typing-indicator span {
+      width: 7px;
+      height: 7px;
+      background: #94A3B8;
+      border-radius: 50%;
+      animation: typingBounce 1.2s ease-in-out infinite;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.30s; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30%            { transform: translateY(-5px); }
+    }
+
+    /* Chat Input Area */
+    .gemini-chat__input-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      border-top: 1px solid #E2E8F0;
+      background: #FAFAFA;
+      flex-shrink: 0;
+    }
+
+    .gemini-chat__input {
+      flex: 1;
+      padding: 9px 13px;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      background: #FFFFFF;
+      color: #0F172A;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .gemini-chat__input:focus {
+      border-color: #7C3AED;
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+    }
+
+    .gemini-chat__input::placeholder { color: #CBD5E1; }
+
+    .gemini-chat__send-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4F46E5, #7C3AED);
+      border: none;
+      color: #FFFFFF;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      transition: transform 0.15s, box-shadow 0.15s;
+      flex-shrink: 0;
+    }
+
+    .gemini-chat__send-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 2px 10px rgba(124,58,237,0.4);
+    }
+
+    .gemini-chat__send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Suggested prompts */
+    .gemini-chat__suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 14px 0;
+    }
+
+    .suggestion-chip {
+      padding: 5px 10px;
+      background: #EEF2FF;
+      border: 1px solid #C7D2FE;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #4F46E5;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .suggestion-chip:hover { background: #E0E7FF; }
+
+    /* Toast stack untuk dashboard */
+    .toast-stack {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 600;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    /* Dashboard content grid */
+    .dashboard-content-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    @media (max-width: 1100px) {
+      .dashboard-content-grid { grid-template-columns: 1fr; }
+      .gemini-chat { width: calc(100vw - 48px); right: 24px; }
+    }
+
+    @media (max-width: 640px) {
+      .gemini-fab { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 1.3rem; }
+      .gemini-chat { bottom: 82px; right: 20px; width: calc(100vw - 40px); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- ================================================================
+         SIDEBAR
+    ================================================================= -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu navigasi guru">
+
+      <div class="sidebar__brand">
+        <div class="sidebar__logo-icon" aria-hidden="true">🧪</div>
+        <span class="sidebar__logo-text">Widy<em>atika</em></span>
+      </div>
+
+      <div class="sidebar__profile" id="sidebarProfile">
+        <div class="sidebar__avatar" id="sidebarAvatar" aria-hidden="true">G</div>
+        <div>
+          <p class="sidebar__profile-name" id="sidebarName">Memuat...</p>
+          <p class="sidebar__profile-role">Guru</p>
+        </div>
+      </div>
+
+      <nav class="sidebar__nav" aria-label="Menu utama">
+        <div class="sidebar__nav-group">
+          <p class="sidebar__nav-label">Menu Utama</p>
+
+          <a href="dashboard.html" class="sidebar__nav-item is-active" id="navDashboard" aria-current="page">
+            <span class="sidebar__nav-icon" aria-hidden="true">📊</span>
+            Dashboard
+          </a>
+
+          <a href="manajemen-kelas.html" class="sidebar__nav-item" id="navKelas">
+            <span class="sidebar__nav-icon" aria-hidden="true">🏫</span>
+            Manajemen Kelas
+          </a>
+
+          <a href="laporan.html" class="sidebar__nav-item" id="navLaporan">
+            <span class="sidebar__nav-icon" aria-hidden="true">📈</span>
+            Laporan & Analitik
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar__footer">
+        <button class="sidebar__logout-btn" id="btnLogout" type="button" aria-label="Keluar dari akun">
+          <span aria-hidden="true">🚪</span> Keluar
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ================================================================
+         TOPBAR
+    ================================================================= -->
+    <header class="topbar" role="banner">
+      <div class="topbar__left">
+        <button
+          class="btn btn--ghost btn--icon"
+          id="btnToggleSidebar"
+          aria-label="Toggle sidebar"
+          aria-expanded="true"
+          style="display:none;"
+          type="button"
+        >☰</button>
+        <h1 class="topbar__page-title">Dashboard</h1>
+      </div>
+      <div class="topbar__right">
+        <div style="font-size:0.8rem; color:var(--clr-text-muted); font-weight:500;" id="topbarDate"></div>
+        <button class="topbar__icon-btn" id="btnRefreshData" aria-label="Muat ulang data" type="button" title="Refresh data">🔄</button>
+      </div>
+    </header>
+
+    <!-- ================================================================
+         MAIN CONTENT
+    ================================================================= -->
+    <main class="main-content" id="mainContent" role="main" aria-label="Konten dashboard">
+
+      <!-- Loading State -->
+      <div id="dashboardLoading" style="display:flex; align-items:center; gap:12px; padding:40px 0; color:var(--clr-text-muted);">
+        <div style="width:20px;height:20px;border:2.5px solid #CBD5E1;border-top-color:var(--clr-blue);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;"></div>
+        <span style="font-weight:600;">Memuat data dashboard...</span>
+      </div>
+
+      <!-- Konten utama (tersembunyi saat loading) -->
+      <div id="dashboardContent" style="display:none;">
+
+        <!-- Page Header -->
+        <div class="page-header">
+          <p class="page-header__title" id="welcomeTitle">Selamat Datang! 👋</p>
+          <p class="page-header__subtitle" id="welcomeSubtitle">Berikut ringkasan aktivitas kelas Anda hari ini.</p>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card stat-card--blue">
+            <div class="stat-card__header">
+              <span class="stat-card__label">Total Kelas</span>
+              <span class="stat-card__icon">🏫</span>
+            </div>
+            <div class="stat-card__value" id="statTotalKelas">—</div>
+            <div class="stat-card__delta stat-card__delta--neutral" id="statKelasInfo">kelas aktif</div>
+          </div>
+
+          <div class="stat-card stat-card--green">
+            <div class="stat-card__header">
+              <span class="stat-card__label">Total Siswa</span>
+              <span class="stat-card__icon">👦</span>
+            </div>
+            <div class="stat-card__value" id="statTotalSiswa">—</div>
+            <div class="stat-card__delta stat-card__delta--neutral">terdaftar</div>
+          </div>
+
+          <div class="stat-card stat-card--orange">
+            <div class="stat-card__header">
+              <span class="stat-card__label">Rata-rata Skor</span>
+              <span class="stat-card__icon">⭐</span>
+            </div>
+            <div class="stat-card__value" id="statRataSkor">—</div>
+            <div class="stat-card__delta stat-card__delta--neutral">poin</div>
+          </div>
+
+          <div class="stat-card stat-card--purple">
+            <div class="stat-card__header">
+              <span class="stat-card__label">Sesi Selesai</span>
+              <span class="stat-card__icon">✅</span>
+            </div>
+            <div class="stat-card__value" id="statSesiSelesai">—</div>
+            <div class="stat-card__delta stat-card__delta--neutral">total sesi</div>
+          </div>
+        </div>
+
+        <!-- Dashboard Grid: Recent Sessions + Leaderboard -->
+        <div class="dashboard-content-grid">
+
+          <!-- Aktivitas Terbaru -->
+          <div class="card" id="cardRecentSessions">
+            <div class="card__header">
+              <div>
+                <p class="card__title">📋 Aktivitas Sesi Terbaru</p>
+                <p class="card__subtitle">10 sesi game terakhir dari semua kelas</p>
+              </div>
+              <a href="laporan.html" class="btn btn--secondary btn--sm">Lihat Semua →</a>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table" id="tableRecentSessions" aria-label="Tabel sesi terbaru">
+                <thead>
+                  <tr>
+                    <th class="col-no">#</th>
+                    <th>Siswa</th>
+                    <th>Kelas</th>
+                    <th>Level</th>
+                    <th>Target</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyRecentSessions">
+                  <tr>
+                    <td colspan="6">
+                      <div class="table-empty">
+                        <div class="table-empty__icon">📭</div>
+                        <div class="table-empty__text">Memuat data sesi...</div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Leaderboard -->
+          <div class="card">
+            <div class="card__header">
+              <div>
+                <p class="card__title">🏆 Siswa Terbaik</p>
+                <p class="card__subtitle">Berdasarkan total poin</p>
+              </div>
+            </div>
+            <div class="card__body">
+              <div class="leaderboard-list" id="leaderboardList">
+                <p style="text-align:center;color:var(--clr-text-muted);font-size:0.85rem;padding:20px 0;">Memuat leaderboard...</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- /dashboard-content-grid -->
+
+      </div>
+      <!-- /dashboardContent -->
+
+    </main>
+    <!-- /main-content -->
+
+  </div>
+  <!-- /app-layout -->
+
+  <!-- ================================================================
+       GEMINI FLOATING ACTION BUTTON
+  ================================================================= -->
+  <button
+    class="gemini-fab"
+    id="geminiFab"
+    aria-label="Buka asisten AI Widy"
+    aria-haspopup="dialog"
+    aria-expanded="false"
+    type="button"
+  >
+    <span id="fabIcon" aria-hidden="true">🌙</span>
+    <span class="gemini-fab__tooltip">Tanya Widy AI</span>
+  </button>
+
+  <!-- ================================================================
+       GEMINI CHAT WIDGET
+  ================================================================= -->
+  <div
+    class="gemini-chat"
+    id="geminiChat"
+    role="dialog"
+    aria-label="Chat dengan asisten AI Widy"
+    aria-modal="false"
+  >
+    <!-- Header -->
+    <div class="gemini-chat__header">
+      <div class="gemini-chat__avatar" aria-hidden="true">🤖</div>
+      <div class="gemini-chat__info">
+        <p class="gemini-chat__name">Widy — Asisten AI</p>
+        <p class="gemini-chat__status">
+          <span class="gemini-chat__status-dot" aria-hidden="true"></span>
+          Bertenaga Gemini · Siap membantu
+        </p>
+      </div>
+      <button
+        class="gemini-chat__close-btn"
+        id="geminiClose"
+        aria-label="Tutup chat asisten"
+        type="button"
+      >✕</button>
+    </div>
+
+    <!-- API Key Notice -->
+    <div class="gemini-chat__api-notice" id="apiKeyNotice" style="display:none;">
+      ⚠️ Isi <strong>GEMINI_API_KEY</strong> di script untuk mengaktifkan AI.
+    </div>
+
+    <!-- Suggested Prompts (awal) -->
+    <div class="gemini-chat__suggestions" id="chatSuggestions">
+      <button class="suggestion-chip" data-prompt="Bagaimana cara meningkatkan skor siswa yang rendah?" type="button">💡 Strategi siswa skor rendah</button>
+      <button class="suggestion-chip" data-prompt="Apa itu Number Talks dan manfaatnya?" type="button">📚 Apa itu Number Talks?</button>
+      <button class="suggestion-chip" data-prompt="Berikan contoh soal numerasi level 3 untuk SD" type="button">🎯 Contoh soal numerasi</button>
+    </div>
+
+    <!-- Messages -->
+    <div class="gemini-chat__messages" id="chatMessages" aria-live="polite" aria-label="Riwayat percakapan">
+      <!-- Pesan sambutan AI -->
+      <div class="msg msg--ai">
+        <div class="msg__bubble">
+          Halo! 👋 Saya <strong>Widy</strong>, asisten pedagogis bertenaga Gemini untuk platform Widyatika.<br/><br/>
+          Saya bisa membantu Anda memahami data siswa, merancang strategi pembelajaran numerasi, atau menjawab pertanyaan seputar Number Talks. Ada yang bisa saya bantu? 😊
+        </div>
+        <span class="msg__time" id="welcomeTime"></span>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="gemini-chat__input-area">
+      <input
+        type="text"
+        class="gemini-chat__input"
+        id="chatInput"
+        placeholder="Tanya tentang kelas atau pedagogi..."
+        maxlength="500"
+        aria-label="Ketik pesan untuk asisten AI"
+      />
+      <button
+        class="gemini-chat__send-btn"
+        id="chatSendBtn"
+        aria-label="Kirim pesan"
+        type="button"
+      >➤</button>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <!-- ================================================================
+       SCRIPT — Dashboard Logic + Gemini Chat
+  ================================================================= -->
+  <script type="module">
+    import { supabase }    from './js/supabase-config.js';
+    import { requireGuruSession, logout } from './js/auth.js';
+
+    // ----------------------------------------------------------------
+    // KONFIGURASI GEMINI API
+    // Ganti dengan API key dari Google AI Studio: https://aistudio.google.com
+    // ----------------------------------------------------------------
+    const GEMINI_API_KEY = 'YOUR_GEMINI_API_KEY_HERE';
+    const GEMINI_MODEL   = 'gemini-1.5-flash';
+    const GEMINI_URL     = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+
+    // Konteks sistem untuk AI
+    const buildSystemPrompt = (guru, statsCtx) => `
+Kamu adalah Widy, asisten pedagogis AI untuk platform Widyatika, platform asesmen diagnostik numerasi berbasis game untuk siswa Sekolah Dasar (SD).
+Platform ini mengimplementasikan metode Number Talks — di mana siswa menemukan banyak cara berbeda untuk mencapai satu angka target.
+
+Data konteks guru yang sedang login:
+- Nama guru: ${guru.nama_lengkap}
+- Total kelas: ${statsCtx.totalKelas}
+- Total siswa: ${statsCtx.totalSiswa}
+- Rata-rata skor siswa: ${statsCtx.rataSkor} poin
+
+Tugasmu:
+1. Membantu guru memahami data dan progres siswa
+2. Memberikan saran pedagogis berbasis bukti untuk meningkatkan kemampuan numerasi
+3. Menjelaskan konsep Number Talks dengan bahasa yang mudah dipahami
+4. Merekomendasikan strategi diferensiasi untuk siswa dengan berbagai kemampuan
+5. Menjawab pertanyaan umum tentang asesmen diagnostik matematika SD
+
+Selalu gunakan Bahasa Indonesia yang hangat, profesional, dan ramah. 
+Jawaban harus singkat, actionable, dan relevan dengan konteks SD.
+Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalikan ke topik yang relevan.
+    `.trim();
+
+    // ----------------------------------------------------------------
+    // UTILITY
+    // ----------------------------------------------------------------
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast-notif toast-notif--${type}`;
+      toast.innerHTML = `<span>${message}</span>`;
+      toast.style.cssText = `
+        background:#1E293B;color:#fff;padding:10px 16px;border-radius:10px;
+        font-size:0.85rem;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.2);
+        animation:slideInRight 0.3s ease;pointer-events:auto;
+      `;
+      document.getElementById('toastStack').appendChild(toast);
+      setTimeout(() => toast.remove(), 3200);
+    }
+
+    function formatTime(date = new Date()) {
+      return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatDate(date = new Date()) {
+      return date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    // ----------------------------------------------------------------
+    // INIT TOPBAR DATE
+    // ----------------------------------------------------------------
+    document.getElementById('topbarDate').textContent = formatDate();
+    document.getElementById('welcomeTime').textContent = formatTime();
+
+    // ----------------------------------------------------------------
+    // SESSION GUARD
+    // ----------------------------------------------------------------
+    let session;
+    try { session = requireGuruSession(); }
+    catch { /* redirect handled by requireGuruSession */ }
+
+    const guru      = session.guru;
+    const idGuru    = guru.id_guru;
+
+    // Set sidebar nama & avatar
+    document.getElementById('sidebarName').textContent = guru.nama_lengkap;
+    document.getElementById('sidebarAvatar').textContent = guru.nama_lengkap.charAt(0).toUpperCase();
+
+    // Set welcome title
+    document.getElementById('welcomeTitle').textContent = `Selamat Datang, ${guru.nama_lengkap.split(' ')[0]}! 👋`;
+
+    // ----------------------------------------------------------------
+    // LOGOUT
+    // ----------------------------------------------------------------
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      if (confirm('Yakin ingin keluar dari akun?')) logout();
+    });
+
+    // ----------------------------------------------------------------
+    // LOAD DASHBOARD DATA
+    // ----------------------------------------------------------------
+    let dashboardStats = { totalKelas: 0, totalSiswa: 0, rataSkor: 0 };
+
+    async function loadDashboard() {
+      try {
+        // 1. Fetch semua kelas milik guru
+        const { data: kelasList, error: kelasErr } = await supabase
+          .from('kelas')
+          .select('id_kelas, nama_kelas, tahun_ajaran')
+          .eq('id_guru', idGuru);
+        if (kelasErr) throw kelasErr;
+
+        const kelasIds = (kelasList || []).map(k => k.id_kelas);
+
+        // 2. Stat: Total Kelas
+        document.getElementById('statTotalKelas').textContent = kelasList?.length ?? 0;
+        document.getElementById('statKelasInfo').textContent  =
+          `tahun ajaran: ${[...new Set((kelasList||[]).map(k=>k.tahun_ajaran))].join(', ') || '—'}`;
+
+        // 3. Fetch siswa di semua kelas
+        let siswaList = [];
+        if (kelasIds.length > 0) {
+          const { data: sd, error: siswErr } = await supabase
+            .from('siswa')
+            .select('id_siswa, nama_panggilan, total_skor, id_kelas')
+            .in('id_kelas', kelasIds);
+          if (siswErr) throw siswErr;
+          siswaList = sd || [];
+        }
+
+        document.getElementById('statTotalSiswa').textContent = siswaList.length;
+
+        const avgSkor = siswaList.length > 0
+          ? Math.round(siswaList.reduce((s, sw) => s + (sw.total_skor || 0), 0) / siswaList.length)
+          : 0;
+        document.getElementById('statRataSkor').textContent = avgSkor;
+
+        // Simpan stats untuk konteks Gemini
+        dashboardStats = { totalKelas: kelasList?.length ?? 0, totalSiswa: siswaList.length, rataSkor: avgSkor };
+
+        // 4. Fetch sesi_game terbaru
+        const siswaIds = siswaList.map(s => s.id_siswa);
+        let recentSesi = [];
+        let totalSesiSelesai = 0;
+        if (siswaIds.length > 0) {
+          const { data: sd2, error: sesiErr } = await supabase
+            .from('sesi_game')
+            .select('id_sesi, id_siswa, level_ke, target_angka, status_selesai')
+            .in('id_siswa', siswaIds)
+            .order('id_sesi', { ascending: false })
+            .limit(10);
+          if (sesiErr) throw sesiErr;
+          recentSesi = sd2 || [];
+          totalSesiSelesai = recentSesi.filter(s => s.status_selesai).length;
+        }
+
+        document.getElementById('statSesiSelesai').textContent = totalSesiSelesai;
+
+        // 5. Render tabel sesi terbaru
+        const siswaMap  = Object.fromEntries(siswaList.map(s => [s.id_siswa, s]));
+        const kelasMap  = Object.fromEntries((kelasList || []).map(k => [k.id_kelas, k]));
+        renderRecentSessions(recentSesi, siswaMap, kelasMap);
+
+        // 6. Render leaderboard (top 10 siswa)
+        const sorted = [...siswaList].sort((a, b) => (b.total_skor || 0) - (a.total_skor || 0)).slice(0, 8);
+        const maxSkor = sorted[0]?.total_skor || 1;
+        renderLeaderboard(sorted, kelasMap, maxSkor);
+
+        // Tampilkan konten
+        document.getElementById('dashboardLoading').style.display = 'none';
+        document.getElementById('dashboardContent').style.display = 'block';
+
+      } catch (err) {
+        console.error('[Dashboard] Load error:', err);
+        showToast('Gagal memuat data. Periksa koneksi Supabase.', 'error');
+        document.getElementById('dashboardLoading').innerHTML =
+          '<span style="color:var(--clr-danger);font-weight:600;">❌ Gagal memuat. Coba refresh halaman.</span>';
+      }
+    }
+
+    function renderRecentSessions(sessions, siswaMap, kelasMap) {
+      const tbody = document.getElementById('tbodyRecentSessions');
+      if (!sessions || sessions.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="6">
+            <div class="table-empty">
+              <div class="table-empty__icon">📭</div>
+              <div class="table-empty__text">Belum ada sesi game</div>
+              <div class="table-empty__sub">Siswa belum memulai game. Minta mereka login di game.html</div>
+            </div>
+          </td></tr>`;
+        return;
+      }
+      tbody.innerHTML = sessions.map((sesi, i) => {
+        const siswa = siswaMap[sesi.id_siswa];
+        const kelas = siswa ? kelasMap[siswa.id_kelas] : null;
+        const status = sesi.status_selesai
+          ? '<span class="badge badge--green"><span class="badge__dot"></span> Selesai</span>'
+          : '<span class="badge badge--yellow"><span class="badge__dot"></span> Aktif</span>';
+        return `
+          <tr>
+            <td class="col-no">${i + 1}</td>
+            <td><strong>${escHtml(siswa?.nama_panggilan ?? '—')}</strong></td>
+            <td>${escHtml(kelas?.nama_kelas ?? '—')}</td>
+            <td><span class="badge badge--blue">Level ${sesi.level_ke}</span></td>
+            <td><strong>${sesi.target_angka}</strong></td>
+            <td>${status}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    function renderLeaderboard(siswaList, kelasMap, maxSkor) {
+      const medals = ['🥇', '🥈', '🥉'];
+      const container = document.getElementById('leaderboardList');
+      if (!siswaList || siswaList.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:var(--clr-text-muted);font-size:0.85rem;padding:20px 0;">Belum ada data skor.</p>';
+        return;
+      }
+      container.innerHTML = siswaList.map((sw, i) => {
+        const kelas  = kelasMap[sw.id_kelas];
+        const pct    = Math.round(((sw.total_skor || 0) / maxSkor) * 100);
+        const rank   = i < 3 ? medals[i] : `${i + 1}`;
+        return `
+          <div class="leaderboard-item">
+            <span class="leaderboard-item__rank">${rank}</span>
+            <div class="leaderboard-item__info">
+              <p class="leaderboard-item__name">${escHtml(sw.nama_panggilan)}</p>
+              <p class="leaderboard-item__sub">${escHtml(kelas?.nama_kelas ?? '—')}</p>
+            </div>
+            <div class="leaderboard-item__bar-wrap">
+              <div class="leaderboard-item__bar" style="width:${pct}%"></div>
+            </div>
+            <span class="leaderboard-item__score">${sw.total_skor ?? 0}</span>
+          </div>`;
+      }).join('');
+    }
+
+    function escHtml(str) {
+      const m = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
+      return String(str).replace(/[&<>"']/g, c => m[c]);
+    }
+
+    // ----------------------------------------------------------------
+    // SIDEBAR TOGGLE (Mobile)
+    // ----------------------------------------------------------------
+    const btnToggle = document.getElementById('btnToggleSidebar');
+    const sidebar   = document.getElementById('sidebar');
+    if (window.innerWidth <= 1024) {
+      btnToggle.style.display = 'flex';
+      btnToggle.addEventListener('click', () => {
+        const isOpen = sidebar.classList.toggle('is-open');
+        btnToggle.setAttribute('aria-expanded', isOpen);
+      });
+      document.addEventListener('click', e => {
+        if (!sidebar.contains(e.target) && !btnToggle.contains(e.target)) {
+          sidebar.classList.remove('is-open');
+          btnToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    // Refresh button
+    document.getElementById('btnRefreshData').addEventListener('click', () => {
+      document.getElementById('dashboardLoading').style.display = 'flex';
+      document.getElementById('dashboardContent').style.display = 'none';
+      loadDashboard();
+    });
+
+    // ----------------------------------------------------------------
+    // GEMINI FAB TOGGLE
+    // ----------------------------------------------------------------
+    const fab        = document.getElementById('geminiFab');
+    const chatWidget = document.getElementById('geminiChat');
+    const fabIcon    = document.getElementById('fabIcon');
+    const closeBtn   = document.getElementById('geminiClose');
+
+    function toggleChat(open) {
+      chatWidget.classList.toggle('is-open', open);
+      fab.classList.toggle('is-open', open);
+      fab.setAttribute('aria-expanded', open);
+      fabIcon.textContent = open ? '✕' : '🌙';
+
+      // Cek API key
+      document.getElementById('apiKeyNotice').style.display =
+        GEMINI_API_KEY.includes('YOUR_GEMINI') ? 'flex' : 'none';
+
+      if (open) {
+        document.getElementById('chatInput').focus();
+        // Sembunyikan suggested prompts jika sudah ada riwayat
+        if (chatHistory.length > 0) {
+          document.getElementById('chatSuggestions').style.display = 'none';
+        }
+      }
+    }
+
+    fab.addEventListener('click', () => toggleChat(!chatWidget.classList.contains('is-open')));
+    closeBtn.addEventListener('click', () => toggleChat(false));
+
+    // Klik suggested prompt
+    document.querySelectorAll('.suggestion-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.getElementById('chatInput').value = chip.dataset.prompt;
+        document.getElementById('chatSuggestions').style.display = 'none';
+        sendMessage();
+      });
+    });
+
+    // ----------------------------------------------------------------
+    // GEMINI CHAT LOGIC
+    // ----------------------------------------------------------------
+    const chatHistory = []; // Format: [{role:'user'|'model', parts:[{text:'...'}]}]
+
+    function appendMessage(role, text, timestamp = new Date()) {
+      const container = document.getElementById('chatMessages');
+      const div       = document.createElement('div');
+      div.className   = `msg msg--${role === 'user' ? 'user' : 'ai'}`;
+
+      // Sanitasi dasar & render markdown ringan (bold, newline)
+      const safeText = escHtml(text)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br/>');
+
+      div.innerHTML = `
+        <div class="msg__bubble">${safeText}</div>
+        <span class="msg__time">${formatTime(timestamp)}</span>
+      `;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+      return div;
+    }
+
+    function appendTypingIndicator() {
+      const container = document.getElementById('chatMessages');
+      const div       = document.createElement('div');
+      div.className   = 'msg msg--ai';
+      div.id          = 'typingIndicator';
+      div.innerHTML   = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      document.getElementById('typingIndicator')?.remove();
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text  = input.value.trim();
+      if (!text) return;
+
+      // Sembunyikan suggestion chips setelah pesan pertama
+      document.getElementById('chatSuggestions').style.display = 'none';
+
+      input.value = '';
+      const sendBtn = document.getElementById('chatSendBtn');
+      sendBtn.disabled = true;
+
+      // Tampilkan pesan user
+      appendMessage('user', text);
+      chatHistory.push({ role: 'user', parts: [{ text }] });
+
+      // Typing indicator
+      appendTypingIndicator();
+
+      try {
+        if (GEMINI_API_KEY.includes('YOUR_GEMINI')) {
+          throw new Error('API_KEY_PLACEHOLDER');
+        }
+
+        // Bangun payload Gemini dengan system prompt sebagai konteks awal
+        const systemMsg = buildSystemPrompt(guru, dashboardStats);
+        const contents  = [
+          { role: 'user',  parts: [{ text: systemMsg }] },
+          { role: 'model', parts: [{ text: 'Siap! Saya Widy, asisten pedagogis Widyatika. Bagaimana saya bisa membantu?' }] },
+          ...chatHistory,
+        ];
+
+        const resp = await fetch(GEMINI_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents,
+            generationConfig: {
+              temperature:     0.75,
+              topK:            40,
+              topP:            0.95,
+              maxOutputTokens: 512,
+            },
+            safetySettings: [
+              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+            ],
+          }),
+        });
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData?.error?.message || `HTTP ${resp.status}`);
+        }
+
+        const data   = await resp.json();
+        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text
+          ?? 'Maaf, saya tidak dapat menghasilkan respons. Coba ulangi pertanyaan Anda.';
+
+        removeTypingIndicator();
+        appendMessage('model', aiText);
+        chatHistory.push({ role: 'model', parts: [{ text: aiText }] });
+
+      } catch (err) {
+        removeTypingIndicator();
+        const isPlaceholder = err.message === 'API_KEY_PLACEHOLDER';
+        const errMsg = isPlaceholder
+          ? 'Fitur AI belum aktif. Isi **GEMINI_API_KEY** di dashboard.html untuk menggunakan Widy.'
+          : `Gagal menghubungi Gemini: ${err.message}. Periksa koneksi atau coba lagi.`;
+        appendMessage('model', errMsg);
+        chatHistory.push({ role: 'model', parts: [{ text: errMsg }] });
+      } finally {
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+
+    // Send on button click or Enter
+    document.getElementById('chatSendBtn').addEventListener('click', sendMessage);
+    document.getElementById('chatInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+
+    // ----------------------------------------------------------------
+    // BOOTSTRAP
+    // ----------------------------------------------------------------
+    loadDashboard();
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Widyatika - Arena Numerasi Interaktif: Temukan sebanyak mungkin cara untuk mencapai target angka dan latih fleksibilitas berpikir matematikamu!" />
+  <title>Arena Numerasi – Widyatika</title>
+
+  <!-- Preconnect Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Game Stylesheet -->
+  <link rel="stylesheet" href="css/game.css" />
+</head>
+<body>
+
+  <!-- =====================================================================
+       LOADING SCREEN
+       Ditampilkan sementara sesi game dimuat dari Supabase.
+       game.js akan menambahkan class "is-hidden" setelah data siap.
+  ====================================================================== -->
+  <div class="loading-screen" id="loadingScreen" role="status" aria-live="polite">
+    <div class="loading-screen__logo">🧪 Widyatika</div>
+    <div class="loading-screen__spinner" aria-hidden="true"></div>
+    <p class="loading-screen__text">Memuat sesi game kamu...</p>
+  </div>
+
+  <!-- =====================================================================
+       TOPBAR — Header Sesi
+  ====================================================================== -->
+  <header class="topbar" role="banner">
+    <div class="topbar__brand">
+      <a href="#" class="topbar__logo" id="topbarBrand" aria-label="Widyatika">
+        <span>W</span>idyatika
+      </a>
+    </div>
+
+    <div class="topbar__session-info" role="group" aria-label="Informasi sesi aktif">
+      <!-- Nama Siswa -->
+      <div class="topbar__badge topbar__badge--student" id="badgeStudentName">
+        <span class="badge-icon" aria-hidden="true">👤</span>
+        <span id="displayStudentName">Memuat...</span>
+      </div>
+
+      <!-- Level Ke -->
+      <div class="topbar__badge topbar__badge--level" id="badgeLevel">
+        <span class="badge-icon" aria-hidden="true">🎯</span>
+        Level <span id="displayLevel">1</span>
+      </div>
+
+      <!-- Total Skor -->
+      <div class="topbar__badge topbar__badge--score" id="badgeScore">
+        <span class="badge-icon" aria-hidden="true">⭐</span>
+        <span id="displayScore">0</span> Poin
+      </div>
+    </div>
+  </header>
+
+  <!-- =====================================================================
+       LAYOUT UTAMA GAME
+  ====================================================================== -->
+  <main class="game-layout" id="gameLayout" aria-label="Arena game numerasi">
+
+    <!-- ----------------------------------------------------------------
+         KOLOM KIRI — Area Permainan Utama
+    ----------------------------------------------------------------- -->
+    <section class="game-layout__main" aria-label="Area permainan">
+
+      <!-- KARTU TARGET ANGKA -->
+      <div class="target-card" id="targetCard" role="region" aria-label="Target angka sesi ini">
+        <div>
+          <p class="target-card__label">🎯 Target Angka</p>
+        </div>
+        <div
+          class="target-card__number animate-in"
+          id="displayTargetNumber"
+          aria-live="polite"
+          aria-label="Target angka"
+        >
+          —
+        </div>
+        <p class="target-card__hint" id="targetHint">
+          Temukan sebanyak mungkin cara berbeda untuk mencapai angka ini!
+        </p>
+      </div>
+
+      <!-- WORKSPACE — Area Input Formula -->
+      <div class="workspace" id="workspace" role="region" aria-label="Area input rumus matematika">
+
+        <!-- Display Formula yang Sedang Dibangun -->
+        <div
+          class="workspace__formula-display state--empty"
+          id="formulaDisplay"
+          role="textbox"
+          aria-label="Formula yang sedang dibangun"
+          aria-readonly="true"
+          aria-live="polite"
+        >
+          <!-- Token formula akan dirender oleh game.js di sini -->
+          <!-- Contoh token yang dihasilkan oleh JS:
+               <span class="formula-token formula-token--number">7</span>
+               <span class="formula-token formula-token--operator">+</span>
+               <span class="formula-token formula-token--number">3</span>
+               <span class="formula-token formula-token--cursor"></span>
+          -->
+        </div>
+
+        <!-- Preview Hasil Kalkulasi Real-time -->
+        <div class="workspace__result-preview" id="resultPreview" aria-live="polite" aria-label="Hasil kalkulasi sementara">
+          <span class="result-preview__equals" aria-hidden="true">=</span>
+          <span class="result-preview__value" id="resultValue" aria-label="Hasil sementara">?</span>
+          <span id="resultStatusMsg" style="font-weight:700; font-size:0.8rem;"></span>
+        </div>
+
+        <!-- ============================================================
+             VIRTUAL KEYPAD
+             Semua interaksi siswa terjadi di sini — tanpa keyboard fisik.
+        ============================================================= -->
+        <div class="keypad" id="virtualKeypad" role="group" aria-label="Papan tombol virtual">
+
+          <!-- Baris Operator & Tanda Kurung -->
+          <div class="keypad__operators" role="group" aria-label="Tombol operator">
+            <button
+              class="key-btn key-btn--operator"
+              id="btnOp_plus"
+              data-value="+"
+              data-type="operator"
+              aria-label="Tambah"
+              type="button"
+            >+</button>
+            <button
+              class="key-btn key-btn--operator"
+              id="btnOp_minus"
+              data-value="-"
+              data-type="operator"
+              aria-label="Kurang"
+              type="button"
+            >−</button>
+            <button
+              class="key-btn key-btn--operator"
+              id="btnOp_multiply"
+              data-value="×"
+              data-type="operator"
+              aria-label="Kali"
+              type="button"
+            >×</button>
+            <button
+              class="key-btn key-btn--operator"
+              id="btnOp_divide"
+              data-value="÷"
+              data-type="operator"
+              aria-label="Bagi"
+              type="button"
+            >÷</button>
+            <button
+              class="key-btn key-btn--paren"
+              id="btnOp_paren"
+              data-value="()"
+              data-type="paren"
+              aria-label="Tambah kurung"
+              type="button"
+            >( )</button>
+          </div>
+
+          <!-- Baris Digit 7 8 9 / 4 5 6 / 1 2 3 / 0 -->
+          <div class="keypad__digits" role="group" aria-label="Tombol angka">
+            <button class="key-btn key-btn--digit" id="btnDigit_7" data-value="7" data-type="digit" aria-label="Angka 7" type="button">7</button>
+            <button class="key-btn key-btn--digit" id="btnDigit_8" data-value="8" data-type="digit" aria-label="Angka 8" type="button">8</button>
+            <button class="key-btn key-btn--digit" id="btnDigit_9" data-value="9" data-type="digit" aria-label="Angka 9" type="button">9</button>
+
+            <button class="key-btn key-btn--digit" id="btnDigit_4" data-value="4" data-type="digit" aria-label="Angka 4" type="button">4</button>
+            <button class="key-btn key-btn--digit" id="btnDigit_5" data-value="5" data-type="digit" aria-label="Angka 5" type="button">5</button>
+            <button class="key-btn key-btn--digit" id="btnDigit_6" data-value="6" data-type="digit" aria-label="Angka 6" type="button">6</button>
+
+            <button class="key-btn key-btn--digit" id="btnDigit_1" data-value="1" data-type="digit" aria-label="Angka 1" type="button">1</button>
+            <button class="key-btn key-btn--digit" id="btnDigit_2" data-value="2" data-type="digit" aria-label="Angka 2" type="button">2</button>
+            <button class="key-btn key-btn--digit" id="btnDigit_3" data-value="3" data-type="digit" aria-label="Angka 3" type="button">3</button>
+          </div>
+
+          <!-- Baris Aksi: Hapus / Reset / 0 / Kirim -->
+          <div class="keypad__actions" role="group" aria-label="Tombol aksi">
+            <button
+              class="key-btn key-btn--delete"
+              id="btnDelete"
+              data-action="delete"
+              aria-label="Hapus satu karakter"
+              type="button"
+            >⌫ Hapus</button>
+            <button
+              class="key-btn key-btn--reset"
+              id="btnReset"
+              data-action="reset"
+              aria-label="Kosongkan formula"
+              type="button"
+            >🔄 Ulang</button>
+            <button
+              class="key-btn key-btn--submit"
+              id="btnSubmit"
+              data-action="submit"
+              aria-label="Kirim rumus untuk dinilai"
+              type="button"
+              disabled
+            >✅ Kirim Rumus!</button>
+          </div>
+
+          <!-- Tombol Digit 0 (terpisah, lebar penuh pada keypad digit) -->
+          <div role="group" aria-label="Angka nol">
+            <button
+              class="key-btn key-btn--digit"
+              id="btnDigit_0"
+              data-value="0"
+              data-type="digit"
+              aria-label="Angka 0"
+              type="button"
+              style="width:100%;"
+            >0</button>
+          </div>
+
+        </div>
+        <!-- /virtualKeypad -->
+
+      </div>
+      <!-- /workspace -->
+
+    </section>
+    <!-- /game-layout__main -->
+
+    <!-- ----------------------------------------------------------------
+         KOLOM KANAN — Sidebar Tabung & Riwayat
+    ----------------------------------------------------------------- -->
+    <aside class="game-layout__sidebar" aria-label="Progres dan riwayat strategi">
+
+      <!-- 9. TABUNG RAMUAN AJAIB — Indikator Progres Gamifikasi -->
+      <div class="potion-card" id="potionCard" role="region" aria-label="Tabung ramuan progres">
+        <h2 class="potion-card__title">🧪 Ramuan Strategiku</h2>
+
+        <div class="potion-tube__wrapper">
+          <div class="potion-tube" aria-hidden="true">
+            <!-- Tutup botol (atas) -->
+            <div class="potion-tube__stopper"></div>
+            <div class="potion-tube__cap"></div>
+            <!-- Badan tabung kaca -->
+            <div class="potion-tube__glass" id="potionGlass">
+              <!-- Cairan yang naik sesuai progres -->
+              <div
+                class="potion-tube__liquid"
+                id="potionLiquid"
+                style="height: 0%;"
+                aria-label="Level cairan ramuan"
+              ></div>
+              <!-- Gelembung animasi -->
+              <div class="potion-tube__bubble"></div>
+              <div class="potion-tube__bubble"></div>
+              <div class="potion-tube__bubble"></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="potion-card__progress-label" id="potionLabel">Strategi Unik Ditemukan</p>
+        <div class="potion-card__count" aria-live="polite">
+          <span id="potionCountCurrent">0</span>
+          <span>/ <span id="potionCountMax">5</span></span>
+        </div>
+
+        <!-- Bintang reward (diisi oleh game.js) -->
+        <div class="potion-card__stars" id="potionStars" aria-label="Bintang reward" aria-live="polite">
+          <span aria-label="Bintang kosong">⭐</span>
+          <span aria-label="Bintang kosong">⭐</span>
+          <span aria-label="Bintang kosong">⭐</span>
+        </div>
+      </div>
+
+      <!-- 10. RIWAYAT STRATEGI YANG SUDAH DITEMUKAN -->
+      <div class="strategy-history" id="strategyHistory" role="region" aria-label="Daftar rumus yang sudah ditemukan">
+        <h2 class="strategy-history__title">
+          📜 Koleksi Rumusku
+        </h2>
+
+        <ul
+          class="strategy-history__list"
+          id="strategyList"
+          aria-label="Daftar strategi yang berhasil ditemukan"
+          aria-live="polite"
+        >
+          <!-- Item dirender oleh game.js, contoh struktur:
+            <li class="strategy-item">
+              <span class="strategy-item__index">1</span>
+              <span class="strategy-item__formula">5 + 3 = 8</span>
+              <span class="strategy-item__points">+10</span>
+            </li>
+          -->
+          <li class="strategy-history__empty" id="strategyEmptyMsg" aria-live="polite">
+            Belum ada rumus. Yuk, mulai temukan!
+          </li>
+        </ul>
+      </div>
+
+    </aside>
+    <!-- /game-layout__sidebar -->
+
+  </main>
+  <!-- /game-layout -->
+
+  <!-- =====================================================================
+       MODAL: DUPLIKAT STRATEGI
+       Muncul jika siswa mengirim rumus yang identik dalam sesi yang sama.
+  ====================================================================== -->
+  <div
+    class="modal-overlay"
+    id="modalDuplicate"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalDupTitle"
+    aria-describedby="modalDupBody"
+  >
+    <div class="modal-box modal-box--duplicate">
+      <div class="modal__emoji" aria-hidden="true">🤔</div>
+      <h3 class="modal__title" id="modalDupTitle">Sudah Pernah Coba!</h3>
+      <p class="modal__body" id="modalDupBody">
+        Rumus ini mirip dengan yang sudah kamu coba sebelumnya. Coba cari kombinasi angka yang berbeda ya!
+      </p>
+      <button
+        class="modal__btn"
+        id="btnCloseDuplicate"
+        type="button"
+        aria-label="Tutup peringatan duplikat dan coba lagi"
+      >
+        💡 Oke, Coba Cara Lain!
+      </button>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODAL: RUMUS BERHASIL (Strategi Baru Ditemukan)
+  ====================================================================== -->
+  <div
+    class="modal-overlay"
+    id="modalSuccess"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalSuccessTitle"
+    aria-describedby="modalSuccessBody"
+  >
+    <div class="modal-box modal-box--success">
+      <div class="modal__emoji" id="modalSuccessEmoji" aria-hidden="true">🎉</div>
+      <h3 class="modal__title" id="modalSuccessTitle">Strategi Baru!</h3>
+      <p class="modal__body" id="modalSuccessBody">
+        Rumus <strong id="modalSuccessFormula"></strong> berhasil! Kamu menemukan cara baru yang keren!
+      </p>
+      <div class="modal__points-badge" id="modalSuccessPoints" aria-live="polite">+10 Poin</div>
+      <button
+        class="modal__btn"
+        id="btnCloseSuccess"
+        type="button"
+        aria-label="Lanjutkan mencari strategi baru"
+      >
+        🚀 Cari Lagi!
+      </button>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODAL: RUMUS TIDAK VALID (Hasil Tidak Sama dengan Target)
+  ====================================================================== -->
+  <div
+    class="modal-overlay"
+    id="modalInvalid"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalInvalidTitle"
+    aria-describedby="modalInvalidBody"
+  >
+    <div class="modal-box modal-box--error">
+      <div class="modal__emoji" aria-hidden="true">❌</div>
+      <h3 class="modal__title" id="modalInvalidTitle">Belum Tepat!</h3>
+      <p class="modal__body" id="modalInvalidBody">
+        Hasil rumusmu belum sama dengan target. Periksa lagi kombinasinya ya!
+      </p>
+      <button
+        class="modal__btn modal__btn--secondary"
+        id="btnCloseInvalid"
+        type="button"
+        aria-label="Tutup dan perbaiki rumus"
+      >
+        ✏️ Perbaiki Rumus
+      </button>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODAL: SESI SELESAI (Semua Strategi Minimum Tercapai)
+  ====================================================================== -->
+  <div
+    class="modal-overlay"
+    id="modalFinish"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalFinishTitle"
+    aria-describedby="modalFinishBody"
+  >
+    <div class="modal-box modal-box--finish">
+      <div class="modal__emoji" aria-hidden="true">🏆</div>
+      <h3 class="modal__title" id="modalFinishTitle">Luar Biasa!</h3>
+      <p class="modal__body" id="modalFinishBody">
+        Kamu berhasil menemukan semua strategi! Skor akhirmu:
+      </p>
+      <div class="modal__points-badge" id="modalFinishScore" aria-live="polite">0 Poin</div>
+      <div class="potion-card__stars" id="modalFinishStars" aria-label="Bintang yang diraih">
+        <span>⭐</span><span>⭐</span><span>⭐</span>
+      </div>
+      <div class="modal__btn-group">
+        <button
+          class="modal__btn"
+          id="btnFinishNext"
+          type="button"
+          aria-label="Lanjut ke level berikutnya"
+        >
+          ➡️ Level Berikutnya
+        </button>
+        <button
+          class="modal__btn modal__btn--secondary"
+          id="btnFinishMore"
+          type="button"
+          aria-label="Terus temukan lebih banyak strategi"
+        >
+          🔍 Cari Lebih Banyak
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       TOAST CONTAINER — Notifikasi singkat non-modal
+  ====================================================================== -->
+  <div
+    class="toast-container"
+    id="toastContainer"
+    role="status"
+    aria-live="polite"
+    aria-atomic="false"
+  ></div>
+
+  <!-- =====================================================================
+       SCRIPTS
+       Rantai impor: game.js → auth.js → supabase-config.js
+       Semua dependensi dikelola via ES Module import — tidak perlu
+       mendefinisikan Supabase di level global window.
+  ====================================================================== -->
+  <script type="module" src="js/game.js"></script>
+
+</body>
+</html>
