@@ -18,8 +18,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 // ---------------------------------------------------------------------------
 // KREDENSIAL PROYEK — Ganti dengan nilai dari dashboard Supabase kamu
 // ---------------------------------------------------------------------------
-const SUPABASE_URL      = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_PUBLIC_KEY';
+const SUPABASE_URL      = 'https://cezzczjzwvnncvygmbog.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
 
 // ---------------------------------------------------------------------------
 // Validasi awal — mencegah runtime error yang membingungkan

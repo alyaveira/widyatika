@@ -694,8 +694,8 @@
        SCRIPT — Dashboard Logic + Gemini Chat
   ================================================================= -->
   <script type="module">
-    import { supabase }    from './js/supabase-config.js';
-    import { requireGuruSession, logout } from './js/auth.js';
+    import { supabase } from './js/supabase-config.js';
+    import { initGuruPage } from './js/guru.js';
 
     // ----------------------------------------------------------------
     // KONFIGURASI GEMINI API
@@ -761,26 +761,16 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
     // ----------------------------------------------------------------
     // SESSION GUARD
     // ----------------------------------------------------------------
-    let session;
-    try { session = requireGuruSession(); }
-    catch { /* redirect handled by requireGuruSession */ }
-
-    const guru      = session.guru;
-    const idGuru    = guru.id_guru;
-
-    // Set sidebar nama & avatar
-    document.getElementById('sidebarName').textContent = guru.nama_lengkap;
-    document.getElementById('sidebarAvatar').textContent = guru.nama_lengkap.charAt(0).toUpperCase();
+    const session = initGuruPage('dashboard');
+    const guru    = session.guru;
+    const idGuru  = guru.id_guru;
 
     // Set welcome title
     document.getElementById('welcomeTitle').textContent = `Selamat Datang, ${guru.nama_lengkap.split(' ')[0]}! 👋`;
 
     // ----------------------------------------------------------------
-    // LOGOUT
+    // NOTE: logout handler sudah di-attach oleh initGuruPage.
     // ----------------------------------------------------------------
-    document.getElementById('btnLogout').addEventListener('click', () => {
-      if (confirm('Yakin ingin keluar dari akun?')) logout();
-    });
 
     // ----------------------------------------------------------------
     // LOAD DASHBOARD DATA

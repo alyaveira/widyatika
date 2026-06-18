@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Widyatika — Platform Asesmen Diagnostik Numerasi. Login sebagai Guru atau Siswa untuk memulai." />
+  <meta name="description"
+    content="Widyatika — Platform Asesmen Diagnostik Numerasi. Login sebagai Guru atau Siswa untuk memulai." />
   <title>Login — Widyatika</title>
 
   <!-- Google Fonts: Inter (Guru) + Nunito (Siswa) + Fredoka One -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Nunito:wght@400;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Nunito:wght@400;700;800;900&family=Fredoka+One&display=swap"
+    rel="stylesheet" />
 
   <style>
     /* ================================================================
@@ -18,8 +22,18 @@
     ================================================================= */
 
     /* -------- 0. RESET & BASE -------- */
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-    html { height:100%; font-size:16px; }
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      height: 100%;
+      font-size: 16px;
+    }
 
     body {
       font-family: 'Inter', system-ui, sans-serif;
@@ -48,7 +62,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background-image: radial-gradient(circle, rgba(59,130,246,0.12) 1.5px, transparent 1.5px);
+      background-image: radial-gradient(circle, rgba(59, 130, 246, 0.12) 1.5px, transparent 1.5px);
       background-size: 30px 30px;
       pointer-events: none;
     }
@@ -61,7 +75,7 @@
       left: -100px;
       width: 500px;
       height: 500px;
-      background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 65%);
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 65%);
       pointer-events: none;
     }
 
@@ -83,7 +97,7 @@
       align-items: center;
       justify-content: center;
       font-size: 1.5rem;
-      box-shadow: 0 4px 20px rgba(59,130,246,0.5);
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.5);
     }
 
     .hero-logo__text {
@@ -114,8 +128,8 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(59,130,246,0.15);
-      border: 1px solid rgba(59,130,246,0.3);
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
       border-radius: 999px;
       padding: 5px 14px;
       font-size: 0.75rem;
@@ -163,45 +177,97 @@
       font-family: 'Fredoka One', cursive;
       border: 2.5px solid #1E1E1E;
       border-radius: 12px;
-      box-shadow: 4px 4px 0px rgba(0,0,0,0.4);
+      box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.4);
       animation: floatBob var(--dur, 4s) ease-in-out infinite alternate;
     }
 
     @keyframes floatBob {
-      from { transform: translateY(0) rotate(var(--rot-start, -3deg)); }
-      to   { transform: translateY(-14px) rotate(var(--rot-end, 3deg)); }
+      from {
+        transform: translateY(0) rotate(var(--rot-start, -3deg));
+      }
+
+      to {
+        transform: translateY(-14px) rotate(var(--rot-end, 3deg));
+      }
     }
 
     /* Kartu angka — posisi & warna individual */
     .float-card--n1 {
-      width:60px; height:60px; font-size:1.8rem;
-      background:#FCD34D; color:#1E1E1E;
-      top:18%; right:28%; --dur:3.5s; --rot-start:-4deg; --rot-end:4deg;
+      width: 60px;
+      height: 60px;
+      font-size: 1.8rem;
+      background: #FCD34D;
+      color: #1E1E1E;
+      top: 18%;
+      right: 28%;
+      --dur: 3.5s;
+      --rot-start: -4deg;
+      --rot-end: 4deg;
     }
+
     .float-card--n2 {
-      width:52px; height:52px; font-size:1.5rem;
-      background:#34D399; color:#1E1E1E;
-      top:32%; right:14%; --dur:4.2s; --rot-start:3deg; --rot-end:-3deg;
+      width: 52px;
+      height: 52px;
+      font-size: 1.5rem;
+      background: #34D399;
+      color: #1E1E1E;
+      top: 32%;
+      right: 14%;
+      --dur: 4.2s;
+      --rot-start: 3deg;
+      --rot-end: -3deg;
     }
+
     .float-card--n3 {
-      width:68px; height:68px; font-size:2rem;
-      background:#FB7185; color:#FFFFFF;
-      top:55%; right:22%; --dur:5s; --rot-start:-2deg; --rot-end:5deg;
+      width: 68px;
+      height: 68px;
+      font-size: 2rem;
+      background: #FB7185;
+      color: #FFFFFF;
+      top: 55%;
+      right: 22%;
+      --dur: 5s;
+      --rot-start: -2deg;
+      --rot-end: 5deg;
     }
+
     .float-card--n4 {
-      width:46px; height:46px; font-size:1.3rem;
-      background:#A78BFA; color:#FFFFFF;
-      top:72%; right:8%; --dur:3.8s; --rot-start:5deg; --rot-end:-2deg;
+      width: 46px;
+      height: 46px;
+      font-size: 1.3rem;
+      background: #A78BFA;
+      color: #FFFFFF;
+      top: 72%;
+      right: 8%;
+      --dur: 3.8s;
+      --rot-start: 5deg;
+      --rot-end: -2deg;
     }
+
     .float-card--op1 {
-      width:54px; height:54px; font-size:1.8rem;
-      background:#FFFFFF; color:#1E293B;
-      top:42%; right:38%; --dur:4.5s; --rot-start:-6deg; --rot-end:3deg;
+      width: 54px;
+      height: 54px;
+      font-size: 1.8rem;
+      background: #FFFFFF;
+      color: #1E293B;
+      top: 42%;
+      right: 38%;
+      --dur: 4.5s;
+      --rot-start: -6deg;
+      --rot-end: 3deg;
     }
+
     .float-card--op2 {
-      width:48px; height:48px; font-size:1.5rem;
-      background:#FCD34D; color:#1E1E1E;
-      top:78%; right:36%; --dur:3.2s; --rot-start:4deg; --rot-end:-4deg;
+      width: 48px;
+      height: 48px;
+      font-size: 1.5rem;
+      background: #FCD34D;
+      color: #1E1E1E;
+      top: 78%;
+      right: 36%;
+      --dur: 3.2s;
+      --rot-start: 4deg;
+      --rot-end: -4deg;
     }
 
     /* Statistik kecil di bawah hero */
@@ -250,7 +316,7 @@
       left: 0;
       width: 200px;
       height: 200px;
-      background: radial-gradient(circle at top left, rgba(59,130,246,0.06), transparent 70%);
+      background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.06), transparent 70%);
       pointer-events: none;
     }
 
@@ -318,7 +384,7 @@
     .tab-btn.is-active {
       background: #FFFFFF;
       color: #0F172A;
-      box-shadow: 0 2px 8px rgba(15,23,42,0.10);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.10);
     }
 
     .tab-btn--siswa.is-active {
@@ -330,7 +396,9 @@
       border: 2px solid #1E1E1E;
     }
 
-    .tab-btn__icon { font-size: 1.1rem; }
+    .tab-btn__icon {
+      font-size: 1.1rem;
+    }
 
     /* ================================================================
        4. FORM PANELS (Guru & Siswa) — Show/Hide
@@ -347,8 +415,15 @@
     }
 
     @keyframes panelIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* ---- Label & Input ---- */
@@ -380,12 +455,12 @@
 
     .form-field input:focus {
       border-color: #3B82F6;
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     }
 
     .form-field input.is-error {
       border-color: #EF4444;
-      box-shadow: 0 0 0 3px rgba(239,68,68,0.12);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
     }
 
     /* Siswa input pakai font Nunito */
@@ -464,7 +539,7 @@
       cursor: pointer;
       font-family: 'Inter', sans-serif;
       transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
-      box-shadow: 0 2px 8px rgba(59,130,246,0.35);
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -475,7 +550,7 @@
     .submit-btn-guru:hover:not(:disabled) {
       background: #2563EB;
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(59,130,246,0.45);
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.45);
     }
 
     .submit-btn-guru:active:not(:disabled) {
@@ -527,17 +602,26 @@
     .btn-spinner {
       width: 16px;
       height: 16px;
-      border: 2.5px solid rgba(255,255,255,0.4);
+      border: 2.5px solid rgba(255, 255, 255, 0.4);
       border-top-color: currentColor;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
       display: none;
     }
 
-    .is-loading .btn-spinner { display: inline-block; }
-    .is-loading .btn-text    { display: none; }
+    .is-loading .btn-spinner {
+      display: inline-block;
+    }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .is-loading .btn-text {
+      display: none;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* ---- Info Siswa: kartu instruksi ---- */
     .siswa-info-card {
@@ -550,7 +634,11 @@
       gap: 10px;
     }
 
-    .siswa-info-card__icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+    .siswa-info-card__icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
 
     .siswa-info-card__text {
       font-family: 'Nunito', sans-serif;
@@ -603,7 +691,10 @@
        6. RESPONSIVE
     ==================================================================== */
     @media (max-width: 900px) {
-      body { flex-direction: column; overflow: auto; }
+      body {
+        flex-direction: column;
+        overflow: auto;
+      }
 
       .hero-panel {
         flex: 0 0 auto;
@@ -611,11 +702,22 @@
         padding: 36px 32px;
       }
 
-      .floating-cards { display: none; }
+      .floating-cards {
+        display: none;
+      }
 
-      .hero-tagline__headline { font-size: 1.6rem; }
-      .hero-stats { display: none; }
-      .hero-tagline { margin-top: 24px; gap: 12px; }
+      .hero-tagline__headline {
+        font-size: 1.6rem;
+      }
+
+      .hero-stats {
+        display: none;
+      }
+
+      .hero-tagline {
+        margin-top: 24px;
+        gap: 12px;
+      }
 
       .login-panel {
         padding: 40px 24px 60px;
@@ -625,13 +727,25 @@
     }
 
     @media (max-width: 480px) {
-      .hero-panel { padding: 28px 20px; }
-      .login-panel { padding: 32px 20px 48px; }
-      .login-box { max-width: 100%; }
-      .hero-logo__text { font-size: 1.5rem; }
+      .hero-panel {
+        padding: 28px 20px;
+      }
+
+      .login-panel {
+        padding: 32px 20px 48px;
+      }
+
+      .login-box {
+        max-width: 100%;
+      }
+
+      .hero-logo__text {
+        font-size: 1.5rem;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <!-- =================================================================
@@ -653,11 +767,12 @@
         ✨ Platform Numerasi Interaktif
       </span>
       <h1 class="hero-tagline__headline">
-        Latih <span class="highlight">Fleksibilitas</span><br/>
+        Latih <span class="highlight">Fleksibilitas</span><br />
         Berpikir Matematika
       </h1>
       <p class="hero-tagline__sub">
-        Asesmen diagnostik numerasi berbasis game yang dirancang khusus untuk siswa Sekolah Dasar. Guru memantau, siswa bereksplorasi.
+        Asesmen diagnostik numerasi berbasis game yang dirancang khusus untuk siswa Sekolah Dasar. Guru memantau, siswa
+        bereksplorasi.
       </p>
     </div>
 
@@ -706,25 +821,13 @@
 
       <!-- Tab Switcher -->
       <div class="tab-switcher" role="tablist" aria-label="Pilih peran login">
-        <button
-          class="tab-btn tab-btn--guru is-active"
-          id="tabGuru"
-          role="tab"
-          aria-selected="true"
-          aria-controls="panelGuru"
-          type="button"
-        >
+        <button class="tab-btn tab-btn--guru is-active" id="tabGuru" role="tab" aria-selected="true"
+          aria-controls="panelGuru" type="button">
           <span class="tab-btn__icon">👩‍🏫</span>
           <span>Login Guru</span>
         </button>
-        <button
-          class="tab-btn tab-btn--siswa"
-          id="tabSiswa"
-          role="tab"
-          aria-selected="false"
-          aria-controls="panelSiswa"
-          type="button"
-        >
+        <button class="tab-btn tab-btn--siswa" id="tabSiswa" role="tab" aria-selected="false" aria-controls="panelSiswa"
+          type="button">
           <span class="tab-btn__icon">🧒</span>
           <span>Login Siswa</span>
         </button>
@@ -733,13 +836,7 @@
       <!-- ======================================================
            FORM GURU
       ====================================================== -->
-      <form
-        class="form-panel is-active"
-        id="panelGuru"
-        role="tabpanel"
-        aria-labelledby="tabGuru"
-        novalidate
-      >
+      <form class="form-panel is-active" id="panelGuru" role="tabpanel" aria-labelledby="tabGuru" novalidate>
         <!-- Alert error -->
         <div class="form-alert form-alert--error" id="alertGuru" role="alert" aria-live="polite">
           <span aria-hidden="true">⚠️</span>
@@ -749,46 +846,23 @@
         <!-- Email -->
         <div class="form-field">
           <label for="guruEmail">Alamat Email</label>
-          <input
-            type="email"
-            id="guruEmail"
-            name="email"
-            placeholder="contoh@sekolah.sch.id"
-            autocomplete="email"
-            required
-            aria-required="true"
-          />
+          <input type="email" id="guruEmail" name="email" placeholder="contoh@sekolah.sch.id" autocomplete="email"
+            required aria-required="true" />
         </div>
 
         <!-- Password -->
         <div class="form-field">
           <label for="guruPassword">Password</label>
           <div class="input-password-wrap">
-            <input
-              type="password"
-              id="guruPassword"
-              name="password"
-              placeholder="Masukkan password"
-              autocomplete="current-password"
-              required
-              aria-required="true"
-            />
-            <button
-              class="toggle-password-btn"
-              type="button"
-              id="toggleGuruPass"
-              aria-label="Tampilkan atau sembunyikan password"
-            >👁️</button>
+            <input type="password" id="guruPassword" name="password" placeholder="Masukkan password"
+              autocomplete="current-password" required aria-required="true" />
+            <button class="toggle-password-btn" type="button" id="toggleGuruPass"
+              aria-label="Tampilkan atau sembunyikan password">👁️</button>
           </div>
         </div>
 
         <!-- Submit -->
-        <button
-          class="submit-btn-guru"
-          type="submit"
-          id="btnGuruLogin"
-          aria-label="Masuk sebagai guru"
-        >
+        <button class="submit-btn-guru" type="submit" id="btnGuruLogin" aria-label="Masuk sebagai guru">
           <span class="btn-spinner" aria-hidden="true"></span>
           <span class="btn-text">🔑 Masuk sebagai Guru</span>
         </button>
@@ -798,13 +872,7 @@
       <!-- ======================================================
            FORM SISWA
       ====================================================== -->
-      <form
-        class="form-panel"
-        id="panelSiswa"
-        role="tabpanel"
-        aria-labelledby="tabSiswa"
-        novalidate
-      >
+      <form class="form-panel" id="panelSiswa" role="tabpanel" aria-labelledby="tabSiswa" novalidate>
         <!-- Info instruksi -->
         <div class="siswa-info-card">
           <span class="siswa-info-card__icon" aria-hidden="true">💡</span>
@@ -822,48 +890,25 @@
         <!-- Username -->
         <div class="form-field">
           <label for="siswaUsername">Username</label>
-          <input
-            type="text"
-            id="siswaUsername"
-            name="username"
-            placeholder="Nama penggunamu"
-            autocomplete="username"
-            required
-            aria-required="true"
-            autocapitalize="none"
-            spellcheck="false"
-          />
+          <input type="text" id="siswaUsername" name="username" placeholder="Nama penggunamu" autocomplete="username"
+            required aria-required="true" autocapitalize="none" spellcheck="false" />
         </div>
 
         <!-- Password -->
         <div class="form-field">
           <label for="siswaPassword">Password</label>
           <div class="input-password-wrap">
-            <input
-              type="password"
-              id="siswaPassword"
-              name="password"
-              placeholder="Kata sandi kamu"
-              autocomplete="current-password"
-              required
-              aria-required="true"
-            />
-            <button
-              class="toggle-password-btn"
-              type="button"
-              id="toggleSiswaPass"
-              aria-label="Tampilkan atau sembunyikan password"
-            >👁️</button>
+            <input type="password" id="siswaPassword" name="password" placeholder="Kata sandi kamu"
+              autocomplete="current-password" required aria-required="true" />
+            <button class="toggle-password-btn" type="button" id="toggleSiswaPass"
+              aria-label="Tampilkan atau sembunyikan password">👁️</button>
           </div>
         </div>
 
         <!-- Level Pilihan (opsional, default 1) -->
         <div class="form-field">
           <label for="siswaLevel">Level (opsional)</label>
-          <select
-            id="siswaLevel"
-            name="level"
-            style="
+          <select id="siswaLevel" name="level" style="
               width:100%;
               padding: 11px 14px;
               border: 1.5px solid #E2E8F0;
@@ -876,13 +921,12 @@
               outline: none;
               cursor: pointer;
               appearance: none;
-              background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\");
-              background-repeat: no-repeat;
-              background-position: right 12px center;
-              padding-right: 36px;
-            "
+              background-image: url(\" data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16'
+            height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' %3E%3Cpath d='m6 9 6 6 6-6'
+            /%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 12px center; padding-right:
+            36px; "
           >
-            <option value="1">Level 1 — Pemanasan 🌱</option>
+            <option value=" 1">Level 1 — Pemanasan 🌱</option>
             <option value="2">Level 2 — Erksplorasi 🔥</option>
             <option value="3">Level 3 — Mahir ⚡</option>
             <option value="4">Level 4 — Jago 🚀</option>
@@ -891,12 +935,8 @@
         </div>
 
         <!-- Submit -->
-        <button
-          class="submit-btn-siswa"
-          type="submit"
-          id="btnSiswaLogin"
-          aria-label="Masuk sebagai siswa dan mulai game"
-        >
+        <button class="submit-btn-siswa" type="submit" id="btnSiswaLogin"
+          aria-label="Masuk sebagai siswa dan mulai game">
           <span class="btn-spinner" aria-hidden="true"></span>
           <span class="btn-text">🎮 Ayo Mulai Game!</span>
         </button>
@@ -933,21 +973,21 @@
     // ----------------------------------------------------------------
     // ELEMENT REFERENCES
     // ----------------------------------------------------------------
-    const tabGuru    = document.getElementById('tabGuru');
-    const tabSiswa   = document.getElementById('tabSiswa');
-    const panelGuru  = document.getElementById('panelGuru');
+    const tabGuru = document.getElementById('tabGuru');
+    const tabSiswa = document.getElementById('tabSiswa');
+    const panelGuru = document.getElementById('panelGuru');
     const panelSiswa = document.getElementById('panelSiswa');
 
-    const headerIcon     = document.getElementById('loginHeaderIcon');
-    const loginTitle     = document.getElementById('loginTitle');
-    const loginSubtitle  = document.getElementById('loginSubtitle');
+    const headerIcon = document.getElementById('loginHeaderIcon');
+    const loginTitle = document.getElementById('loginTitle');
+    const loginSubtitle = document.getElementById('loginSubtitle');
 
-    const alertGuru    = document.getElementById('alertGuru');
+    const alertGuru = document.getElementById('alertGuru');
     const alertGuruMsg = document.getElementById('alertGuruMsg');
-    const alertSiswa   = document.getElementById('alertSiswa');
+    const alertSiswa = document.getElementById('alertSiswa');
     const alertSiswaMsg = document.getElementById('alertSiswaMsg');
 
-    const btnGuruLogin  = document.getElementById('btnGuruLogin');
+    const btnGuruLogin = document.getElementById('btnGuruLogin');
     const btnSiswaLogin = document.getElementById('btnSiswaLogin');
 
     // ----------------------------------------------------------------
@@ -969,12 +1009,12 @@
       alertSiswa.classList.remove('is-visible');
 
       if (isGuru) {
-        headerIcon.textContent  = '🔐';
-        loginTitle.textContent  = 'Masuk sebagai Guru';
+        headerIcon.textContent = '🔐';
+        loginTitle.textContent = 'Masuk sebagai Guru';
         loginSubtitle.textContent = 'Kelola kelas dan pantau progres siswa';
       } else {
-        headerIcon.textContent  = '🎮';
-        loginTitle.textContent  = 'Hai, Selamat Datang!';
+        headerIcon.textContent = '🎮';
+        loginTitle.textContent = 'Hai, Selamat Datang!';
         loginSubtitle.textContent = 'Siap bermain dan menemukan banyak rumus?';
       }
     }
@@ -986,17 +1026,17 @@
     // TOGGLE PASSWORD VISIBILITY
     // ----------------------------------------------------------------
     function initTogglePassword(btnId, inputId) {
-      const btn   = document.getElementById(btnId);
+      const btn = document.getElementById(btnId);
       const input = document.getElementById(inputId);
       btn.addEventListener('click', () => {
         const isHidden = input.type === 'password';
-        input.type     = isHidden ? 'text' : 'password';
+        input.type = isHidden ? 'text' : 'password';
         btn.textContent = isHidden ? '🙈' : '👁️';
         btn.setAttribute('aria-label', isHidden ? 'Sembunyikan password' : 'Tampilkan password');
       });
     }
 
-    initTogglePassword('toggleGuruPass',  'guruPassword');
+    initTogglePassword('toggleGuruPass', 'guruPassword');
     initTogglePassword('toggleSiswaPass', 'siswaPassword');
 
     // ----------------------------------------------------------------
@@ -1027,7 +1067,7 @@
       e.preventDefault();
       hideError(alertGuru);
 
-      const email    = document.getElementById('guruEmail').value.trim();
+      const email = document.getElementById('guruEmail').value.trim();
       const password = document.getElementById('guruPassword').value;
 
       // Validasi client-side minimal
@@ -1060,7 +1100,7 @@
 
       const username = document.getElementById('siswaUsername').value.trim();
       const password = document.getElementById('siswaPassword').value;
-      const level    = parseInt(document.getElementById('siswaLevel').value, 10) || 1;
+      const level = parseInt(document.getElementById('siswaLevel').value, 10) || 1;
 
       if (!username || !password) {
         showError(alertSiswa, alertSiswaMsg, 'Username dan password wajib diisi ya!');
@@ -1120,4 +1160,5 @@
   </script>
 
 </body>
+
 </html>
