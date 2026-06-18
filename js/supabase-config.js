@@ -4,6 +4,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 //  KREDENSIAL SUPABASE — Ambil dari dashboard Supabase Anda
 // ============================================================
 const SUPABASE_URL = 'https://cezzczjzwvnncvygmbog.supabase.co';  // ← HAPUS /rest/v1
+const SUPABASE_URL = 'https://cezzczjzwnncvvgmbog.supabase.co';  // ← PASTE URL DARI DASHBOARD
 const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
 
 // ============================================================
