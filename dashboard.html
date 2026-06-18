@@ -6,9 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Widyatika — Dashboard Guru</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        /* =====================================================
+           STYLE LENGKAP (sama seperti MathMind sebelumnya)
+           ===================================================== */
         :root {
             --purple: #4f46e5;
             --purple-dark: #4338ca;
@@ -74,7 +76,6 @@
             z-index: 5;
         }
 
-        /* ===== SIDEBAR ===== */
         .sidebar {
             width: var(--sidebar-w);
             background: var(--white);
@@ -310,7 +311,6 @@
             flex-shrink: 0;
         }
 
-        /* ===== MAIN ===== */
         .main {
             flex: 1;
             margin-left: var(--sidebar-w);
@@ -378,7 +378,6 @@
             font-size: 20px;
         }
 
-        /* ===== PAGE ===== */
         .page-content {
             flex: 1;
             padding: 28px;
@@ -407,7 +406,6 @@
             }
         }
 
-        /* Welcome banner */
         .welcome-banner {
             background: linear-gradient(135deg, var(--purple) 0%, #3730a3 50%, #312e81 100%);
             border-radius: 24px;
@@ -472,7 +470,6 @@
             }
         }
 
-        /* Stats */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -524,7 +521,6 @@
             color: var(--green);
         }
 
-        /* Content row */
         .content-row {
             display: grid;
             grid-template-columns: 1fr 320px;
@@ -601,7 +597,6 @@
             line-height: 1.5;
         }
 
-        /* AI insight card */
         .insight-card {
             background: linear-gradient(135deg, #d97706, #92400e);
             border-radius: 20px;
@@ -673,7 +668,6 @@
             line-height: 1.4;
         }
 
-        /* Section header */
         .section-header {
             display: flex;
             align-items: center;
@@ -775,7 +769,6 @@
             color: var(--purple);
         }
 
-        /* Class cards */
         .class-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -882,7 +875,6 @@
             font-size: 28px;
         }
 
-        /* Student list */
         .student-list {
             display: flex;
             flex-direction: column;
@@ -1020,7 +1012,6 @@
             font-size: 18px;
         }
 
-        /* Empty state */
         .empty-state {
             text-align: center;
             padding: 48px 24px;
@@ -1044,7 +1035,6 @@
             font-size: 13px;
         }
 
-        /* Modal */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -1189,7 +1179,6 @@
             background: #dc2626;
         }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 24px;
@@ -1226,7 +1215,6 @@
             font-size: 20px;
         }
 
-        /* Filter chips for laporan */
         .filter-row {
             display: flex;
             gap: 8px;
@@ -1260,7 +1248,6 @@
             color: var(--purple);
         }
 
-        /* Leaderboard */
         .lb-item {
             display: flex;
             align-items: center;
@@ -1315,7 +1302,6 @@
             color: var(--purple);
         }
 
-        /* Responsive */
         @media(max-width:900px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -1409,7 +1395,7 @@
 
             <div class="page-content">
 
-                <!-- ================= BERANDA ================= -->
+                <!-- BERANDA -->
                 <div class="tab-panel on" id="tab-beranda">
                     <div class="welcome-banner">
                         <div class="welcome-text">
@@ -1472,7 +1458,7 @@
                     <div class="class-grid" id="homeClassGrid"></div>
                 </div>
 
-                <!-- ================= KELAS ================= -->
+                <!-- KELAS -->
                 <div class="tab-panel" id="tab-kelas">
                     <div class="section-header">
                         <div class="section-title"><i class="material-icons-round" style="color:var(--purple);">school</i> Daftar Kelas <span class="task-count-badge" id="classListCount">0</span></div>
@@ -1481,7 +1467,7 @@
                     <div class="class-grid" id="classGrid"></div>
                 </div>
 
-                <!-- ================= KELAS DETAIL ================= -->
+                <!-- KELAS DETAIL -->
                 <div class="tab-panel" id="tab-kelas-detail">
                     <div class="back-link" onclick="switchTab('kelas')" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-weight:700;font-size:13px;cursor:pointer;margin-bottom:14px;transition:color .15s;">
                         <i class="material-icons-round" style="font-size:18px;">arrow_back</i> Kembali ke Daftar Kelas
@@ -1502,7 +1488,7 @@
                     <div class="student-list" id="studentList"></div>
                 </div>
 
-                <!-- ================= LAPORAN ================= -->
+                <!-- LAPORAN -->
                 <div class="tab-panel" id="tab-laporan">
                     <div class="section-header">
                         <div class="section-title"><i class="material-icons-round" style="color:var(--purple);">bar_chart</i> Laporan Siswa</div>
@@ -1543,7 +1529,7 @@
         </main>
     </div>
 
-    <!-- ===== MODAL KELAS ===== -->
+    <!-- MODAL KELAS -->
     <div class="modal-overlay" id="modalClass">
         <div class="modal-box">
             <div class="modal-title-row">
@@ -1564,7 +1550,7 @@
         </div>
     </div>
 
-    <!-- ===== MODAL SISWA ===== -->
+    <!-- MODAL SISWA -->
     <div class="modal-overlay" id="modalStudent">
         <div class="modal-box">
             <div class="modal-title-row">
@@ -1573,7 +1559,7 @@
             </div>
             <div class="form-group"><label class="form-label">Nama Siswa</label><input class="form-input" id="inpStudentName" placeholder="Contoh: Alya Putri" maxlength="30"></div>
             <div class="form-group"><label class="form-label">Avatar (Emoji)</label>
-                <input class="form-input" id="inpStudentEmoji" placeholder="Contoh: 👧" maxlength="2" value="👧">
+                <input class="form-input" id="inpStudentEmoji" placeholder="Contoh: 👧" maxlength="2" value="👦">
             </div>
             <div class="modal-footer">
                 <button class="modal-btn modal-btn-cancel" onclick="closeStudentModal()">Batal</button>
@@ -1582,7 +1568,7 @@
         </div>
     </div>
 
-    <!-- ===== MODAL DELETE ===== -->
+    <!-- MODAL DELETE -->
     <div class="modal-overlay" id="modalDelete">
         <div class="modal-box" style="width:360px;">
             <div class="modal-title-row">
@@ -1597,9 +1583,9 @@
         </div>
     </div>
 
-    <!-- ===== CHAT FAB (Widy AI) ===== -->
-    <button class="gemini-fab" id="geminiFab" aria-label="Buka asisten AI Widy" style="position:fixed;bottom:28px;right:28px;z-index:500;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#4F46E5,#7C3AED,#A855F7);border:none;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.45),0 2px 8px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform .2s,box-shadow .2s;color:#fff;user-select:none;outline:none;">
-        <span id="fabIcon" aria-hidden="true">💬</span>
+    <!-- CHAT FAB -->
+    <button class="gemini-fab" id="geminiFab" style="position:fixed;bottom:28px;right:28px;z-index:500;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#4F46E5,#7C3AED,#A855F7);border:none;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.45),0 2px 8px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform .2s,box-shadow .2s;color:#fff;user-select:none;outline:none;">
+        <span id="fabIcon" style="font-size:1.5rem;">💬</span>
         <span style="position:absolute;right:64px;top:50%;transform:translateY(-50%);background:#1E293B;color:#fff;font-size:.75rem;font-weight:600;white-space:nowrap;padding:5px 10px;border-radius:6px;pointer-events:none;opacity:0;transition:opacity .2s;">Tanya Widy AI</span>
     </button>
 
@@ -1640,11 +1626,11 @@
 
     <script type="module">
         import { supabase } from './js/supabase-config.js';
-        import { initGuruPage, showToast } from './js/guru.js';
+        import { initGuruPage } from './js/guru.js';
 
-        // =====================================================
-        //  STATE
-        // =====================================================
+        // ================================================================
+        //  SESSION & STATE
+        // ================================================================
         const session = initGuruPage('dashboard');
         const guru = session.guru;
         const idGuru = guru.id_guru;
@@ -1653,10 +1639,11 @@
         let editStudentId = null;
         let kelasList = [];
         let siswaList = [];
+        let sesiList = [];
 
-        // =====================================================
+        // ================================================================
         //  DOM REFS
-        // =====================================================
+        // ================================================================
         const $ = id => document.getElementById(id);
         const welcomeTitle = $('welcomeTitle');
         const welcomeSub = $('welcomeSub');
@@ -1695,68 +1682,62 @@
         const confirmDeleteBtn = $('confirmDeleteBtn');
         const classModalTitle = $('classModalTitle');
         const studentModalTitle = $('studentModalTitle');
-        const chatMessages = $('chatMessages');
-        const chatInput = $('chatInput');
-        const chatSendBtn = $('chatSendBtn');
-        const fab = $('geminiFab');
-        const chatWidget = $('geminiChat');
-        const fabIcon = $('fabIcon');
-        const geminiClose = $('geminiClose');
-        const welcomeTime = $('welcomeTime');
 
-        // =====================================================
+        // ================================================================
         //  SETUP
-        // =====================================================
+        // ================================================================
         sidebarName.textContent = guru.nama_lengkap;
         sidebarAvatar.textContent = guru.nama_lengkap.charAt(0).toUpperCase();
         welcomeTitle.textContent = `Selamat datang, ${guru.nama_lengkap.split(' ')[0]}! 👋`;
         welcomeSub.textContent = 'Yuk pantau perkembangan belajar siswa hari ini.';
         topbarDate.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        welcomeTime.textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        $('welcomeTime').textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-        // =====================================================
+        // ================================================================
         //  LOAD DATA
-        // =====================================================
+        // ================================================================
         async function loadAll() {
             try {
+                // 1. Kelas
                 const { data: kls, error: e1 } = await supabase
                     .from('kelas')
                     .select('id_kelas, nama_kelas, tahun_ajaran')
                     .eq('id_guru', idGuru);
                 if (e1) throw e1;
                 kelasList = kls || [];
-                const kelasIds = kelasList.map(k => k.id_kelas);
 
-                let siswaData = [];
+                // 2. Siswa
+                const kelasIds = kelasList.map(k => k.id_kelas);
                 if (kelasIds.length) {
                     const { data: sw, error: e2 } = await supabase
                         .from('siswa')
                         .select('id_siswa, nama_panggilan, total_skor, id_kelas, username, password_plain')
                         .in('id_kelas', kelasIds);
                     if (e2) throw e2;
-                    siswaData = sw || [];
+                    siswaList = sw || [];
+                } else {
+                    siswaList = [];
                 }
-                siswaList = siswaData;
 
-                // Fetch sesi untuk laporan
+                // 3. Sesi
                 const siswaIds = siswaList.map(s => s.id_siswa);
-                let sesiData = [];
                 if (siswaIds.length) {
                     const { data: ss, error: e3 } = await supabase
                         .from('sesi_game')
                         .select('id_sesi, id_siswa, level_ke, target_angka, status_selesai')
                         .in('id_siswa', siswaIds);
                     if (e3) throw e3;
-                    sesiData = ss || [];
+                    sesiList = ss || [];
+                } else {
+                    sesiList = [];
                 }
 
                 // Render semua
-                renderBeranda(siswaData, sesiData);
-                renderClassGrid(kelasList, siswaData);
-                renderLaporan(siswaData, sesiData, kelasList);
-                renderLaporanFilters(kelasList);
+                renderBeranda();
+                renderClassGrid();
+                renderLaporan();
+                renderLaporanFilters();
                 navClassCount.textContent = kelasList.length;
-                // jika ada kelas detail aktif, refresh
                 if (currentClassId) renderClassDetail(currentClassId);
 
             } catch (err) {
@@ -1765,18 +1746,18 @@
             }
         }
 
-        // =====================================================
+        // ================================================================
         //  BERANDA
-        // =====================================================
-        function renderBeranda(siswaData, sesiData) {
+        // ================================================================
+        function renderBeranda() {
             const totalKelas = kelasList.length;
-            const totalSiswa = siswaData.length;
-            const avgSkor = totalSiswa ? Math.round(siswaData.reduce((a, s) => a + (s.total_skor || 0), 0) / totalSiswa) : 0;
+            const totalSiswa = siswaList.length;
+            const avgSkor = totalSiswa ? Math.round(siswaList.reduce((a, s) => a + (s.total_skor || 0), 0) / totalSiswa) : 0;
             statTotalKelas.textContent = totalKelas;
             statTotalSiswa.textContent = totalSiswa;
             statRataSkor.textContent = avgSkor;
 
-            const played = siswaData.filter(s => (s.total_skor || 0) > 0).length;
+            const played = siswaList.filter(s => (s.total_skor || 0) > 0).length;
             const pct = totalSiswa ? Math.round(played / totalSiswa * 100) : 0;
             const circ = 232.5;
             progressRing.style.strokeDashoffset = circ - (circ * pct / 100);
@@ -1788,13 +1769,13 @@
                 pct === 100 ? 'Semua siswa sudah mencoba permainan ini.' :
                 'Ajak siswa lainnya untuk mulai bermain juga.';
 
-            // Insight AI
-            if (siswaData.length === 0) {
+            // Insight
+            if (siswaList.length === 0) {
                 insightMainMsg.textContent = 'Belum ada data siswa untuk dianalisis.';
                 insightList.innerHTML = '';
             } else {
-                const low = siswaData.filter(s => (s.total_skor || 0) < 50).length;
-                const top = [...siswaData].sort((a, b) => (b.total_skor || 0) - (a.total_skor || 0))[0];
+                const low = siswaList.filter(s => (s.total_skor || 0) < 50).length;
+                const top = [...siswaList].sort((a, b) => (b.total_skor || 0) - (a.total_skor || 0))[0];
                 insightMainMsg.textContent = `${Math.round(low / totalSiswa * 100)}% siswa masih memiliki skor di bawah 50. Coba berikan motivasi tambahan!`;
                 insightList.innerHTML = `
                     <div class="insight-card-item">🌟 <b>${top?.nama_panggilan || '-'}</b> tampil terbaik dengan skor ${top?.total_skor || 0}.</div>
@@ -1802,7 +1783,6 @@
                 `;
             }
 
-            // Home class grid
             homeClassCount.textContent = totalKelas;
             if (totalKelas === 0) {
                 homeClassGrid.innerHTML = `
@@ -1814,7 +1794,7 @@
                 `;
             } else {
                 homeClassGrid.innerHTML = kelasList.slice(0, 3).map(k => {
-                    const sw = siswaData.filter(s => s.id_kelas === k.id_kelas);
+                    const sw = siswaList.filter(s => s.id_kelas === k.id_kelas);
                     const avg = sw.length ? Math.round(sw.reduce((a, s) => a + (s.total_skor || 0), 0) / sw.length) : 0;
                     return `
                         <div class="class-card" onclick="openClassDetail('${k.id_kelas}')">
@@ -1831,12 +1811,12 @@
             }
         }
 
-        // =====================================================
+        // ================================================================
         //  KELAS GRID
-        // =====================================================
-        function renderClassGrid(kls, sw) {
-            classListCount.textContent = kls.length;
-            if (kls.length === 0) {
+        // ================================================================
+        function renderClassGrid() {
+            classListCount.textContent = kelasList.length;
+            if (kelasList.length === 0) {
                 classGrid.innerHTML = `
                     <div class="empty-state" style="grid-column:1/-1;">
                         <i class="material-icons-round">school</i>
@@ -1847,14 +1827,14 @@
                 `;
                 return;
             }
-            classGrid.innerHTML = kls.map(k => {
-                const siswa = sw.filter(s => s.id_kelas === k.id_kelas);
-                const avg = siswa.length ? Math.round(siswa.reduce((a, s) => a + (s.total_skor || 0), 0) / siswa.length) : 0;
+            classGrid.innerHTML = kelasList.map(k => {
+                const sw = siswaList.filter(s => s.id_kelas === k.id_kelas);
+                const avg = sw.length ? Math.round(sw.reduce((a, s) => a + (s.total_skor || 0), 0) / sw.length) : 0;
                 return `
                     <div class="class-card" onclick="openClassDetail('${k.id_kelas}')">
                         <div class="class-card-top">
                             <div class="class-icon" style="background:#e0e7ff;"><i class="material-icons-round" style="color:var(--purple);">school</i></div>
-                            <div class="class-badge">${siswa.length} siswa</div>
+                            <div class="class-badge">${sw.length} siswa</div>
                         </div>
                         <div class="class-name">${k.nama_kelas}</div>
                         <div class="class-meta">${k.tahun_ajaran || '-'} · rata-rata ${avg}%</div>
@@ -1866,16 +1846,16 @@
             `;
         }
 
-        // =====================================================
+        // ================================================================
         //  KELAS DETAIL
-        // =====================================================
-        window.openClassDetail = async function(id) {
+        // ================================================================
+        window.openClassDetail = function(id) {
             currentClassId = id;
             switchTab('kelas-detail');
-            await renderClassDetail(id);
+            renderClassDetail(id);
         };
 
-        async function renderClassDetail(id) {
+        function renderClassDetail(id) {
             const kls = kelasList.find(k => k.id_kelas === id);
             if (!kls) return;
             const sw = siswaList.filter(s => s.id_kelas === id);
@@ -1899,7 +1879,7 @@
                 const cat = s.total_skor >= 70 ? 'h' : s.total_skor >= 40 ? 'm' : 'l';
                 return `
                     <div class="student-card">
-                        <div class="student-avatar" style="background:${cat === 'h' ? '#d1fae5' : cat === 'm' ? '#fef9c3' : '#fee2e2'};">👦</div>
+                        <div class="student-avatar" style="background:${cat === 'h' ? '#d1fae5' : cat === 'm' ? '#fef9c3' : '#fee2e2'};">${inpStudentEmoji?.value || '👦'}</div>
                         <div class="student-body">
                             <div class="student-name">${s.nama_panggilan}</div>
                             <div class="student-meta">
@@ -1920,9 +1900,9 @@
             }).join('');
         }
 
-        // =====================================================
-        //  CRUD KELAS
-        // =====================================================
+        // ================================================================
+        //  CRUD KELAS (Supabase)
+        // ================================================================
         window.openClassModal = function(id = null) {
             editClassId = id;
             classModalTitle.textContent = id ? 'Edit Kelas' : 'Tambah Kelas';
@@ -1966,16 +1946,16 @@
                 }
                 closeClassModal();
                 await loadAll();
-                if (currentClassId) await renderClassDetail(currentClassId);
+                if (currentClassId) renderClassDetail(currentClassId);
             } catch (err) {
                 console.error(err);
                 showToast('Gagal menyimpan kelas', 'error');
             }
         };
 
-        // =====================================================
-        //  CRUD SISWA
-        // =====================================================
+        // ================================================================
+        //  CRUD SISWA (Supabase)
+        // ================================================================
         window.openStudentModal = function(id = null) {
             editStudentId = id;
             studentModalTitle.textContent = id ? 'Edit Siswa' : 'Tambah Siswa';
@@ -2027,7 +2007,7 @@
                 }
                 closeStudentModal();
                 await loadAll();
-                if (currentClassId) await renderClassDetail(currentClassId);
+                if (currentClassId) renderClassDetail(currentClassId);
             } catch (err) {
                 console.error(err);
                 showToast('Gagal menyimpan siswa', 'error');
@@ -2048,7 +2028,7 @@
                     showToast('Siswa dihapus', 'success');
                     closeDeleteModal();
                     await loadAll();
-                    if (currentClassId) await renderClassDetail(currentClassId);
+                    if (currentClassId) renderClassDetail(currentClassId);
                 } catch (err) {
                     console.error(err);
                     showToast('Gagal hapus siswa', 'error');
@@ -2060,13 +2040,63 @@
             $('modalDelete').classList.remove('active');
         };
 
-        // =====================================================
+        // ================================================================
         //  LAPORAN
-        // =====================================================
-        function renderLaporan(sw, sesi, kls) {
-            const totalSesi = sesi.length;
+        // ================================================================
+        function renderLaporan() {
+            const totalSesi = sesiList.length;
+            const avgSkor = siswaList.length ? Math.round(siswaList.reduce((a, s) => a + (s.total_skor || 0), 0) / siswaList.length) : 0;
+            const avgStrategi = siswaList.length ? (sesiList.length / siswaList.length).toFixed(1) : 0;
+            repSesi.textContent = totalSesi;
+            repSkor.textContent = avgSkor + '%';
+            repStrategi.textContent = avgStrategi;
+
+            const sorted = [...siswaList].sort((a, b) => (b.total_skor || 0) - (a.total_skor || 0));
+            if (sorted.length === 0) {
+                laporanTable.innerHTML = `<div class="empty-state"><i class="material-icons-round">bar_chart</i><div class="empty-state-txt">Belum ada data</div></div>`;
+                leaderboardList.innerHTML = `<div style="font-size:13px;color:var(--text-muted);text-align:center;padding:16px 0;">Belum ada data</div>`;
+                return;
+            }
+            laporanTable.innerHTML = sorted.map((s, i) => `
+                <div class="lb-item">
+                    <div class="lb-rank ${i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : 'rn'}">${i+1}</div>
+                    <span style="font-size:18px;">${inpStudentEmoji?.value || '👦'}</span>
+                    <span class="lb-name">${s.nama_panggilan}</span>
+                    <span class="cat-pill cat-${s.total_skor >= 70 ? 'h' : s.total_skor >= 40 ? 'm' : 'l'}" style="margin-right:8px;">${s.total_skor >= 70 ? 'Tinggi' : s.total_skor >= 40 ? 'Sedang' : 'Rendah'}</span>
+                    <span class="lb-score">${s.total_skor || 0}</span>
+                </div>
+            `).join('');
+
+            const top5 = sorted.slice(0, 5);
+            leaderboardList.innerHTML = top5.map((s, i) => `
+                <div class="lb-item">
+                    <div class="lb-rank ${i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : 'rn'}">${i+1}</div>
+                    <span style="font-size:16px;">${inpStudentEmoji?.value || '👦'}</span>
+                    <span class="lb-name">${s.nama_panggilan}</span>
+                    <span class="lb-score">${s.total_skor || 0}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderLaporanFilters() {
+            laporanFilterChips.innerHTML = `
+                <div class="chip active" onclick="filterLaporan('all')">Semua Kelas</div>
+                ${kelasList.map(k => `<div class="chip" onclick="filterLaporan('${k.id_kelas}')">${k.nama_kelas}</div>`).join('')}
+            `;
+        }
+
+        window.filterLaporan = function(id) {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            let sw = siswaList;
+            if (id !== 'all') sw = sw.filter(s => s.id_kelas === id);
+            const siswaIds = sw.map(s => s.id_siswa);
+            let ss = sesiList;
+            if (id !== 'all') ss = ss.filter(s => siswaIds.includes(s.id_siswa));
+            // re-render laporan dengan filter
+            const totalSesi = ss.length;
             const avgSkor = sw.length ? Math.round(sw.reduce((a, s) => a + (s.total_skor || 0), 0) / sw.length) : 0;
-            const avgStrategi = sesi.length ? (sesi.length / sw.length).toFixed(1) : 0;
+            const avgStrategi = sw.length ? (ss.length / sw.length).toFixed(1) : 0;
             repSesi.textContent = totalSesi;
             repSkor.textContent = avgSkor + '%';
             repStrategi.textContent = avgStrategi;
@@ -2080,7 +2110,7 @@
             laporanTable.innerHTML = sorted.map((s, i) => `
                 <div class="lb-item">
                     <div class="lb-rank ${i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : 'rn'}">${i+1}</div>
-                    <span style="font-size:18px;">👦</span>
+                    <span style="font-size:18px;">${inpStudentEmoji?.value || '👦'}</span>
                     <span class="lb-name">${s.nama_panggilan}</span>
                     <span class="cat-pill cat-${s.total_skor >= 70 ? 'h' : s.total_skor >= 40 ? 'm' : 'l'}" style="margin-right:8px;">${s.total_skor >= 70 ? 'Tinggi' : s.total_skor >= 40 ? 'Sedang' : 'Rendah'}</span>
                     <span class="lb-score">${s.total_skor || 0}</span>
@@ -2091,37 +2121,16 @@
             leaderboardList.innerHTML = top5.map((s, i) => `
                 <div class="lb-item">
                     <div class="lb-rank ${i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : 'rn'}">${i+1}</div>
-                    <span style="font-size:16px;">👦</span>
+                    <span style="font-size:16px;">${inpStudentEmoji?.value || '👦'}</span>
                     <span class="lb-name">${s.nama_panggilan}</span>
                     <span class="lb-score">${s.total_skor || 0}</span>
                 </div>
             `).join('');
-        }
-
-        function renderLaporanFilters(kls) {
-            laporanFilterChips.innerHTML = `
-                <div class="chip active" onclick="filterLaporan('all')">Semua Kelas</div>
-                ${kls.map(k => `<div class="chip" onclick="filterLaporan('${k.id_kelas}')">${k.nama_kelas}</div>`).join('')}
-            `;
-        }
-
-        window.filterLaporan = async function(id) {
-            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
-            let sw = siswaList;
-            if (id !== 'all') sw = sw.filter(s => s.id_kelas === id);
-            const siswaIds = sw.map(s => s.id_siswa);
-            let sesi = [];
-            if (siswaIds.length) {
-                const { data } = await supabase.from('sesi_game').select('*').in('id_siswa', siswaIds);
-                sesi = data || [];
-            }
-            renderLaporan(sw, sesi, kelasList);
         };
 
-        // =====================================================
+        // ================================================================
         //  TAB NAVIGATION
-        // =====================================================
+        // ================================================================
         window.switchTab = function(name) {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('on'));
             const target = name === 'kelas-detail' ? 'kelas-detail' : name;
@@ -2144,9 +2153,9 @@
             item.addEventListener('click', () => switchTab(item.dataset.nav));
         });
 
-        // =====================================================
+        // ================================================================
         //  SIDEBAR TOGGLE
-        // =====================================================
+        // ================================================================
         const sidebar = document.getElementById('sidebar');
         const main = document.getElementById('mainContent');
         const toggle = document.getElementById('sidebarToggle');
@@ -2168,9 +2177,9 @@
             sidebar.classList.toggle('mobile-open');
         });
 
-        // =====================================================
+        // ================================================================
         //  LOGOUT
-        // =====================================================
+        // ================================================================
         document.getElementById('btnLogout').addEventListener('click', () => {
             if (confirm('Yakin ingin keluar?')) {
                 sessionStorage.removeItem('widyatika_session');
@@ -2178,68 +2187,42 @@
             }
         });
 
-        // =====================================================
+        // ================================================================
         //  CHAT AI (WIDY)
-        // =====================================================
+        // ================================================================
         const BACKEND_CHAT_URL = '/api/chat';
         let chatHistory = [];
 
         function appendMessage(role, text) {
+            const container = document.getElementById('chatMessages');
             const div = document.createElement('div');
             div.className = `msg msg--${role}`;
-            div.style.display = 'flex';
-            div.style.flexDirection = 'column';
-            div.style.maxWidth = '85%';
-            div.style.animation = 'msgSlideIn .2s ease forwards';
-            if (role === 'ai') div.style.alignSelf = 'flex-start';
-            else div.style.alignSelf = 'flex-end';
-
+            div.style.cssText = `display:flex;flex-direction:column;max-width:85%;animation:msgSlideIn .2s ease forwards;${role === 'ai' ? 'align-self:flex-start;' : 'align-self:flex-end;'}`;
             const bubble = document.createElement('div');
-            bubble.style.padding = '9px 13px';
-            bubble.style.borderRadius = '14px';
-            bubble.style.fontSize = '.82rem';
-            bubble.style.lineHeight = '1.5';
-            bubble.style.wordBreak = 'break-word';
-            if (role === 'ai') {
-                bubble.style.background = '#F1F5F9';
-                bubble.style.color = '#0F172A';
-                bubble.style.borderBottomLeftRadius = '4px';
-            } else {
-                bubble.style.background = 'linear-gradient(135deg, #4F46E5, #7C3AED)';
-                bubble.style.color = '#FFFFFF';
-                bubble.style.borderBottomRightRadius = '4px';
-            }
+            bubble.style.cssText = `padding:9px 13px;border-radius:14px;font-size:.82rem;line-height:1.5;word-break:break-word;${role === 'ai' ? 'background:#F1F5F9;color:#0F172A;border-bottom-left-radius:4px;' : 'background:linear-gradient(135deg,#4F46E5,#7C3AED);color:#FFFFFF;border-bottom-right-radius:4px;'}`;
             bubble.innerHTML = text.replace(/\n/g, '<br>');
-
             const time = document.createElement('span');
-            time.style.fontSize = '.65rem';
-            time.style.color = '#94A3B8';
-            time.style.marginTop = '3px';
-            time.style.padding = '0 4px';
-            if (role === 'user') time.style.textAlign = 'right';
+            time.style.cssText = `font-size:.65rem;color:#94A3B8;margin-top:3px;padding:0 4px;${role === 'user' ? 'text-align:right;' : ''}`;
             time.textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-
             div.appendChild(bubble);
             div.appendChild(time);
-            chatMessages.appendChild(div);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
         }
 
         function appendTyping() {
+            const container = document.getElementById('chatMessages');
             const div = document.createElement('div');
             div.id = 'typingIndicator';
             div.className = 'msg msg--ai';
-            div.style.display = 'flex';
-            div.style.alignSelf = 'flex-start';
-            div.style.maxWidth = '85%';
+            div.style.cssText = 'display:flex;align-self:flex-start;max-width:85%;';
             div.innerHTML = `<div style="padding:10px 14px;background:#F1F5F9;border-radius:14px;border-bottom-left-radius:4px;display:flex;gap:4px;"><span style="width:7px;height:7px;background:#94A3B8;border-radius:50%;animation:typingBounce 1.2s ease-in-out infinite;"></span><span style="width:7px;height:7px;background:#94A3B8;border-radius:50%;animation:typingBounce 1.2s ease-in-out infinite;animation-delay:0.15s;"></span><span style="width:7px;height:7px;background:#94A3B8;border-radius:50%;animation:typingBounce 1.2s ease-in-out infinite;animation-delay:0.30s;"></span></div>`;
-            chatMessages.appendChild(div);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
         }
 
         function removeTyping() {
-            const el = document.getElementById('typingIndicator');
-            if (el) el.remove();
+            document.getElementById('typingIndicator')?.remove();
         }
 
         async function sendChatMessage(text) {
@@ -2247,8 +2230,8 @@
             document.querySelectorAll('.suggestion-chip').forEach(el => el.style.display = 'none');
             appendMessage('user', text);
             chatHistory.push({ role: 'user', parts: [{ text }] });
-            chatInput.value = '';
-            chatSendBtn.disabled = true;
+            document.getElementById('chatInput').value = '';
+            document.getElementById('chatSendBtn').disabled = true;
 
             appendTyping();
             try {
@@ -2277,8 +2260,8 @@
                 removeTyping();
                 appendMessage('ai', '❌ Gagal menghubungi AI: ' + err.message);
             } finally {
-                chatSendBtn.disabled = false;
-                chatInput.focus();
+                document.getElementById('chatSendBtn').disabled = false;
+                document.getElementById('chatInput').focus();
             }
         }
 
@@ -2290,41 +2273,55 @@
             });
         });
 
-        chatSendBtn.addEventListener('click', () => sendChatMessage(chatInput.value.trim()));
-        chatInput.addEventListener('keydown', e => {
+        document.getElementById('chatSendBtn').addEventListener('click', () => {
+            const input = document.getElementById('chatInput');
+            sendChatMessage(input.value.trim());
+        });
+        document.getElementById('chatInput').addEventListener('keydown', e => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                sendChatMessage(chatInput.value.trim());
+                const input = document.getElementById('chatInput');
+                sendChatMessage(input.value.trim());
             }
         });
 
         // FAB toggle
         let chatOpen = false;
-        fab.addEventListener('click', () => {
+        const fabBtn = document.getElementById('geminiFab');
+        const chatWidget = document.getElementById('geminiChat');
+        const fabIcon = document.getElementById('fabIcon');
+        const closeBtn = document.getElementById('geminiClose');
+
+        fabBtn.addEventListener('click', () => {
             chatOpen = !chatOpen;
             chatWidget.style.opacity = chatOpen ? '1' : '0';
             chatWidget.style.visibility = chatOpen ? 'visible' : 'hidden';
             chatWidget.style.transform = chatOpen ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.95)';
-            fab.classList.toggle('is-open', chatOpen);
             fabIcon.textContent = chatOpen ? '✕' : '💬';
-            if (chatOpen) chatInput.focus();
+            if (chatOpen) document.getElementById('chatInput').focus();
         });
-        geminiClose.addEventListener('click', () => {
+        closeBtn.addEventListener('click', () => {
             chatOpen = false;
             chatWidget.style.opacity = '0';
             chatWidget.style.visibility = 'hidden';
             chatWidget.style.transform = 'translateY(16px) scale(0.95)';
-            fab.classList.remove('is-open');
             fabIcon.textContent = '💬';
         });
 
-        // =====================================================
+        // ================================================================
         //  BOOT
-        // =====================================================
+        // ================================================================
         loadAll();
 
         // Toast global
-        window.showToast = showToast;
+        window.showToast = function(msg, type = 'info') {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            const iconMap = { success: 'check_circle', error: 'error', warning: 'warning' };
+            t.innerHTML = `<i class="material-icons-round" style="color:${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#f59e0b'};">${iconMap[type] || 'info'}</i>${msg}`;
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3800);
+        };
     </script>
 </body>
 
