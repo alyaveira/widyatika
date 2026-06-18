@@ -4,359 +4,442 @@ import { initGuruPage, showToast } from './guru.js';
 const session = initGuruPage('manajemen');
 const guruId = session.guru.id_guru;
 
-const elements = {
-  selectFilterKelas: document.getElementById('selectKelas'),
-  selectTambahKelas: document.getElementById('selectTambahKelas'),
-  btnTambahSiswa: document.getElementById('btnTambahSiswa'),
-  btnTambahKelas: document.getElementById('btnTambahKelas'),
-  formPanel: document.getElementById('studentFormPanel'),
-  classFormPanel: document.getElementById('classFormPanel'),
-  studentForm: document.getElementById('studentForm'),
-  classForm: document.getElementById('classForm'),
-  inputNamaLengkap: document.getElementById('inputNamaLengkap'),
-  inputNamaPanggilan: document.getElementById('inputNamaPanggilan'),
-  inputUsername: document.getElementById('inputUsername'),
-  inputPassword: document.getElementById('inputPassword'),
-  inputNamaKelas: document.getElementById('inputNamaKelas'),
-  tbodyStudents: document.getElementById('tbodyStudents'),
-  tableWrapper: document.querySelector('.table-wrapper'),
-};
-
+// State
 let kelasList = [];
-// ========== EDIT SISWA ==========
-const editModal = document.getElementById('modalEditStudent');
-const editForm = document.getElementById('editStudentForm');
-const editNamaLengkap = document.getElementById('editNamaLengkap');
-const editNamaPanggilan = document.getElementById('editNamaPanggilan');
-const editUsername = document.getElementById('editUsername');
-const editPassword = document.getElementById('editPassword');
+let siswaList = [];
+let sesiList = [];
+let strategiList = [];
+let selectedClassId = null;
+let editingKelasId = null;
+let editingSiswaId = null;
+
+// DOM refs
+const modeDaftar = document.getElementById('modeDaftar');
+const modeDetail = document.getElementById('modeDetail');
+const kelasGrid = document.getElementById('kelasGrid');
+const tbodyStudents = document.getElementById('tbodyStudents');
+const detailNamaKelas = document.getElementById('detailNamaKelas');
+const detailMetaKelas = document.getElementById('detailMetaKelas');
+const btnBackDaftar = document.getElementById('btnBackDaftar');
+const btnTambahKelas = document.getElementById('btnTambahKelas');
+const btnTambahSiswa = document.getElementById('btnTambahSiswa');
+const btnEditKelas = document.getElementById('btnEditKelas');
+
+// Modal Kelas
+const modalKelas = document.getElementById('modalKelas');
+const modalKelasTitle = document.getElementById('modalKelasTitle');
+const inputNamaKelas = document.getElementById('inputNamaKelas');
+const inputTingkat = document.getElementById('inputTingkat');
+const inputWarna = document.querySelectorAll('input[name="warna"]');
+const editKelasId = document.getElementById('editKelasId');
+const btnSubmitKelas = document.getElementById('btnSubmitKelas');
+const btnCancelModalKelas = document.getElementById('btnCancelModalKelas');
+const btnCloseModalKelas = document.getElementById('btnCloseModalKelas');
+
+// Modal Siswa
+const modalSiswa = document.getElementById('modalSiswa');
+const modalSiswaTitle = document.getElementById('modalSiswaTitle');
+const inputNISN = document.getElementById('inputNISN');
+const inputNamaSiswa = document.getElementById('inputNamaSiswa');
+const inputPanggilan = document.getElementById('inputPanggilan');
+const inputPinSiswa = document.getElementById('inputPinSiswa');
 const editSiswaId = document.getElementById('editSiswaId');
+const siswaKelasId = document.getElementById('siswaKelasId');
+const btnSubmitSiswa = document.getElementById('btnSubmitSiswa');
+const btnCancelModalSiswa = document.getElementById('btnCancelModalSiswa');
+const btnCloseModalSiswa = document.getElementById('btnCloseModalSiswa');
 
-function openEditModal(siswa) {
-  editSiswaId.value = siswa.id_siswa;
-  editNamaLengkap.value = siswa.nama_lengkap;
-  editNamaPanggilan.value = siswa.nama_panggilan;
-  editUsername.value = siswa.username;
-  editPassword.value = siswa.password_plain;
-  editModal.classList.add('is-open');
-}
-
-function closeEditModal() {
-  editModal.classList.remove('is-open');
-  editForm.reset();
-}
-
-async function handleEditSubmit(e) {
-  e.preventDefault();
-  const id = editSiswaId.value;
-  const namaLengkap = editNamaLengkap.value.trim();
-  const namaPanggilan = editNamaPanggilan.value.trim();
-  const username = editUsername.value.trim().toLowerCase();
-  const password = editPassword.value.trim();
-
-  if (!namaLengkap || !namaPanggilan || !username || !password) {
-    showToast('Semua field harus diisi.', 'warning');
-    return;
-  }
-
+// ========== LOAD DATA ==========
+async function loadAllData() {
   try {
-    const { error } = await supabase
-      .from('siswa')
-      .update({ nama_lengkap, nama_panggilan, username, password_plain: password })
-      .eq('id_siswa', id);
-    if (error) throw error;
-    showToast('Data siswa diperbarui.', 'success');
-    closeEditModal();
-    await loadStudents();
-  } catch (err) {
-    console.error('[Edit] Error:', err);
-    showToast('Gagal update data.', 'error');
-  }
-}
-
-// Tambahkan di bindEvents() setelah event lainnya:
-document.getElementById('btnCloseEditModal')?.addEventListener('click', closeEditModal);
-document.getElementById('btnCancelEdit')?.addEventListener('click', closeEditModal);
-editModal?.addEventListener('click', (e) => { if (e.target === editModal) closeEditModal(); });
-editForm?.addEventListener('submit', handleEditSubmit);
-
-// Delegasi untuk tombol Edit di tabel (gunakan event listener pada tbody)
-document.querySelector('#tbodyStudents')?.addEventListener('click', (e) => {
-  const btn = e.target.closest('button[data-action="edit"]');
-  if (btn) {
-    const row = btn.closest('tr');
-    const cells = row.querySelectorAll('td');
-    const siswa = {
-      id_siswa: btn.dataset.siswaId,
-      nama_lengkap: cells[1].textContent,
-      nama_panggilan: cells[2].textContent,
-      username: cells[3].textContent.trim(),
-      password_plain: cells[4].textContent.trim(),
-    };
-    openEditModal(siswa);
-  }
-});
-async function initClassPage() {
-  bindEvents();
-  await loadKelas();
-}
-
-function bindEvents() {
-  if (elements.btnTambahSiswa) {
-    elements.btnTambahSiswa.addEventListener('click', openForm);
-  }
-  if (elements.btnTambahKelas) {
-    elements.btnTambahKelas.addEventListener('click', openClassForm);
-  }
-  if (elements.selectFilterKelas) {
-    elements.selectFilterKelas.addEventListener('change', loadStudents);
-  }
-  if (elements.studentForm) {
-    elements.studentForm.addEventListener('submit', handleSubmitStudent);
-  }
-  if (elements.classForm) {
-    elements.classForm.addEventListener('submit', handleSubmitClass);
-  }
-  document.getElementById('btnCancelTambah')?.addEventListener('click', event => {
-    event.preventDefault();
-    closeForm();
-  });
-  document.getElementById('btnCancelTambahKelas')?.addEventListener('click', event => {
-    event.preventDefault();
-    closeClassForm();
-  });
-}
-
-async function loadKelas() {
-  try {
-    const { data, error } = await supabase
+    // Kelas
+    const { data: kelas, error: kelasErr } = await supabase
       .from('kelas')
-      .select('id_kelas, nama_kelas')
-      .eq('id_guru', guruId)
-      .order('nama_kelas', { ascending: true });
-    if (error) throw error;
+      .select('*')
+      .eq('id_guru', guruId);
+    if (kelasErr) throw kelasErr;
+    kelasList = kelas || [];
 
-    kelasList = data || [];
-    renderClassOptions();
-    await loadStudents();
+    // Siswa
+    const kelasIds = kelasList.map(k => k.id_kelas);
+    let siswa = [];
+    if (kelasIds.length > 0) {
+      const { data: s, error: sErr } = await supabase
+        .from('siswa')
+        .select('*')
+        .in('id_kelas', kelasIds);
+      if (sErr) throw sErr;
+      siswa = s || [];
+    }
+    siswaList = siswa;
+
+    // Sesi
+    const siswaIds = siswaList.map(s => s.id_siswa);
+    let sesi = [];
+    if (siswaIds.length > 0) {
+      const { data: se, error: seErr } = await supabase
+        .from('sesi_game')
+        .select('*')
+        .in('id_siswa', siswaIds);
+      if (seErr) throw seErr;
+      sesi = se || [];
+    }
+    sesiList = sesi;
+
+    // Strategi
+    const sesiIds = sesiList.map(s => s.id_sesi);
+    let strategi = [];
+    if (sesiIds.length > 0) {
+      const { data: st, error: stErr } = await supabase
+        .from('detail_strategi')
+        .select('*')
+        .in('id_sesi', sesiIds);
+      if (stErr) throw stErr;
+      strategi = st || [];
+    }
+    strategiList = strategi;
+
+    renderDaftar();
   } catch (err) {
-    console.error('[Kelas] Load kelas error:', err);
-    showToast('Gagal memuat daftar kelas.', 'error');
-    if (elements.tbodyStudents) {
-      elements.tbodyStudents.innerHTML = '<tr><td colspan="6">Tidak dapat memuat data kelas.</td></tr>';
-    }
+    console.error('[Kelas] Load data error:', err);
+    showToast('Gagal memuat data.', 'error');
   }
 }
 
-function renderClassOptions() {
-  if (!elements.selectFilterKelas || !elements.selectTambahKelas) return;
+// ========== RENDER DAFTAR KELAS ==========
+function renderDaftar() {
+  modeDaftar.style.display = 'block';
+  modeDetail.style.display = 'none';
+  document.getElementById('topbarTitle').textContent = 'Kelas';
 
-  const options = kelasList.length > 0
-    ? kelasList.map(kelas => `
-      <option value="${kelas.id_kelas}">${kelas.nama_kelas}</option>
-    `).join('')
-    : '<option value="">Belum ada kelas. Tambahkan kelas baru.</option>';
-
-  elements.selectFilterKelas.innerHTML = options;
-  elements.selectTambahKelas.innerHTML = options;
-  elements.selectFilterKelas.disabled = kelasList.length === 0;
-  elements.selectTambahKelas.disabled = kelasList.length === 0;
-  if (elements.btnTambahSiswa) elements.btnTambahSiswa.disabled = kelasList.length === 0;
-}
-
-async function loadStudents() {
-  if (!elements.selectFilterKelas) return;
-  const selectedClassId = elements.selectFilterKelas.value;
-  if (!selectedClassId) {
-    if (elements.tbodyStudents) {
-      elements.tbodyStudents.innerHTML = `
-        <tr><td colspan="6" style="text-align:center;padding:24px;color:#64748B;">
-          Pilih kelas terlebih dahulu untuk melihat siswa.
-        </td></tr>`;
-    }
-    return;
-  }
-  try {
-    const { data, error } = await supabase
-      .from('siswa')
-      .select('id_siswa, nama_lengkap, nama_panggilan, username, password_plain, total_skor')
-      .eq('id_kelas', selectedClassId)
-      .order('nama_lengkap', { ascending: true });
-    if (error) throw error;
-    renderStudentRows(data || []);
-  } catch (err) {
-    console.error('[Kelas] Load siswa error:', err);
-    showToast('Gagal memuat data siswa.', 'error');
-    if (elements.tbodyStudents) {
-      elements.tbodyStudents.innerHTML = '<tr><td colspan="6">Terjadi kesalahan saat memuat siswa.</td></tr>';
-    }
-  }
-}
-
-function renderStudentRows(students) {
-  if (!elements.tbodyStudents) return;
-  if (!students || students.length === 0) {
-    elements.tbodyStudents.innerHTML = `
-      <tr><td colspan="6" style="text-align:center;padding:24px;color:#64748B;">
-        Belum ada siswa di kelas ini. Tambahkan siswa baru untuk mulai melacak.
-      </td></tr>`;
+  if (!kelasList || kelasList.length === 0) {
+    kelasGrid.innerHTML = `
+      <div style="grid-column:1/-1; text-align:center; padding:40px 0; color:var(--clr-text-muted);">
+        <p style="font-weight:600;">Belum ada kelas.</p>
+        <p style="font-size:0.9rem;">Klik "Tambah Kelas" untuk memulai.</p>
+      </div>
+    `;
     return;
   }
 
-  elements.tbodyStudents.innerHTML = students.map((siswa, index) => `
-    <tr>
-      <td>${index + 1}</td>
-      <td>${escHtml(siswa.nama_lengkap)}</td>
-      <td>${escHtml(siswa.nama_panggilan)}</td>
-      <td><span class="data-pill">${escHtml(siswa.username)}</span></td>
-      <td><span class="badge-token">${escHtml(siswa.password_plain)}</span></td>
-      <td>
-        <div class="action-buttons">
-          <button class="action-btn" type="button" data-siswa-id="${siswa.id_siswa}" data-action="edit">Edit</button>
-          <button class="action-btn action-btn--danger" type="button" data-siswa-id="${siswa.id_siswa}" data-action="delete">Hapus</button>
+  // Hitung statistik per kelas
+  const kelasStats = {};
+  siswaList.forEach(s => {
+    if (!kelasStats[s.id_kelas]) {
+      kelasStats[s.id_kelas] = { total: 0, count: 0 };
+    }
+    kelasStats[s.id_kelas].total += (s.total_skor || 0);
+    kelasStats[s.id_kelas].count += 1;
+  });
+
+  kelasGrid.innerHTML = kelasList.map(kelas => {
+    const stats = kelasStats[kelas.id_kelas] || { total: 0, count: 0 };
+    const avg = stats.count > 0 ? Math.round(stats.total / stats.count) : 0;
+    const warna = kelas.warna || '#3B82F6';
+    const tingkat = kelas.tingkat || 'Kelas 4';
+    return `
+      <div class="kelas-card" style="--kelas-color: ${warna};" data-id="${kelas.id_kelas}">
+        <div class="kelas-card__name">${escHtml(kelas.nama_kelas)}</div>
+        <div class="kelas-card__meta">${escHtml(tingkat)} · rata-rata <span>${avg}%</span></div>
+        <div class="kelas-card__bar">
+          <div class="kelas-card__bar-inner" style="width:${Math.min(avg, 100)}%;"></div>
         </div>
-      </td>
-    </tr>
-  `).join('');
+        <div class="kelas-card__jumlah">${stats.count} siswa</div>
+      </div>
+    `;
+  }).join('');
 
-  elements.tbodyStudents.querySelectorAll('button[data-action="delete"]').forEach(button => {
-    button.addEventListener('click', () => {
-      const siswaId = button.dataset.siswaId;
-      deleteStudent(siswaId);
+  // Event klik card -> buka detail
+  document.querySelectorAll('.kelas-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.id;
+      openDetail(id);
     });
   });
 }
 
-async function handleSubmitStudent(event) {
-  event.preventDefault();
-  const namaLengkap = elements.inputNamaLengkap?.value.trim();
-  const namaPanggilan = elements.inputNamaPanggilan?.value.trim();
-  const username = elements.inputUsername?.value.trim().toLowerCase();
-  const password = elements.inputPassword?.value.trim();
-  const idKelas = elements.selectTambahKelas?.value;
+// ========== OPEN DETAIL KELAS ==========
+async function openDetail(kelasId) {
+  selectedClassId = kelasId;
+  const kelas = kelasList.find(k => k.id_kelas === kelasId);
+  if (!kelas) return;
 
-  if (!namaLengkap || !namaPanggilan || !username || !password || !idKelas) {
-    showToast('Lengkapi semua data siswa sebelum menyimpan.', 'warning');
+  modeDaftar.style.display = 'none';
+  modeDetail.style.display = 'block';
+  document.getElementById('topbarTitle').textContent = kelas.nama_kelas;
+
+  // Header
+  detailNamaKelas.textContent = kelas.nama_kelas;
+  const siswaDiKelas = siswaList.filter(s => s.id_kelas === kelasId);
+  const totalSiswa = siswaDiKelas.length;
+  const avg = totalSiswa > 0
+    ? Math.round(siswaDiKelas.reduce((sum, s) => sum + (s.total_skor || 0), 0) / totalSiswa)
+    : 0;
+  detailMetaKelas.textContent = `${kelas.tingkat || 'Kelas 4'} · ${totalSiswa} siswa · rata-rata ${avg}%`;
+
+  // Render siswa
+  renderSiswa(kelasId);
+}
+
+function renderSiswa(kelasId) {
+  const siswaDiKelas = siswaList.filter(s => s.id_kelas === kelasId);
+  if (siswaDiKelas.length === 0) {
+    tbodyStudents.innerHTML = `
+      <tr><td colspan="5" style="text-align:center;padding:24px;color:#64748B;">
+        Belum ada siswa. Klik "Tambah Siswa" untuk menambahkan.
+      </td></tr>
+    `;
+    return;
+  }
+
+  // Kumpulkan data sesi & strategi per siswa
+  const siswaData = siswaDiKelas.map(siswa => {
+    const sesiSiswa = sesiList.filter(se => se.id_siswa === siswa.id_siswa);
+    const sesiIds = sesiSiswa.map(se => se.id_sesi);
+    const strategiSiswa = strategiList.filter(st => sesiIds.includes(st.id_sesi));
+    const totalSkor = siswa.total_skor || 0;
+    const kategori = totalSkor >= 80 ? 'Tinggi' : totalSkor >= 50 ? 'Sedang' : 'Rendah';
+    const badgeClass = kategori === 'Tinggi' ? 'badge-kategori--tinggi' :
+                       kategori === 'Sedang' ? 'badge-kategori--sedang' : 'badge-kategori--rendah';
+    return {
+      ...siswa,
+      jumlahStrategi: strategiSiswa.length,
+      jumlahMain: sesiSiswa.length,
+      kategori,
+      badgeClass
+    };
+  });
+
+  tbodyStudents.innerHTML = siswaData.map(s => `
+    <tr>
+      <td><span class="student-name">${escHtml(s.nama_panggilan || s.nama_lengkap)}</span></td>
+      <td><span class="badge-kategori ${s.badgeClass}">${s.kategori}</span></td>
+      <td>${s.jumlahStrategi}</td>
+      <td>${s.jumlahMain}</td>
+      <td>
+        <button class="action-btn-sm action-btn-sm--success" data-id="${s.id_siswa}" data-action="play">▶ Main</button>
+        <button class="action-btn-sm" data-id="${s.id_siswa}" data-action="edit">✎ Edit</button>
+        <button class="action-btn-sm action-btn-sm--danger" data-id="${s.id_siswa}" data-action="delete">✕ Hapus</button>
+      </td>
+    </tr>
+  `).join('');
+
+  // Event listener untuk tombol aksi
+  tbodyStudents.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      if (action === 'play') {
+        // Buka game untuk siswa ini (bisa redirect ke game.html dengan parameter)
+        showToast('Fitur Play Game akan segera hadir.', 'info');
+      } else if (action === 'edit') {
+        openEditSiswa(id);
+      } else if (action === 'delete') {
+        deleteSiswa(id);
+      }
+    });
+  });
+}
+
+// ========== TAMBAH / EDIT KELAS ==========
+function openModalKelas(editData = null) {
+  modalKelas.classList.add('is-open');
+  if (editData) {
+    modalKelasTitle.textContent = 'Edit Kelas';
+    inputNamaKelas.value = editData.nama_kelas;
+    inputTingkat.value = editData.tingkat || 'Kelas 4';
+    editKelasId.value = editData.id_kelas;
+    // Set warna
+    document.querySelectorAll('input[name="warna"]').forEach(el => {
+      el.checked = (el.value === editData.warna);
+    });
+  } else {
+    modalKelasTitle.textContent = 'Tambah Kelas Baru';
+    inputNamaKelas.value = '';
+    inputTingkat.value = 'Kelas 4';
+    editKelasId.value = '';
+    document.querySelector('input[name="warna"][value="#3B82F6"]').checked = true;
+  }
+}
+
+function closeModalKelas() {
+  modalKelas.classList.remove('is-open');
+}
+
+async function submitKelas() {
+  const nama = inputNamaKelas.value.trim();
+  const tingkat = inputTingkat.value;
+  const warna = document.querySelector('input[name="warna"]:checked')?.value || '#3B82F6';
+  const id = editKelasId.value;
+
+  if (!nama) {
+    showToast('Nama kelas wajib diisi.', 'warning');
     return;
   }
 
   try {
-    const { error } = await supabase
-      .from('siswa')
-      .insert([{ 
-        id_kelas: idKelas,
-        nama_lengkap: namaLengkap,
-        nama_panggilan: namaPanggilan,
-        username: username,
-        password_plain: password,
-        total_skor: 0,
-      }]);
-
-    if (error) throw error;
-    showToast('Siswa baru berhasil ditambahkan.', 'success');
-    closeForm();
-    if (elements.selectFilterKelas?.value === idKelas) {
-      await loadStudents();
+    if (id) {
+      // Edit
+      const { error } = await supabase
+        .from('kelas')
+        .update({ nama_kelas: nama, tingkat, warna })
+        .eq('id_kelas', id);
+      if (error) throw error;
+      showToast('Kelas berhasil diperbarui.', 'success');
+    } else {
+      // Tambah
+      const { error } = await supabase
+        .from('kelas')
+        .insert([{ id_guru: guruId, nama_kelas: nama, tingkat, warna }]);
+      if (error) throw error;
+      showToast('Kelas berhasil ditambahkan.', 'success');
     }
+    closeModalKelas();
+    await loadAllData();
   } catch (err) {
-    console.error('[Kelas] Tambah siswa error:', err);
-    showToast('Gagal menambahkan siswa. Periksa koneksi.', 'error');
+    console.error('[Kelas] Submit error:', err);
+    showToast('Gagal menyimpan kelas.', 'error');
   }
 }
 
-async function deleteStudent(idSiswa) {
-  if (!idSiswa || !confirm('Hapus siswa ini dari kelas? Tindakan ini tidak dapat dibatalkan.')) return;
+// ========== TAMBAH / EDIT SISWA ==========
+function openModalSiswa(editData = null) {
+  modalSiswa.classList.add('is-open');
+  if (editData) {
+    modalSiswaTitle.textContent = 'Edit Siswa';
+    inputNISN.value = editData.username || '';
+    inputNamaSiswa.value = editData.nama_lengkap || '';
+    inputPanggilan.value = editData.nama_panggilan || '';
+    inputPinSiswa.value = editData.password_plain || '';
+    editSiswaId.value = editData.id_siswa;
+    siswaKelasId.value = editData.id_kelas;
+  } else {
+    modalSiswaTitle.textContent = 'Tambah Siswa';
+    inputNISN.value = '';
+    inputNamaSiswa.value = '';
+    inputPanggilan.value = '';
+    inputPinSiswa.value = '';
+    editSiswaId.value = '';
+    siswaKelasId.value = selectedClassId || '';
+  }
+}
+
+function closeModalSiswa() {
+  modalSiswa.classList.remove('is-open');
+}
+
+async function submitSiswa() {
+  const nisn = inputNISN.value.trim();
+  const nama = inputNamaSiswa.value.trim();
+  const panggilan = inputPanggilan.value.trim() || nama;
+  const pin = inputPinSiswa.value.trim();
+  const idKelas = siswaKelasId.value;
+  const id = editSiswaId.value;
+
+  if (!nisn || !nama || !pin || !idKelas) {
+    showToast('NISN, Nama, dan PIN wajib diisi.', 'warning');
+    return;
+  }
+
+  try {
+    if (id) {
+      // Edit
+      const { error } = await supabase
+        .from('siswa')
+        .update({
+          username: nisn,
+          nama_lengkap: nama,
+          nama_panggilan: panggilan,
+          password_plain: pin
+        })
+        .eq('id_siswa', id);
+      if (error) throw error;
+      showToast('Siswa berhasil diperbarui.', 'success');
+    } else {
+      // Tambah
+      const { error } = await supabase
+        .from('siswa')
+        .insert([{
+          id_kelas: idKelas,
+          username: nisn,
+          nama_lengkap: nama,
+          nama_panggilan: panggilan,
+          password_plain: pin,
+          total_skor: 0
+        }]);
+      if (error) throw error;
+      showToast('Siswa berhasil ditambahkan.', 'success');
+    }
+    closeModalSiswa();
+    await loadAllData();
+    // Buka ulang detail jika masih di detail
+    if (selectedClassId) openDetail(selectedClassId);
+  } catch (err) {
+    console.error('[Siswa] Submit error:', err);
+    showToast('Gagal menyimpan siswa.', 'error');
+  }
+}
+
+function openEditSiswa(siswaId) {
+  const siswa = siswaList.find(s => s.id_siswa === siswaId);
+  if (siswa) openModalSiswa(siswa);
+}
+
+async function deleteSiswa(siswaId) {
+  if (!confirm('Yakin ingin menghapus siswa ini?')) return;
   try {
     const { error } = await supabase
       .from('siswa')
       .delete()
-      .eq('id_siswa', idSiswa);
+      .eq('id_siswa', siswaId);
     if (error) throw error;
     showToast('Siswa berhasil dihapus.', 'success');
-    await loadStudents();
+    await loadAllData();
+    if (selectedClassId) openDetail(selectedClassId);
   } catch (err) {
-    console.error('[Kelas] Hapus siswa error:', err);
-    showToast('Gagal menghapus siswa. Periksa koneksi atau data terkait.', 'error');
+    console.error('[Siswa] Delete error:', err);
+    showToast('Gagal menghapus siswa.', 'error');
   }
 }
 
-function openForm() {
-  if (!elements.formPanel) return;
-  elements.formPanel.style.display = 'block';
-  if (elements.selectFilterKelas && elements.selectTambahKelas) {
-    elements.selectTambahKelas.value = elements.selectFilterKelas.value;
-  }
+// ========== EVENT LISTENERS ==========
+btnTambahKelas.addEventListener('click', () => openModalKelas());
+btnCancelModalKelas.addEventListener('click', closeModalKelas);
+btnCloseModalKelas.addEventListener('click', closeModalKelas);
+btnSubmitKelas.addEventListener('click', submitKelas);
+
+btnTambahSiswa.addEventListener('click', () => openModalSiswa());
+btnCancelModalSiswa.addEventListener('click', closeModalSiswa);
+btnCloseModalSiswa.addEventListener('click', closeModalSiswa);
+btnSubmitSiswa.addEventListener('click', submitSiswa);
+
+btnBackDaftar.addEventListener('click', () => {
+  selectedClassId = null;
+  renderDaftar();
+});
+
+btnEditKelas.addEventListener('click', () => {
+  const kelas = kelasList.find(k => k.id_kelas === selectedClassId);
+  if (kelas) openModalKelas(kelas);
+});
+
+// Tutup modal jika klik backdrop
+modalKelas.addEventListener('click', (e) => {
+  if (e.target === modalKelas) closeModalKelas();
+});
+modalSiswa.addEventListener('click', (e) => {
+  if (e.target === modalSiswa) closeModalSiswa();
+});
+
+// Refresh
+document.getElementById('btnRefreshData').addEventListener('click', loadAllData);
+
+// ========== UTILITY ==========
+function escHtml(str) {
+  const m = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
+  return String(str).replace(/[&<>"']/g, c => m[c]);
 }
 
-function closeForm() {
-  if (!elements.formPanel) return;
-  elements.formPanel.style.display = 'none';
-  elements.studentForm?.reset();
-}
-function openClassForm() {
-  if (!elements.classFormPanel) return;
-  elements.classFormPanel.style.display = 'block';
-}
-
-function closeClassForm() {
-  if (!elements.classFormPanel) return;
-  elements.classFormPanel.style.display = 'none';
-  elements.classForm?.reset();
-}
-
-async function handleSubmitClass(event) {
-  event.preventDefault();
-  const namaKelas = elements.inputNamaKelas?.value.trim();
-  const normalizedNamaKelas = namaKelas?.toLowerCase().trim();
-
-  if (!namaKelas) {
-    showToast('Isi nama kelas sebelum menyimpan.', 'warning');
-    return;
-  }
-
-  if (kelasList.some(kelas => kelas.nama_kelas.trim().toLowerCase() === normalizedNamaKelas)) {
-    showToast('Nama kelas sudah terdaftar. Gunakan nama lain.', 'warning');
-    return;
-  }
-
-  try {
-    const { data: existingKelas, error: existingError } = await supabase
-      .from('kelas')
-      .select('id_kelas')
-      .eq('id_guru', guruId)
-      .ilike('nama_kelas', namaKelas)
-      .limit(1);
-
-    if (existingError) throw existingError;
-    if (existingKelas && existingKelas.length > 0) {
-      showToast('Nama kelas sudah ada di database. Coba nama lain.', 'warning');
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('kelas')
-      .insert([{ id_guru: guruId, nama_kelas: namaKelas }])
-      .select('id_kelas')
-      .single();
-
-    if (error) throw error;
-
-    showToast('Kelas baru berhasil dibuat.', 'success');
-    closeClassForm();
-    await loadKelas();
-
-    if (data?.id_kelas) {
-      if (elements.selectFilterKelas) elements.selectFilterKelas.value = data.id_kelas;
-      if (elements.selectTambahKelas) elements.selectTambahKelas.value = data.id_kelas;
-      await loadStudents();
-    }
-  } catch (err) {
-    console.error('[Kelas] Tambah kelas error:', err);
-    showToast('Gagal membuat kelas baru. Periksa koneksi atau hak akses.', 'error');
-  }
-}
-function escHtml(value) {
-  return String(value || '').replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
-}
-
-initClassPage();
+// ========== INIT ==========
+loadAllData();
