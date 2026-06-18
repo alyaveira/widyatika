@@ -3,256 +3,540 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Widyatika — Manajemen Data Kelas & Siswa untuk Guru." />
-  <title>Manajemen Kelas — Widyatika</title>
+  <meta name="description" content="Widyatika � Manajemen Data Kelas & Siswa untuk Guru." />
+  <title>Manajemen Kelas � Widyatika</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/dashboard.css" />
+
   <style>
-    /* Override kecil untuk form tambahan */
-    .form-panel-extra {
-      display: grid;
-      gap: 16px;
-      max-width: 600px;
+    :root {
+      --clr-navy: #1E293B;
+      --clr-blue: #3B82F6;
+      --clr-bg: #F8FAFC;
+      --clr-surface: #FFFFFF;
+      --clr-text: #0F172A;
+      --clr-text-muted: #64748B;
+      --clr-border: #E2E8F0;
+      --clr-border-strong: #CBD5E1;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 10px;
+      --shadow-sm: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --shadow-md: 0 12px 32px rgba(15, 23, 42, 0.12);
+      --sp-4: 16px;
+      --sp-5: 20px;
+      --sp-6: 24px;
+      --sp-8: 32px;
+      --ease-fast: 0.18s ease;
     }
-    .form-panel-extra .form-group {
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--clr-bg);
+      color: var(--clr-text);
+    }
+
+    button, select {
+      font: inherit;
+    }
+
+    .app-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: var(--clr-navy);
+      color: #FFFFFF;
+      padding: 32px 22px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 30px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
     }
-    .form-panel-extra .form-group label {
-      font-weight: 600;
-      font-size: 0.9rem;
+
+    .sidebar__brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-    .form-panel-extra .form-group input,
-    .form-panel-extra .form-group select {
-      padding: 10px 14px;
-      border: 1px solid var(--clr-border);
-      border-radius: var(--radius-md);
+
+    .sidebar__logo-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: var(--clr-blue);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25);
+    }
+
+    .sidebar__logo-text {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .sidebar__logo-text em {
+      font-style: normal;
+      color: var(--clr-blue);
+    }
+
+    .sidebar__profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .sidebar__avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--clr-blue);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+
+    .sidebar__profile-name {
+      margin: 0;
+      font-weight: 700;
       font-size: 0.95rem;
     }
-    .form-panel-extra .form-actions {
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-      margin-top: 8px;
+
+    .sidebar__profile-role {
+      margin: 2px 0 0;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.72);
     }
-    .action-btn--danger {
-      color: var(--clr-danger);
-      border-color: var(--clr-danger);
-    }
-    .action-btn--danger:hover {
-      background: var(--clr-danger-light);
-      border-color: var(--clr-danger);
-    }
-    /* Modal edit */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15,23,42,0.5);
-      z-index: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--sp-6);
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity var(--ease-normal), visibility var(--ease-normal);
-    }
-    .modal-backdrop.is-open {
-      opacity: 1;
-      visibility: visible;
-    }
-    .modal {
-      background: var(--clr-surface);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-xl);
-      width: 100%;
-      max-width: 520px;
+
+    .sidebar__nav {
       display: flex;
       flex-direction: column;
-      max-height: 90vh;
-      transform: scale(0.92) translateY(16px);
-      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
-      overflow: hidden;
+      gap: 10px;
     }
-    .modal-backdrop.is-open .modal {
-      transform: scale(1) translateY(0);
+
+    .sidebar__nav-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(255, 255, 255, 0.62);
+      margin-bottom: 10px;
     }
-    .modal__header {
+
+    .sidebar__nav-item {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: var(--sp-5) var(--sp-6);
-      border-bottom: 1px solid var(--clr-border);
-      flex-shrink: 0;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      color: rgba(255, 255, 255, 0.88);
+      transition: background var(--ease-fast), color var(--ease-fast);
     }
-    .modal__title {
-      font-size: var(--text-lg);
-      font-weight: 700;
-      color: var(--clr-text);
+
+    .sidebar__nav-item:hover,
+    .sidebar__nav-item.is-active {
+      background: rgba(255, 255, 255, 0.12);
+      color: #FFFFFF;
     }
-    .modal__close-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--clr-border);
+
+    .sidebar__nav-icon {
+      width: 20px;
+      display: inline-flex;
+      justify-content: center;
+    }
+
+    .sidebar__footer {
+      margin-top: auto;
+    }
+
+    .sidebar__logout-btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
       background: transparent;
-      color: var(--clr-text-muted);
+      color: #FFFFFF;
       cursor: pointer;
+      transition: background var(--ease-fast);
+    }
+
+    .sidebar__logout-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .main {
+      background: var(--clr-bg);
+      padding: 32px 36px;
       display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .page-title {
+      max-width: 720px;
+    }
+
+    .page-title h1 {
+      margin: 0;
+      font-size: 2rem;
+      line-height: 1.05;
+    }
+
+    .page-title p {
+      margin: 12px 0 0;
+      max-width: 680px;
+      color: var(--clr-text-muted);
+      line-height: 1.7;
+    }
+
+    .page-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn-primary {
+      border: none;
+      border-radius: 999px;
+      padding: 14px 22px;
+      background: var(--clr-blue);
+      color: #FFFFFF;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--ease-fast), background var(--ease-fast);
+    }
+
+    .btn-primary:hover {
+      background: #2563EB;
+      transform: translateY(-1px);
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filter-group label {
+      font-size: 0.9rem;
+      color: var(--clr-text-muted);
+      font-weight: 700;
+    }
+
+    .filter-group select {
+      min-width: 180px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--clr-border);
+      background: var(--clr-surface);
+      color: var(--clr-text);
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+    }
+
+    .table-card {
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 28px;
+    }
+
+    .table-card__header {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .table-card__header h2 {
+      margin: 0;
+      font-size: 1.35rem;
+      color: var(--clr-navy);
+    }
+
+    .table-card__header p {
+      margin: 0;
+      color: var(--clr-text-muted);
+      line-height: 1.7;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--clr-border);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 0.95rem;
+    }
+
+    .data-table thead th {
+      color: var(--clr-navy);
+      font-weight: 700;
+      background: var(--clr-bg);
+    }
+
+    .data-table tbody tr:nth-child(odd) {
+      background: #FFFFFF;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: #F8FAFC;
+    }
+
+    .data-table tbody tr:hover {
+      background: #EFF6FF;
+    }
+
+    .data-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(59, 130, 246, 0.18);
+      background: #EFF6FF;
+      color: var(--clr-blue);
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .badge-token {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.1rem;
-      transition: all var(--ease-fast);
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.12);
+      color: var(--clr-blue);
+      font-weight: 700;
+      font-size: 0.92rem;
     }
-    .modal__close-btn:hover {
-      background: var(--clr-bg);
-      color: var(--clr-text);
-    }
-    .modal__body {
-      padding: var(--sp-6);
-      overflow-y: auto;
-      flex: 1;
-    }
-    .modal__footer {
-      padding: var(--sp-4) var(--sp-6);
-      border-top: 1px solid var(--clr-border);
+
+    .action-buttons {
       display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: var(--sp-3);
-      flex-shrink: 0;
-      background: var(--clr-bg);
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--clr-border);
+      background: #FFFFFF;
+      color: var(--clr-text);
+      cursor: pointer;
+      font-weight: 700;
+      transition: background var(--ease-fast), border-color var(--ease-fast);
+    }
+
+    .action-btn:hover {
+      background: #EFF6FF;
+      border-color: var(--clr-blue);
+    }
+
+    .action-btn--danger:hover {
+      background: #FEE2E2;
+      border-color: #FCA5A5;
+    }
+
+    @media (max-width: 1080px) {
+      .app-layout {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: relative;
+        height: auto;
+        width: 100%;
+      }
+      .main {
+        padding: 24px;
+      }
+      .table-wrapper {
+        overflow-x: auto;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page-header {
+        flex-direction: column;
+      }
+      .page-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .filter-group {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-group select,
+      .btn-primary {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
   <div class="app-layout">
-    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu navigasi guru">
       <div class="sidebar__brand">
-        <div class="sidebar__logo-icon" aria-hidden="true">◈</div>
-        <span class="sidebar__logo-text">Widy<em>atika</em></span>
+        <div class="sidebar__logo-icon">W</div>
+        <div>
+          <div class="sidebar__logo-text">Widyatika</div>
+          <div class="sidebar__profile-role">Guru</div>
+        </div>
       </div>
-      <div class="sidebar__profile" id="sidebarProfile">
+      <div class="sidebar__profile" style="background: rgba(255,255,255,0.08); padding:16px; border-radius:18px;">
         <div class="sidebar__avatar" id="sidebarAvatar" aria-hidden="true">G</div>
         <div>
           <p class="sidebar__profile-name" id="sidebarName">Memuat...</p>
           <p class="sidebar__profile-role">Guru</p>
         </div>
       </div>
-      <nav class="sidebar__nav" aria-label="Menu utama">
-        <div class="sidebar__nav-group">
-          <p class="sidebar__nav-label">Menu Utama</p>
-          <a href="dashboard.html" class="sidebar__nav-item" id="navDashboard">
-            <span class="sidebar__nav-icon" aria-hidden="true">⊞</span>
-            Dashboard
-          </a>
-          <a href="manajemen-kelas.html" class="sidebar__nav-item is-active" aria-current="page">
-            <span class="sidebar__nav-icon" aria-hidden="true">⌂</span>
-            Manajemen Kelas
-          </a>
-          <a href="laporan.html" class="sidebar__nav-item" id="navLaporan">
-            <span class="sidebar__nav-icon" aria-hidden="true">▤</span>
-            Laporan & Analitik
-          </a>
-        </div>
-      </nav>
+
+      <div class="sidebar__nav">
+        <p class="sidebar__nav-label">Menu Utama</p>
+        <a href="dashboard.html" class="sidebar__nav-item">
+          <span class="sidebar__nav-icon">🏠</span>
+          Dashboard
+        </a>
+        <a href="manajemen-kelas.html" class="sidebar__nav-item is-active" aria-current="page">
+          <span class="sidebar__nav-icon">👥</span>
+          Manajemen Kelas
+        </a>
+        <a href="laporan.html" class="sidebar__nav-item">
+          <span class="sidebar__nav-icon">📊</span>
+          Laporan & Grafik
+        </a>
+      </div>
       <div class="sidebar__footer">
         <button class="sidebar__logout-btn" id="btnLogout" type="button" aria-label="Keluar dari akun">
-          <span aria-hidden="true">⏻</span> Keluar
+          <span aria-hidden="true">🚪</span> Keluar
         </button>
       </div>
     </aside>
 
-    <!-- TOPBAR -->
-    <header class="topbar" role="banner">
-      <div class="topbar__left">
-        <button class="btn btn--ghost btn--icon" id="btnToggleSidebar" aria-label="Toggle sidebar" aria-expanded="true" style="display:none;" type="button">☰</button>
-        <h1 class="topbar__page-title">Manajemen Kelas</h1>
-      </div>
-      <div class="topbar__right">
-        <div style="font-size:0.8rem; color:var(--clr-text-muted); font-weight:500;" id="topbarDate"></div>
-      </div>
-    </header>
-
-    <!-- MAIN CONTENT -->
-    <main class="main-content" id="mainContent" role="main">
-      <!-- Page Header -->
-      <div class="page-header">
-        <div>
-          <h1 class="page-header__title">Manajemen Data Kelas & Siswa</h1>
-          <p class="page-header__subtitle">Kelola data siswa, generate akun/token masuk, dan atur kelompok bermain.</p>
+    <main class="main">
+      <section class="page-header">
+        <div class="page-title">
+          <h1>Manajemen Data Kelas & Siswa</h1>
+          <p>Kelola data siswa, generate akun/token masuk, dan atur kelompok bermain.</p>
         </div>
-        <div class="page-header__actions" style="display:flex; gap:12px; flex-wrap:wrap;">
-          <button id="btnTambahKelas" class="btn btn--primary" type="button">+ Tambah Kelas</button>
-          <button id="btnTambahSiswa" class="btn btn--primary" type="button">+ Tambah Siswa</button>
-          <div class="filter-bar" style="display:flex; align-items:center; gap:8px;">
-            <label for="selectKelas" style="font-weight:600; color:var(--clr-text-muted);">Pilih Kelas</label>
-            <select id="selectKelas" class="form-select" style="min-width:180px;"></select>
+        <div class="page-actions">
+          <button id="btnTambahKelas" class="btn-primary" type="button">+ Tambah Kelas Baru</button>
+          <button id="btnTambahSiswa" class="btn-primary" type="button">+ Tambah Siswa Baru</button>
+          <div class="filter-group">
+            <label for="selectKelas">Pilih Kelas</label>
+            <select id="selectKelas" name="kelas"></select>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Form Tambah Kelas -->
-      <section id="classFormPanel" class="card card--padded" style="display:none; margin-bottom:24px;">
-        <h2 class="card__title" style="margin-bottom:12px;">Tambah Kelas Baru</h2>
-        <form id="classForm" class="form-panel-extra">
-          <div class="form-group">
-            <label for="inputNamaKelas">Nama Kelas</label>
-            <input id="inputNamaKelas" type="text" placeholder="Misal: Kelas 4A" required />
-          </div>
-          <div class="form-actions">
-            <button type="button" id="btnCancelTambahKelas" class="btn btn--secondary">Batal</button>
-            <button type="submit" class="btn btn--primary">Simpan Kelas</button>
+      <section id="classFormPanel" class="table-card" style="display:none;">
+        <div class="table-card__header">
+          <h2>Tambah Kelas Baru</h2>
+          <p>Buat kelas baru untuk mengelompokkan siswa dan menambah data siswa ke kelas ini.</p>
+        </div>
+        <form id="classForm" style="display:grid;gap:16px;">
+          <label>
+            Nama Kelas
+            <input id="inputNamaKelas" name="namaKelas" type="text" required placeholder="Misal: Kelas 4A" />
+          </label>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:flex-end;">
+            <button id="btnCancelTambahKelas" class="action-btn" type="button">Batal</button>
+            <button class="btn-primary" type="submit">Simpan Kelas</button>
           </div>
         </form>
       </section>
 
-      <!-- Form Tambah Siswa -->
-      <section id="studentFormPanel" class="card card--padded" style="display:none; margin-bottom:24px;">
-        <h2 class="card__title" style="margin-bottom:12px;">Tambah Siswa Baru</h2>
-        <form id="studentForm" class="form-panel-extra">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-            <div class="form-group">
-              <label for="inputNamaLengkap">Nama Lengkap</label>
-              <input id="inputNamaLengkap" type="text" placeholder="Siti Nurhaliza" required />
-            </div>
-            <div class="form-group">
-              <label for="inputNamaPanggilan">Nama Panggilan</label>
-              <input id="inputNamaPanggilan" type="text" placeholder="Siti" required />
-            </div>
+      <section id="studentFormPanel" class="table-card" style="display:none;">
+        <div class="table-card__header">
+          <h2>Tambah Siswa Baru</h2>
+          <p>Isi data siswa dan pilih kelas untuk membuat akun siswa baru.</p>
+        </div>
+        <form id="studentForm" style="display:grid;gap:16px;">
+          <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr;">
+            <label>
+              Nama Lengkap
+              <input id="inputNamaLengkap" name="namaLengkap" type="text" required placeholder="Misal: Siti Nurhaliza" />
+            </label>
+            <label>
+              Nama Panggilan
+              <input id="inputNamaPanggilan" name="namaPanggilan" type="text" required placeholder="Misal: Siti" />
+            </label>
           </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-            <div class="form-group">
-              <label for="inputUsername">Username</label>
-              <input id="inputUsername" type="text" placeholder="siti.21" required />
-            </div>
-            <div class="form-group">
-              <label for="inputPassword">PIN / Password</label>
-              <input id="inputPassword" type="text" placeholder="4832" required />
-            </div>
+          <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr;">
+            <label>
+              Username
+              <input id="inputUsername" name="username" type="text" required placeholder="Misal: siti.21" />
+            </label>
+            <label>
+              PIN / Password
+              <input id="inputPassword" name="password" type="text" required placeholder="Misal: 4832" />
+            </label>
           </div>
-          <div class="form-group">
-            <label for="selectTambahKelas">Pilih Kelas</label>
-            <select id="selectTambahKelas" required></select>
-          </div>
-          <div class="form-actions">
-            <button type="button" id="btnCancelTambah" class="btn btn--secondary">Batal</button>
-            <button type="submit" class="btn btn--primary">Simpan Siswa</button>
+          <label>
+            Pilih Kelas
+            <select id="selectTambahKelas" name="kelas" required></select>
+          </label>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:flex-end;">
+            <button id="btnCancelTambah" class="action-btn" type="button">Batal</button>
+            <button class="btn-primary" type="submit">Simpan Siswa</button>
           </div>
         </form>
       </section>
 
-      <!-- Tabel Siswa -->
-      <section class="card">
-        <div class="card__header">
-          <div>
-            <h2 class="card__title">Daftar Siswa</h2>
-            <p class="card__subtitle">Tabel siswa SD lengkap dengan username, PIN, dan kontrol aksi.</p>
-          </div>
+      <section class="table-card">
+        <div class="table-card__header">
+          <h2>Daftar Siswa</h2>
+          <p>Tabel siswa SD lengkap dengan username, PIN, dan kontrol aksi untuk edit atau hapus data.</p>
         </div>
         <div class="table-wrapper">
           <table class="data-table" aria-label="Tabel siswa manajemen kelas">
@@ -261,58 +545,55 @@
                 <th>No</th>
                 <th>Nama Lengkap</th>
                 <th>Nama Panggilan</th>
-                <th>Username</th>
-                <th>PIN</th>
+                <th>Username / ID Masuk</th>
+                <th>PIN / Token</th>
                 <th>Aksi</th>
               </tr>
             </thead>
             <tbody id="tbodyStudents">
-              <tr><td colspan="6" style="text-align:center;padding:24px;color:#64748B;">Memuat data siswa...</td></tr>
+              <tr>
+                <td colspan="6" style="text-align:center;padding:24px;color:#64748B;">Memuat data siswa...</td>
+              </tr>
             </tbody>
           </table>
         </div>
       </section>
     </main>
   </div>
-
-  <!-- MODAL EDIT SISWA -->
-  <div class="modal-backdrop" id="modalEditStudent" role="dialog" aria-modal="true">
-    <div class="modal">
-      <div class="modal__header">
-        <h2 class="modal__title">Edit Data Siswa</h2>
-        <button class="modal__close-btn" id="btnCloseEditModal" type="button">✕</button>
-      </div>
-      <div class="modal__body">
-        <form id="editStudentForm" novalidate>
-          <div class="form-group">
-            <label for="editNamaLengkap">Nama Lengkap</label>
-            <input class="form-input" id="editNamaLengkap" type="text" required />
-          </div>
-          <div class="form-group">
-            <label for="editNamaPanggilan">Nama Panggilan</label>
-            <input class="form-input" id="editNamaPanggilan" type="text" required />
-          </div>
-          <div class="form-group">
-            <label for="editUsername">Username</label>
-            <input class="form-input" id="editUsername" type="text" required />
-          </div>
-          <div class="form-group">
-            <label for="editPassword">PIN</label>
-            <input class="form-input" id="editPassword" type="text" required />
-          </div>
-          <input type="hidden" id="editSiswaId" />
-          <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px;">
-            <button class="btn btn--secondary" type="button" id="btnCancelEdit">Batal</button>
-            <button class="btn btn--primary" type="submit">Simpan</button>
-          </div>
-        </form>
-      </div>
+  <!-- Modal Edit Siswa -->
+<div class="modal-backdrop" id="modalEditStudent" role="dialog" aria-modal="true">
+  <div class="modal modal--sm">
+    <div class="modal__header">
+      <h2 class="modal__title">Edit Data Siswa</h2>
+      <button class="modal__close-btn" id="btnCloseEditModal" type="button">✕</button>
+    </div>
+    <div class="modal__body">
+      <form id="editStudentForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="editNamaLengkap">Nama Lengkap</label>
+          <input class="form-input" id="editNamaLengkap" type="text" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editNamaPanggilan">Nama Panggilan</label>
+          <input class="form-input" id="editNamaPanggilan" type="text" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editUsername">Username</label>
+          <input class="form-input" id="editUsername" type="text" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editPassword">PIN</label>
+          <input class="form-input" id="editPassword" type="text" required />
+        </div>
+        <input type="hidden" id="editSiswaId" />
+        <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px;">
+          <button class="btn btn--secondary" type="button" id="btnCancelEdit">Batal</button>
+          <button class="btn btn--primary" type="submit">Simpan</button>
+        </div>
+      </form>
     </div>
   </div>
-
-  <!-- TOAST -->
-  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
-
+</div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"></script>
   <script type="module" src="js/supabase-config.js"></script>
   <script type="module" src="js/auth.js"></script>
