@@ -485,7 +485,7 @@
     <main class="main-content" id="mainContent" role="main" aria-label="Konten dashboard">
 
       <!-- Loading State -->
-      <div id="dashboardLoading" style="display:flex; align-items:center; gap:12px; padding:40px 0; color:var(--clr-text-muted);">
+      <div id="dashboardLoading" style="display:flex; align-items:center; gap:12px; padding:40px 0; color:var(--clr-text-muted); flex-direction:column;">
         <div style="width:20px;height:20px;border:2.5px solid #CBD5E1;border-top-color:var(--clr-blue);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;"></div>
         <span style="font-weight:600;">Memuat data dashboard...</span>
       </div>
@@ -655,7 +655,7 @@
 
     <!-- Suggested Prompts (awal) -->
     <div class="gemini-chat__suggestions" id="chatSuggestions">
-      <button class="suggestion-chip" type="button" onclick="analyseDashboard()">📊 Analisis Dashboard</button>
+      <button class="suggestion-chip" type="button" onclick="window.analyseDashboard && window.analyseDashboard()">📊 Analisis Dashboard</button>
       <button class="suggestion-chip" data-prompt="Bagaimana cara meningkatkan skor siswa yang rendah?" type="button">💡 Strategi siswa skor rendah</button>
       <button class="suggestion-chip" data-prompt="Apa itu Number Talks dan manfaatnya?" type="button">📚 Apa itu Number Talks?</button>
       <button class="suggestion-chip" data-prompt="Berikan contoh soal numerasi level 3 untuk SD" type="button">🎯 Contoh soal numerasi</button>
@@ -780,101 +780,149 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
     // LOAD DASHBOARD DATA
     // ----------------------------------------------------------------
     let dashboardStats = { totalKelas: 0, totalSiswa: 0, rataSkor: 0 };
-// Hitung rata-rata per kelas
-const classScores = {};
-siswaList.forEach(s => {
-  if (!classScores[s.id_kelas]) classScores[s.id_kelas] = { total: 0, count: 0 };
-  classScores[s.id_kelas].total += (s.total_skor || 0);
-  classScores[s.id_kelas].count += 1;
-});
-let highestClass = null, lowestClass = null;
-let highestAvg = -Infinity, lowestAvg = Infinity;
-Object.keys(classScores).forEach(id => {
-  const avg = classScores[id].total / classScores[id].count;
-  const nama = kelasMap[id]?.nama_kelas || id;
-  if (avg > highestAvg) { highestAvg = avg; highestClass = nama; }
-  if (avg < lowestAvg) { lowestAvg = avg; lowestClass = nama; }
-});
-dashboardStats.highestClass = highestClass;
-dashboardStats.lowestClass = lowestClass;
-    async function loadDashboard() {
-      try {
-        // 1. Fetch semua kelas milik guru
-        const { data: kelasList, error: kelasErr } = await supabase
-          .from('kelas')
-          .select('id_kelas, nama_kelas, tahun_ajaran')
-          .eq('id_guru', idGuru);
-        if (kelasErr) throw kelasErr;
 
-        const kelasIds = (kelasList || []).map(k => k.id_kelas);
+    // Fungsi terpisah untuk mengambil data
+    async function fetchDashboardData() {
+      // 1. Ambil semua kelas guru
+      const { data: kelasList, error: kelasErr } = await supabase
+        .from('kelas')
+        .select('id_kelas, nama_kelas, tahun_ajaran')
+        .eq('id_guru', idGuru);
+      if (kelasErr) throw new Error(`Kelas: ${kelasErr.message}`);
 
-        // 2. Stat: Total Kelas
-        document.getElementById('statTotalKelas').textContent = kelasList?.length ?? 0;
-        document.getElementById('statKelasInfo').textContent  =
-          `tahun ajaran: ${[...new Set((kelasList||[]).map(k=>k.tahun_ajaran))].join(', ') || '—'}`;
+      const kelasIds = (kelasList || []).map(k => k.id_kelas);
+      const kelasMap = Object.fromEntries((kelasList || []).map(k => [k.id_kelas, k]));
 
-        // 3. Fetch siswa di semua kelas
-        let siswaList = [];
-        if (kelasIds.length > 0) {
-          const { data: sd, error: siswErr } = await supabase
-            .from('siswa')
-            .select('id_siswa, nama_panggilan, total_skor, id_kelas')
-            .in('id_kelas', kelasIds);
-          if (siswErr) throw siswErr;
-          siswaList = sd || [];
-        }
+      // 2. Ambil semua siswa di kelas tersebut
+      let siswaList = [];
+      if (kelasIds.length > 0) {
+        const { data: sd, error: siswErr } = await supabase
+          .from('siswa')
+          .select('id_siswa, nama_panggilan, total_skor, id_kelas')
+          .in('id_kelas', kelasIds);
+        if (siswErr) throw new Error(`Siswa: ${siswErr.message}`);
+        siswaList = sd || [];
+      }
 
-        document.getElementById('statTotalSiswa').textContent = siswaList.length;
-
-        const avgSkor = siswaList.length > 0
-          ? Math.round(siswaList.reduce((s, sw) => s + (sw.total_skor || 0), 0) / siswaList.length)
-          : 0;
-        document.getElementById('statRataSkor').textContent = avgSkor;
-
-        // Simpan stats untuk konteks Gemini
-        dashboardStats = { totalKelas: kelasList?.length ?? 0, totalSiswa: siswaList.length, rataSkor: avgSkor };
-
-        // 4. Fetch sesi_game terbaru
+      // 3. Ambil 10 sesi terbaru (hanya jika ada siswa)
+      let recentSesi = [];
+      let totalSesiSelesai = 0;
+      if (siswaList.length > 0) {
         const siswaIds = siswaList.map(s => s.id_siswa);
-        let recentSesi = [];
-        let totalSesiSelesai = 0;
-        if (siswaIds.length > 0) {
-          const { data: sd2, error: sesiErr } = await supabase
-            .from('sesi_game')
-            .select('id_sesi, id_siswa, level_ke, target_angka, status_selesai')
-            .in('id_siswa', siswaIds)
-            .order('id_sesi', { ascending: false })
-            .limit(10);
-          if (sesiErr) throw sesiErr;
-          recentSesi = sd2 || [];
-          totalSesiSelesai = recentSesi.filter(s => s.status_selesai).length;
-        }
+        const { data: sd2, error: sesiErr } = await supabase
+          .from('sesi_game')
+          .select('id_sesi, id_siswa, level_ke, target_angka, status_selesai')
+          .in('id_siswa', siswaIds)
+          .order('id_sesi', { ascending: false })
+          .limit(10);
+        if (sesiErr) throw new Error(`Sesi: ${sesiErr.message}`);
+        recentSesi = sd2 || [];
+        totalSesiSelesai = recentSesi.filter(s => s.status_selesai).length;
+      }
 
-        document.getElementById('statSesiSelesai').textContent = totalSesiSelesai;
+      // 4. Hitung statistik
+      const totalKelas = kelasList.length;
+      const totalSiswa = siswaList.length;
+      const rataSkor = totalSiswa > 0
+        ? Math.round(siswaList.reduce((s, sw) => s + (sw.total_skor || 0), 0) / totalSiswa)
+        : 0;
 
-        // 5. Render tabel sesi terbaru
-        const siswaMap  = Object.fromEntries(siswaList.map(s => [s.id_siswa, s]));
-        const kelasMap  = Object.fromEntries((kelasList || []).map(k => [k.id_kelas, k]));
-        renderRecentSessions(recentSesi, siswaMap, kelasMap);
+      // 5. Hitung highest/lowest class
+      const classScores = {};
+      siswaList.forEach(s => {
+        if (!classScores[s.id_kelas]) classScores[s.id_kelas] = { total: 0, count: 0 };
+        classScores[s.id_kelas].total += (s.total_skor || 0);
+        classScores[s.id_kelas].count += 1;
+      });
+      let highestClass = null, lowestClass = null;
+      let highestAvg = -Infinity, lowestAvg = Infinity;
+      Object.keys(classScores).forEach(id => {
+        const avg = classScores[id].total / classScores[id].count;
+        const nama = kelasMap[id]?.nama_kelas || id;
+        if (avg > highestAvg) { highestAvg = avg; highestClass = nama; }
+        if (avg < lowestAvg) { lowestAvg = avg; lowestClass = nama; }
+      });
 
-        // 6. Render leaderboard (top 10 siswa)
-        const sorted = [...siswaList].sort((a, b) => (b.total_skor || 0) - (a.total_skor || 0)).slice(0, 8);
-        const maxSkor = sorted[0]?.total_skor || 1;
-        renderLeaderboard(sorted, kelasMap, maxSkor);
+      // Simpan semua data
+      return {
+        kelasList,
+        siswaList,
+        recentSesi,
+        totalKelas,
+        totalSiswa,
+        rataSkor,
+        totalSesiSelesai,
+        highestClass,
+        lowestClass,
+        kelasMap,
+      };
+    }
 
-        // Tampilkan konten
-        document.getElementById('dashboardLoading').style.display = 'none';
-        document.getElementById('dashboardContent').style.display = 'block';
+    // Fungsi render data
+    function renderDashboardData(data) {
+      const {
+        kelasList, siswaList, recentSesi, totalKelas, totalSiswa,
+        rataSkor, totalSesiSelesai, highestClass, lowestClass, kelasMap
+      } = data;
 
-        // ✅ Auto-trigger dashboard analysis setelah data dimuat
+      // Stat cards
+      document.getElementById('statTotalKelas').textContent = totalKelas;
+      document.getElementById('statKelasInfo').textContent =
+        `tahun ajaran: ${[...new Set((kelasList || []).map(k => k.tahun_ajaran))].join(', ') || '—'}`;
+      document.getElementById('statTotalSiswa').textContent = totalSiswa;
+      document.getElementById('statRataSkor').textContent = rataSkor;
+      document.getElementById('statSesiSelesai').textContent = totalSesiSelesai;
+
+      // Simpan stats untuk Gemini
+      dashboardStats = { totalKelas, totalSiswa, rataSkor, highestClass, lowestClass };
+
+      // Render tabel sesi
+      const siswaMap = Object.fromEntries(siswaList.map(s => [s.id_siswa, s]));
+      renderRecentSessions(recentSesi, siswaMap, kelasMap);
+
+      // Render leaderboard
+      const sorted = [...siswaList].sort((a, b) => (b.total_skor || 0) - (a.total_skor || 0)).slice(0, 8);
+      const maxSkor = sorted[0]?.total_skor || 1;
+      renderLeaderboard(sorted, kelasMap, maxSkor);
+    }
+
+    async function loadDashboard() {
+      const loadingEl = document.getElementById('dashboardLoading');
+      const contentEl = document.getElementById('dashboardContent');
+      let timeoutId;
+
+      // Tampilkan loading
+      loadingEl.style.display = 'flex';
+      contentEl.style.display = 'none';
+
+      // Set timeout 10 detik untuk mencegah loading selamanya
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('Waktu habis. Coba refresh.')), 10000);
+      });
+
+      try {
+        // Jalankan semua query dengan Promise.race agar timeout bisa memotong
+        const result = await Promise.race([
+          fetchDashboardData(),
+          timeoutPromise,
+        ]);
+
+        // Jika berhasil, render data
+        renderDashboardData(result);
+        loadingEl.style.display = 'none';
+        contentEl.style.display = 'block';
+
+        // Auto-trigger dashboard analysis
         setTimeout(() => analyseDashboard(), 500);
-        const context = { nama_lengkap: guru.nama_lengkap, ...dashboardStats };
 
       } catch (err) {
-        console.error('[Dashboard] Load error:', err);
-        showToast('Gagal memuat data. Periksa koneksi Supabase.', 'error');
-        document.getElementById('dashboardLoading').innerHTML =
-          '<span style="color:var(--clr-danger);font-weight:600;">❌ Gagal memuat. Coba refresh halaman.</span>';
+        console.error('[Dashboard] Error:', err);
+        loadingEl.innerHTML = `
+          <span style="color:var(--clr-danger);font-weight:600;">❌ Gagal memuat: ${err.message}</span>
+          <button class="btn btn--primary btn--sm" onclick="location.reload()" style="margin-top:12px;">🔄 Refresh</button>
+        `;
+      } finally {
+        clearTimeout(timeoutId);
       }
     }
 
@@ -943,17 +991,18 @@ dashboardStats.lowestClass = lowestClass;
     // ----------------------------------------------------------------
     // ANALISIS DASHBOARD (AI-powered insights)
     // ----------------------------------------------------------------
-    async function analyseDashboard() {
+    window.analyseDashboard = async function analyseDashboard() {
       appendMessage('model', '🔍 Menganalisis data dashboard...');
       appendTypingIndicator();
 
       try {
+        const context = { nama_lengkap: guru.nama_lengkap, ...dashboardStats };
         const resp = await fetch(BACKEND_CHAT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             mode: 'analyse',
-            context: { nama_lengkap: guru.nama_lengkap, ...dashboardStats },
+            context: context,
           }),
         });
 
@@ -977,7 +1026,7 @@ dashboardStats.lowestClass = lowestClass;
         const errMsg = `❌ Gagal menganalisis: ${err.message}`;
         appendMessage('model', errMsg);
       }
-    }
+    };
 
     // ----------------------------------------------------------------
     // SIDEBAR TOGGLE (Mobile)
@@ -1000,9 +1049,7 @@ dashboardStats.lowestClass = lowestClass;
 
     // Refresh button
     document.getElementById('btnRefreshData').addEventListener('click', () => {
-      document.getElementById('dashboardLoading').style.display = 'flex';
-      document.getElementById('dashboardContent').style.display = 'none';
-      loadDashboard();
+      location.reload(); // sederhana
     });
 
     // ----------------------------------------------------------------
@@ -1020,10 +1067,7 @@ dashboardStats.lowestClass = lowestClass;
       // Saat tertutup: 💬 , saat terbuka: ✕
       fabIcon.textContent = open ? '✕' : '💬';
 
-      // Cek API key
-      document.getElementById('apiKeyNotice').style.display =
-        GEMINI_API_KEY.includes('YOUR_GEMINI') ? 'flex' : 'none';
-
+      // Cek API key (tidak diperlukan di frontend, hanya info)
       if (open) {
         document.getElementById('chatInput').focus();
         // Sembunyikan suggested prompts jika sudah ada riwayat
@@ -1104,13 +1148,14 @@ dashboardStats.lowestClass = lowestClass;
 
       try {
         // ✅ AMAN: Kirim ke backend proxy, bukan Gemini langsung
+        const context = { nama_lengkap: guru.nama_lengkap, ...dashboardStats };
         const resp = await fetch(BACKEND_CHAT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             mode: 'chat',
             message: text,
-            context: { nama_lengkap: guru.nama_lengkap, ...dashboardStats },
+            context: context,
           }),
         });
 
