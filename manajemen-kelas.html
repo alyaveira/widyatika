@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Widyatika — Manajemen Kelas & Siswa untuk Guru." />
-  <title>Kelas — Widyatika</title>
+  <meta name="description" content="Widyatika — Manajemen Data Siswa untuk Guru." />
+  <title>Manajemen Siswa — Widyatika</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/dashboard.css" />
   <style>
-    /* Tambahan kecil untuk form dan modal, tetap pakai dashboard.css */
+    /* Form dan modal tambahan */
     .form-panel-extra {
       display: grid;
       gap: 16px;
@@ -46,7 +46,6 @@
       justify-content: flex-end;
       margin-top: 8px;
     }
-    /* Modal edit — gaya sudah di dashboard.css, kita hanya pastikan */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -116,7 +115,6 @@
       overflow-y: auto;
       flex: 1;
     }
-    /* Tombol aksi di tabel */
     .action-btn--danger {
       color: var(--clr-danger);
       border-color: var(--clr-danger);
@@ -134,13 +132,36 @@
       background: var(--clr-bg);
       border-color: var(--clr-border-strong);
     }
+    /* Badge hasil */
+    .hasil-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+    .hasil-badge--tinggi {
+      background: #DCFCE7;
+      color: #15803D;
+    }
+    .hasil-badge--sedang {
+      background: #FEF9C3;
+      color: #A16207;
+    }
+    .hasil-badge--rendah {
+      background: #FEE2E2;
+      color: #B91C1C;
+    }
   </style>
 </head>
 <body>
 
   <div class="app-layout">
 
-    <!-- ========== SIDEBAR (SAMA PERSIS DENGAN DASHBOARD) ========== -->
+    <!-- ========== SIDEBAR ========== -->
     <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu navigasi guru">
       <div class="sidebar__brand">
         <div class="sidebar__logo-icon" aria-hidden="true">◈</div>
@@ -195,14 +216,14 @@
       <!-- Page Header -->
       <div class="page-header">
         <div>
-          <h1 class="page-header__title">Manajemen Kelas & Siswa</h1>
-          <p class="page-header__subtitle">Kelola data siswa, generate akun, dan atur kelompok bermain.</p>
+          <h1 class="page-header__title">Data Siswa</h1>
+          <p class="page-header__subtitle">Kelola data siswa, lihat hasil belajar, dan pantau progres.</p>
         </div>
         <div class="page-header__actions" style="display:flex; gap:12px; flex-wrap:wrap;">
           <button id="btnTambahKelas" class="btn btn--primary" type="button">+ Tambah Kelas</button>
           <button id="btnTambahSiswa" class="btn btn--primary" type="button">+ Tambah Siswa</button>
           <div style="display:flex; align-items:center; gap:8px;">
-            <label for="selectKelas" style="font-weight:600; color:var(--clr-text-muted); font-size:0.9rem;">Pilih Kelas</label>
+            <label for="selectKelas" style="font-weight:600; color:var(--clr-text-muted); font-size:0.9rem;">Filter Kelas</label>
             <select id="selectKelas" class="form-select" style="min-width:180px;"></select>
           </div>
         </div>
@@ -239,8 +260,8 @@
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
             <div class="form-group">
-              <label for="inputUsername">Username</label>
-              <input id="inputUsername" type="text" placeholder="siti.21" required />
+              <label for="inputUsername">NISN / Username</label>
+              <input id="inputUsername" type="text" placeholder="1234567890" required />
             </div>
             <div class="form-group">
               <label for="inputPassword">PIN / Password</label>
@@ -263,7 +284,7 @@
         <div class="card__header">
           <div>
             <h2 class="card__title">Daftar Siswa</h2>
-            <p class="card__subtitle">Tabel siswa SD lengkap dengan username, PIN, dan kontrol aksi.</p>
+            <p class="card__subtitle">Data siswa, kelas, dan hasil belajar yang sudah dicapai.</p>
           </div>
         </div>
         <div class="table-wrapper">
@@ -271,10 +292,10 @@
             <thead>
               <tr>
                 <th>No</th>
+                <th>NISN</th>
                 <th>Nama Lengkap</th>
-                <th>Nama Panggilan</th>
-                <th>Username</th>
-                <th>PIN</th>
+                <th>Kelas</th>
+                <th>Hasil</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -306,7 +327,7 @@
             <input class="form-input" id="editNamaPanggilan" type="text" required />
           </div>
           <div class="form-group">
-            <label class="form-label" for="editUsername">Username</label>
+            <label class="form-label" for="editUsername">NISN / Username</label>
             <input class="form-input" id="editUsername" type="text" required />
           </div>
           <div class="form-group">
