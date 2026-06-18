@@ -485,7 +485,7 @@
     <main class="main-content" id="mainContent" role="main" aria-label="Konten dashboard">
 
       <!-- Loading State -->
-      <div id="dashboardLoading" style="display:flex; align-items:center; gap:12px; padding:40px 0; color:var(--clr-text-muted); flex-direction:column;">
+      <div id="dashboardLoading" style="display:flex; align-items:center; gap:12px; padding:40px 0; color:var(--clr-text-muted);">
         <div style="width:20px;height:20px;border:2.5px solid #CBD5E1;border-top-color:var(--clr-blue);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;"></div>
         <span style="font-weight:600;">Memuat data dashboard...</span>
       </div>
@@ -655,7 +655,7 @@
 
     <!-- Suggested Prompts (awal) -->
     <div class="gemini-chat__suggestions" id="chatSuggestions">
-      <button class="suggestion-chip" type="button" onclick="window.analyseDashboard && window.analyseDashboard()">📊 Analisis Dashboard</button>
+      <button class="suggestion-chip" type="button" onclick="analyseDashboard()">📊 Analisis Dashboard</button>
       <button class="suggestion-chip" data-prompt="Bagaimana cara meningkatkan skor siswa yang rendah?" type="button">💡 Strategi siswa skor rendah</button>
       <button class="suggestion-chip" data-prompt="Apa itu Number Talks dan manfaatnya?" type="button">📚 Apa itu Number Talks?</button>
       <button class="suggestion-chip" data-prompt="Berikan contoh soal numerasi level 3 untuk SD" type="button">🎯 Contoh soal numerasi</button>
@@ -779,7 +779,7 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
     // ----------------------------------------------------------------
     // LOAD DASHBOARD DATA
     // ----------------------------------------------------------------
-    let dashboardStats = { totalKelas: 0, totalSiswa: 0, rataSkor: 0 };
+    let dashboardStats = { totalKelas: 0, totalSiswa: 0, rataSkor: 0, highestClass: null, lowestClass: null };
 
     // Fungsi terpisah untuk mengambil data
     async function fetchDashboardData() {
@@ -868,7 +868,7 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
       // Stat cards
       document.getElementById('statTotalKelas').textContent = totalKelas;
       document.getElementById('statKelasInfo').textContent =
-        `tahun ajaran: ${[...new Set((kelasList || []).map(k => k.tahun_ajaran))].join(', ') || '—'}`;
+        `tahun ajaran: ${[...new Set(kelasList.map(k => k.tahun_ajaran))].join(', ') || '—'}`;
       document.getElementById('statTotalSiswa').textContent = totalSiswa;
       document.getElementById('statRataSkor').textContent = rataSkor;
       document.getElementById('statSesiSelesai').textContent = totalSesiSelesai;
@@ -912,7 +912,7 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
         loadingEl.style.display = 'none';
         contentEl.style.display = 'block';
 
-        // Auto-trigger dashboard analysis
+        // Auto-trigger dashboard analysis setelah data dimuat
         setTimeout(() => analyseDashboard(), 500);
 
       } catch (err) {
@@ -921,6 +921,7 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
           <span style="color:var(--clr-danger);font-weight:600;">❌ Gagal memuat: ${err.message}</span>
           <button class="btn btn--primary btn--sm" onclick="location.reload()" style="margin-top:12px;">🔄 Refresh</button>
         `;
+        // loading tetap terlihat, tapi dengan pesan error
       } finally {
         clearTimeout(timeoutId);
       }
@@ -991,7 +992,7 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
     // ----------------------------------------------------------------
     // ANALISIS DASHBOARD (AI-powered insights)
     // ----------------------------------------------------------------
-    window.analyseDashboard = async function analyseDashboard() {
+    async function analyseDashboard() {
       appendMessage('model', '🔍 Menganalisis data dashboard...');
       appendTypingIndicator();
 
@@ -1026,7 +1027,7 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
         const errMsg = `❌ Gagal menganalisis: ${err.message}`;
         appendMessage('model', errMsg);
       }
-    };
+    }
 
     // ----------------------------------------------------------------
     // SIDEBAR TOGGLE (Mobile)
@@ -1049,7 +1050,9 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
 
     // Refresh button
     document.getElementById('btnRefreshData').addEventListener('click', () => {
-      location.reload(); // sederhana
+      document.getElementById('dashboardLoading').style.display = 'flex';
+      document.getElementById('dashboardContent').style.display = 'none';
+      loadDashboard();
     });
 
     // ----------------------------------------------------------------
@@ -1067,7 +1070,6 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
       // Saat tertutup: 💬 , saat terbuka: ✕
       fabIcon.textContent = open ? '✕' : '💬';
 
-      // Cek API key (tidak diperlukan di frontend, hanya info)
       if (open) {
         document.getElementById('chatInput').focus();
         // Sembunyikan suggested prompts jika sudah ada riwayat
@@ -1148,14 +1150,13 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
 
       try {
         // ✅ AMAN: Kirim ke backend proxy, bukan Gemini langsung
-        const context = { nama_lengkap: guru.nama_lengkap, ...dashboardStats };
         const resp = await fetch(BACKEND_CHAT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             mode: 'chat',
             message: text,
-            context: context,
+            context: { nama_lengkap: guru.nama_lengkap, ...dashboardStats },
           }),
         });
 
@@ -1196,6 +1197,9 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
     // BOOTSTRAP
     // ----------------------------------------------------------------
     loadDashboard();
+
+    // Ekspos fungsi untuk tombol suggestion di HTML
+    window.analyseDashboard = analyseDashboard;
 
   </script>
 
