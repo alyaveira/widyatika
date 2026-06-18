@@ -780,7 +780,23 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
     // LOAD DASHBOARD DATA
     // ----------------------------------------------------------------
     let dashboardStats = { totalKelas: 0, totalSiswa: 0, rataSkor: 0 };
-
+// Hitung rata-rata per kelas
+const classScores = {};
+siswaList.forEach(s => {
+  if (!classScores[s.id_kelas]) classScores[s.id_kelas] = { total: 0, count: 0 };
+  classScores[s.id_kelas].total += (s.total_skor || 0);
+  classScores[s.id_kelas].count += 1;
+});
+let highestClass = null, lowestClass = null;
+let highestAvg = -Infinity, lowestAvg = Infinity;
+Object.keys(classScores).forEach(id => {
+  const avg = classScores[id].total / classScores[id].count;
+  const nama = kelasMap[id]?.nama_kelas || id;
+  if (avg > highestAvg) { highestAvg = avg; highestClass = nama; }
+  if (avg < lowestAvg) { lowestAvg = avg; lowestClass = nama; }
+});
+dashboardStats.highestClass = highestClass;
+dashboardStats.lowestClass = lowestClass;
     async function loadDashboard() {
       try {
         // 1. Fetch semua kelas milik guru
@@ -852,6 +868,7 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
 
         // ✅ Auto-trigger dashboard analysis setelah data dimuat
         setTimeout(() => analyseDashboard(), 500);
+        const context = { nama_lengkap: guru.nama_lengkap, ...dashboardStats };
 
       } catch (err) {
         console.error('[Dashboard] Load error:', err);

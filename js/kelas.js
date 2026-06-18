@@ -23,7 +23,79 @@ const elements = {
 };
 
 let kelasList = [];
+// ========== EDIT SISWA ==========
+const editModal = document.getElementById('modalEditStudent');
+const editForm = document.getElementById('editStudentForm');
+const editNamaLengkap = document.getElementById('editNamaLengkap');
+const editNamaPanggilan = document.getElementById('editNamaPanggilan');
+const editUsername = document.getElementById('editUsername');
+const editPassword = document.getElementById('editPassword');
+const editSiswaId = document.getElementById('editSiswaId');
 
+function openEditModal(siswa) {
+  editSiswaId.value = siswa.id_siswa;
+  editNamaLengkap.value = siswa.nama_lengkap;
+  editNamaPanggilan.value = siswa.nama_panggilan;
+  editUsername.value = siswa.username;
+  editPassword.value = siswa.password_plain;
+  editModal.classList.add('is-open');
+}
+
+function closeEditModal() {
+  editModal.classList.remove('is-open');
+  editForm.reset();
+}
+
+async function handleEditSubmit(e) {
+  e.preventDefault();
+  const id = editSiswaId.value;
+  const namaLengkap = editNamaLengkap.value.trim();
+  const namaPanggilan = editNamaPanggilan.value.trim();
+  const username = editUsername.value.trim().toLowerCase();
+  const password = editPassword.value.trim();
+
+  if (!namaLengkap || !namaPanggilan || !username || !password) {
+    showToast('Semua field harus diisi.', 'warning');
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('siswa')
+      .update({ nama_lengkap, nama_panggilan, username, password_plain: password })
+      .eq('id_siswa', id);
+    if (error) throw error;
+    showToast('Data siswa diperbarui.', 'success');
+    closeEditModal();
+    await loadStudents();
+  } catch (err) {
+    console.error('[Edit] Error:', err);
+    showToast('Gagal update data.', 'error');
+  }
+}
+
+// Tambahkan di bindEvents() setelah event lainnya:
+document.getElementById('btnCloseEditModal')?.addEventListener('click', closeEditModal);
+document.getElementById('btnCancelEdit')?.addEventListener('click', closeEditModal);
+editModal?.addEventListener('click', (e) => { if (e.target === editModal) closeEditModal(); });
+editForm?.addEventListener('submit', handleEditSubmit);
+
+// Delegasi untuk tombol Edit di tabel (gunakan event listener pada tbody)
+document.querySelector('#tbodyStudents')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-action="edit"]');
+  if (btn) {
+    const row = btn.closest('tr');
+    const cells = row.querySelectorAll('td');
+    const siswa = {
+      id_siswa: btn.dataset.siswaId,
+      nama_lengkap: cells[1].textContent,
+      nama_panggilan: cells[2].textContent,
+      username: cells[3].textContent.trim(),
+      password_plain: cells[4].textContent.trim(),
+    };
+    openEditModal(siswa);
+  }
+});
 async function initClassPage() {
   bindEvents();
   await loadKelas();
