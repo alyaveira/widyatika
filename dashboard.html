@@ -651,6 +651,7 @@
 
     <!-- Suggested Prompts (awal) -->
     <div class="gemini-chat__suggestions" id="chatSuggestions">
+      <button class="suggestion-chip" type="button" onclick="analyseDashboard()">📊 Analisis Dashboard</button>
       <button class="suggestion-chip" data-prompt="Bagaimana cara meningkatkan skor siswa yang rendah?" type="button">💡 Strategi siswa skor rendah</button>
       <button class="suggestion-chip" data-prompt="Apa itu Number Talks dan manfaatnya?" type="button">📚 Apa itu Number Talks?</button>
       <button class="suggestion-chip" data-prompt="Berikan contoh soal numerasi level 3 untuk SD" type="button">🎯 Contoh soal numerasi</button>
@@ -699,11 +700,10 @@
 
     // ----------------------------------------------------------------
     // KONFIGURASI GEMINI API
-    // Ganti dengan API key dari Google AI Studio: https://aistudio.google.com
+    // ✅ API Key disimpan AMAN di backend (api/chat.js)
+    // Browser NOT mengirim key langsung ke Gemini
     // ----------------------------------------------------------------
-    const GEMINI_API_KEY = 'YOUR_GEMINI_API_KEY_HERE';
-    const GEMINI_MODEL   = 'gemini-1.5-flash';
-    const GEMINI_URL     = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+    const BACKEND_CHAT_URL = '/api/chat';  // Backend proxy endpoint
 
     // Konteks sistem untuk AI
     const buildSystemPrompt = (guru, statsCtx) => `
@@ -846,6 +846,9 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
         document.getElementById('dashboardLoading').style.display = 'none';
         document.getElementById('dashboardContent').style.display = 'block';
 
+        // ✅ Auto-trigger dashboard analysis setelah data dimuat
+        setTimeout(() => analyseDashboard(), 500);
+
       } catch (err) {
         console.error('[Dashboard] Load error:', err);
         showToast('Gagal memuat data. Periksa koneksi Supabase.', 'error');
@@ -914,6 +917,45 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
     function escHtml(str) {
       const m = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
       return String(str).replace(/[&<>"']/g, c => m[c]);
+    }
+
+    // ----------------------------------------------------------------
+    // ANALISIS DASHBOARD (AI-powered insights)
+    // ----------------------------------------------------------------
+    async function analyseDashboard() {
+      appendMessage('model', '🔍 Menganalisis data dashboard...');
+      appendTypingIndicator();
+
+      try {
+        const resp = await fetch(BACKEND_CHAT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: 'analyse',
+            context: { nama_lengkap: guru.nama_lengkap, ...dashboardStats },
+          }),
+        });
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData?.error || `HTTP ${resp.status}`);
+        }
+
+        const data = await resp.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Response tidak valid');
+        }
+
+        removeTypingIndicator();
+        const analysis = data.response || 'Tidak dapat menganalisis data saat ini.';
+        appendMessage('model', `📊 **Analisis Dashboard:**\n\n${analysis}`);
+        chatHistory.push({ role: 'model', parts: [{ text: analysis }] });
+
+      } catch (err) {
+        removeTypingIndicator();
+        const errMsg = `❌ Gagal menganalisis: ${err.message}`;
+        appendMessage('model', errMsg);
+      }
     }
 
     // ----------------------------------------------------------------
@@ -1039,43 +1081,28 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
       appendTypingIndicator();
 
       try {
-        if (GEMINI_API_KEY.includes('YOUR_GEMINI')) {
-          throw new Error('API_KEY_PLACEHOLDER');
-        }
-
-        // Bangun payload Gemini dengan system prompt sebagai konteks awal
-        const systemMsg = buildSystemPrompt(guru, dashboardStats);
-        const contents  = [
-          { role: 'user',  parts: [{ text: systemMsg }] },
-          { role: 'model', parts: [{ text: 'Siap! Saya Widy, asisten pedagogis Widyatika. Bagaimana saya bisa membantu?' }] },
-          ...chatHistory,
-        ];
-
-        const resp = await fetch(GEMINI_URL, {
+        // ✅ AMAN: Kirim ke backend proxy, bukan Gemini langsung
+        const resp = await fetch(BACKEND_CHAT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents,
-            generationConfig: {
-              temperature:     0.75,
-              topK:            40,
-              topP:            0.95,
-              maxOutputTokens: 512,
-            },
-            safetySettings: [
-              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-            ],
+            mode: 'chat',
+            message: text,
+            context: { nama_lengkap: guru.nama_lengkap, ...dashboardStats },
           }),
         });
 
         if (!resp.ok) {
           const errData = await resp.json().catch(() => ({}));
-          throw new Error(errData?.error?.message || `HTTP ${resp.status}`);
+          throw new Error(errData?.error || `HTTP ${resp.status}`);
         }
 
-        const data   = await resp.json();
-        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text
-          ?? 'Maaf, saya tidak dapat menghasilkan respons. Coba ulangi pertanyaan Anda.';
+        const data = await resp.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Response tidak valid dari server');
+        }
+
+        const aiText = data.response || 'Maaf, saya tidak dapat menghasilkan respons. Coba ulangi pertanyaan Anda.';
 
         removeTypingIndicator();
         appendMessage('model', aiText);
@@ -1083,10 +1110,7 @@ Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalika
 
       } catch (err) {
         removeTypingIndicator();
-        const isPlaceholder = err.message === 'API_KEY_PLACEHOLDER';
-        const errMsg = isPlaceholder
-          ? 'Fitur AI belum aktif. Isi **GEMINI_API_KEY** di dashboard.html untuk menggunakan Widy.'
-          : `Gagal menghubungi Gemini: ${err.message}. Periksa koneksi atau coba lagi.`;
+        const errMsg = `Gagal menghubungi server: ${err.message}. Periksa koneksi atau coba lagi.`;
         appendMessage('model', errMsg);
         chatHistory.push({ role: 'model', parts: [{ text: errMsg }] });
       } finally {

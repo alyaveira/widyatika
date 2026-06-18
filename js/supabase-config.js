@@ -23,6 +23,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const FALLBACK_SUPABASE_URL      = 'https://cezzczjzwvnncvygmbog.supabase.co';
 const FALLBACK_SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
 
+
 async function loadSupabaseEnv() {
   if (typeof window === 'undefined') return {};
   try {
