@@ -17,9 +17,25 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // ---------------------------------------------------------------------------
 // KREDENSIAL PROYEK — Ganti dengan nilai dari dashboard Supabase kamu
+// Jika kamu menggunakan .env lokal, jalankan `node scripts/generate-env-config.mjs`
+// lalu file `js/env-config.js` akan di-load secara otomatis.
 // ---------------------------------------------------------------------------
-const SUPABASE_URL      = 'https://cezzczjzwvnncvygmbog.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
+const FALLBACK_SUPABASE_URL      = 'https://cezzczjzwvnncvygmbog.supabase.co';
+const FALLBACK_SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
+
+async function loadSupabaseEnv() {
+  if (typeof window === 'undefined') return {};
+  try {
+    const envModule = await import('./env-config.js');
+    return envModule.default ?? envModule.SUPABASE_ENV ?? {};
+  } catch {
+    return {};
+  }
+}
+
+const envConfig = await loadSupabaseEnv();
+const SUPABASE_URL = envConfig.SUPABASE_URL || FALLBACK_SUPABASE_URL;
+const SUPABASE_ANON_KEY = envConfig.SUPABASE_ANON_KEY || FALLBACK_SUPABASE_ANON_KEY;
 
 // ---------------------------------------------------------------------------
 // Validasi awal — mencegah runtime error yang membingungkan

@@ -8,12 +8,16 @@ const elements = {
   selectFilterKelas: document.getElementById('selectKelas'),
   selectTambahKelas: document.getElementById('selectTambahKelas'),
   btnTambahSiswa: document.getElementById('btnTambahSiswa'),
+  btnTambahKelas: document.getElementById('btnTambahKelas'),
   formPanel: document.getElementById('studentFormPanel'),
+  classFormPanel: document.getElementById('classFormPanel'),
   studentForm: document.getElementById('studentForm'),
+  classForm: document.getElementById('classForm'),
   inputNamaLengkap: document.getElementById('inputNamaLengkap'),
   inputNamaPanggilan: document.getElementById('inputNamaPanggilan'),
   inputUsername: document.getElementById('inputUsername'),
   inputPassword: document.getElementById('inputPassword'),
+  inputNamaKelas: document.getElementById('inputNamaKelas'),
   tbodyStudents: document.getElementById('tbodyStudents'),
   tableWrapper: document.querySelector('.table-wrapper'),
 };
@@ -29,15 +33,25 @@ function bindEvents() {
   if (elements.btnTambahSiswa) {
     elements.btnTambahSiswa.addEventListener('click', openForm);
   }
+  if (elements.btnTambahKelas) {
+    elements.btnTambahKelas.addEventListener('click', openClassForm);
+  }
   if (elements.selectFilterKelas) {
     elements.selectFilterKelas.addEventListener('change', loadStudents);
   }
   if (elements.studentForm) {
     elements.studentForm.addEventListener('submit', handleSubmitStudent);
   }
+  if (elements.classForm) {
+    elements.classForm.addEventListener('submit', handleSubmitClass);
+  }
   document.getElementById('btnCancelTambah')?.addEventListener('click', event => {
     event.preventDefault();
     closeForm();
+  });
+  document.getElementById('btnCancelTambahKelas')?.addEventListener('click', event => {
+    event.preventDefault();
+    closeClassForm();
   });
 }
 
@@ -64,18 +78,32 @@ async function loadKelas() {
 
 function renderClassOptions() {
   if (!elements.selectFilterKelas || !elements.selectTambahKelas) return;
-  const options = kelasList.map(kelas => `
-    <option value="${kelas.id_kelas}">${kelas.nama_kelas}</option>
-  `).join('');
+
+  const options = kelasList.length > 0
+    ? kelasList.map(kelas => `
+      <option value="${kelas.id_kelas}">${kelas.nama_kelas}</option>
+    `).join('')
+    : '<option value="">Belum ada kelas. Tambahkan kelas baru.</option>';
 
   elements.selectFilterKelas.innerHTML = options;
   elements.selectTambahKelas.innerHTML = options;
+  elements.selectFilterKelas.disabled = kelasList.length === 0;
+  elements.selectTambahKelas.disabled = kelasList.length === 0;
+  if (elements.btnTambahSiswa) elements.btnTambahSiswa.disabled = kelasList.length === 0;
 }
 
 async function loadStudents() {
   if (!elements.selectFilterKelas) return;
   const selectedClassId = elements.selectFilterKelas.value;
-  if (!selectedClassId) return;
+  if (!selectedClassId) {
+    if (elements.tbodyStudents) {
+      elements.tbodyStudents.innerHTML = `
+        <tr><td colspan="6" style="text-align:center;padding:24px;color:#64748B;">
+          Pilih kelas terlebih dahulu untuk melihat siswa.
+        </td></tr>`;
+    }
+    return;
+  }
   try {
     const { data, error } = await supabase
       .from('siswa')
@@ -193,7 +221,68 @@ function closeForm() {
   elements.formPanel.style.display = 'none';
   elements.studentForm?.reset();
 }
+function openClassForm() {
+  if (!elements.classFormPanel) return;
+  elements.classFormPanel.style.display = 'block';
+}
 
+function closeClassForm() {
+  if (!elements.classFormPanel) return;
+  elements.classFormPanel.style.display = 'none';
+  elements.classForm?.reset();
+}
+
+async function handleSubmitClass(event) {
+  event.preventDefault();
+  const namaKelas = elements.inputNamaKelas?.value.trim();
+  const normalizedNamaKelas = namaKelas?.toLowerCase().trim();
+
+  if (!namaKelas) {
+    showToast('Isi nama kelas sebelum menyimpan.', 'warning');
+    return;
+  }
+
+  if (kelasList.some(kelas => kelas.nama_kelas.trim().toLowerCase() === normalizedNamaKelas)) {
+    showToast('Nama kelas sudah terdaftar. Gunakan nama lain.', 'warning');
+    return;
+  }
+
+  try {
+    const { data: existingKelas, error: existingError } = await supabase
+      .from('kelas')
+      .select('id_kelas')
+      .eq('id_guru', guruId)
+      .ilike('nama_kelas', namaKelas)
+      .limit(1);
+
+    if (existingError) throw existingError;
+    if (existingKelas && existingKelas.length > 0) {
+      showToast('Nama kelas sudah ada di database. Coba nama lain.', 'warning');
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('kelas')
+      .insert([{ id_guru: guruId, nama_kelas: namaKelas }])
+      .select('id_kelas')
+      .single();
+
+    if (error) throw error;
+
+    showToast('Kelas baru berhasil dibuat.', 'success');
+    closeClassForm();
+    await loadKelas();
+
+    if (data?.id_kelas) {
+      if (elements.selectFilterKelas) elements.selectFilterKelas.value = data.id_kelas;
+      if (elements.selectTambahKelas) elements.selectTambahKelas.value = data.id_kelas;
+      await loadStudents();
+    }
+  } catch (err) {
+    console.error('[Kelas] Tambah kelas error:', err);
+    showToast('Gagal membuat kelas baru. Periksa koneksi atau hak akses.', 'error');
+  }
+}
 function escHtml(value) {
   return String(value || '').replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
 }

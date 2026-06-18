@@ -470,12 +470,30 @@
           <p>Kelola data siswa, generate akun/token masuk, dan atur kelompok bermain.</p>
         </div>
         <div class="page-actions">
+          <button id="btnTambahKelas" class="btn-primary" type="button">+ Tambah Kelas Baru</button>
           <button id="btnTambahSiswa" class="btn-primary" type="button">+ Tambah Siswa Baru</button>
           <div class="filter-group">
             <label for="selectKelas">Pilih Kelas</label>
             <select id="selectKelas" name="kelas"></select>
           </div>
         </div>
+      </section>
+
+      <section id="classFormPanel" class="table-card" style="display:none;">
+        <div class="table-card__header">
+          <h2>Tambah Kelas Baru</h2>
+          <p>Buat kelas baru untuk mengelompokkan siswa dan menambah data siswa ke kelas ini.</p>
+        </div>
+        <form id="classForm" style="display:grid;gap:16px;">
+          <label>
+            Nama Kelas
+            <input id="inputNamaKelas" name="namaKelas" type="text" required placeholder="Misal: Kelas 4A" />
+          </label>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:flex-end;">
+            <button id="btnCancelTambahKelas" class="action-btn" type="button">Batal</button>
+            <button class="btn-primary" type="submit">Simpan Kelas</button>
+          </div>
+        </form>
       </section>
 
       <section id="studentFormPanel" class="table-card" style="display:none;">
