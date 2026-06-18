@@ -13,7 +13,7 @@ let selectedClassId = null;
 let editingKelasId = null;
 let editingSiswaId = null;
 
-// DOM refs
+// DOM refs (menyesuaikan dengan struktur terbaru manajemen-kelas.html)
 const modeDaftar = document.getElementById('modeDaftar');
 const modeDetail = document.getElementById('modeDetail');
 const kelasGrid = document.getElementById('kelasGrid');
@@ -231,7 +231,6 @@ function renderSiswa(kelasId) {
       const id = btn.dataset.id;
       const action = btn.dataset.action;
       if (action === 'play') {
-        // Buka game untuk siswa ini (bisa redirect ke game.html dengan parameter)
         showToast('Fitur Play Game akan segera hadir.', 'info');
       } else if (action === 'edit') {
         openEditSiswa(id);
@@ -250,7 +249,6 @@ function openModalKelas(editData = null) {
     inputNamaKelas.value = editData.nama_kelas;
     inputTingkat.value = editData.tingkat || 'Kelas 4';
     editKelasId.value = editData.id_kelas;
-    // Set warna
     document.querySelectorAll('input[name="warna"]').forEach(el => {
       el.checked = (el.value === editData.warna);
     });
@@ -280,7 +278,6 @@ async function submitKelas() {
 
   try {
     if (id) {
-      // Edit
       const { error } = await supabase
         .from('kelas')
         .update({ nama_kelas: nama, tingkat, warna })
@@ -288,7 +285,6 @@ async function submitKelas() {
       if (error) throw error;
       showToast('Kelas berhasil diperbarui.', 'success');
     } else {
-      // Tambah
       const { error } = await supabase
         .from('kelas')
         .insert([{ id_guru: guruId, nama_kelas: nama, tingkat, warna }]);
@@ -303,7 +299,7 @@ async function submitKelas() {
   }
 }
 
-// ========== TAMBAH / EDIT SISWA ==========
+// ========== TAMBAH / EDIT SISWA (DIPERBAIKI) ==========
 function openModalSiswa(editData = null) {
   modalSiswa.classList.add('is-open');
   if (editData) {
@@ -329,15 +325,17 @@ function closeModalSiswa() {
   modalSiswa.classList.remove('is-open');
 }
 
-async function submitSiswa() {
-  const nisn = inputNISN.value.trim();
-  const nama = inputNamaSiswa.value.trim();
-  const panggilan = inputPanggilan.value.trim() || nama;
-  const pin = inputPinSiswa.value.trim();
+// ========== FUNGSI handleSubmitStudent YANG DIPERBAIKI ==========
+async function handleSubmitStudent(event) {
+  event.preventDefault();
+  const namaLengkap = inputNamaSiswa.value.trim();
+  const namaPanggilan = inputPanggilan.value.trim() || namaLengkap;
+  const username = inputNISN.value.trim().toLowerCase();
+  const password = inputPinSiswa.value.trim();
   const idKelas = siswaKelasId.value;
   const id = editSiswaId.value;
 
-  if (!nisn || !nama || !pin || !idKelas) {
+  if (!namaLengkap || !username || !password || !idKelas) {
     showToast('NISN, Nama, dan PIN wajib diisi.', 'warning');
     return;
   }
@@ -348,32 +346,37 @@ async function submitSiswa() {
       const { error } = await supabase
         .from('siswa')
         .update({
-          username: nisn,
-          nama_lengkap: nama,
-          nama_panggilan: panggilan,
-          password_plain: pin
+          username: username,
+          nama_lengkap: namaLengkap,
+          nama_panggilan: namaPanggilan,
+          password_plain: password,
         })
         .eq('id_siswa', id);
       if (error) throw error;
       showToast('Siswa berhasil diperbarui.', 'success');
     } else {
       // Tambah
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('siswa')
         .insert([{
           id_kelas: idKelas,
-          username: nisn,
-          nama_lengkap: nama,
-          nama_panggilan: panggilan,
-          password_plain: pin,
-          total_skor: 0
-        }]);
-      if (error) throw error;
+          nama_lengkap: namaLengkap,
+          nama_panggilan: namaPanggilan,
+          username: username,
+          password_plain: password,
+          total_skor: 0,
+        }])
+        .select();
+
+      if (error) {
+        console.error('[Tambah Siswa] Supabase error:', error);
+        showToast(`Gagal: ${error.message || 'Unknown error'}`, 'error');
+        return;
+      }
       showToast('Siswa berhasil ditambahkan.', 'success');
     }
     closeModalSiswa();
     await loadAllData();
-    // Buka ulang detail jika masih di detail
     if (selectedClassId) openDetail(selectedClassId);
   } catch (err) {
     console.error('[Siswa] Submit error:', err);
@@ -381,11 +384,7 @@ async function submitSiswa() {
   }
 }
 
-function openEditSiswa(siswaId) {
-  const siswa = siswaList.find(s => s.id_siswa === siswaId);
-  if (siswa) openModalSiswa(siswa);
-}
-
+// ========== HAPUS SISWA ==========
 async function deleteSiswa(siswaId) {
   if (!confirm('Yakin ingin menghapus siswa ini?')) return;
   try {
@@ -403,6 +402,11 @@ async function deleteSiswa(siswaId) {
   }
 }
 
+function openEditSiswa(siswaId) {
+  const siswa = siswaList.find(s => s.id_siswa === siswaId);
+  if (siswa) openModalSiswa(siswa);
+}
+
 // ========== EVENT LISTENERS ==========
 btnTambahKelas.addEventListener('click', () => openModalKelas());
 btnCancelModalKelas.addEventListener('click', closeModalKelas);
@@ -412,7 +416,7 @@ btnSubmitKelas.addEventListener('click', submitKelas);
 btnTambahSiswa.addEventListener('click', () => openModalSiswa());
 btnCancelModalSiswa.addEventListener('click', closeModalSiswa);
 btnCloseModalSiswa.addEventListener('click', closeModalSiswa);
-btnSubmitSiswa.addEventListener('click', submitSiswa);
+btnSubmitSiswa.addEventListener('click', handleSubmitStudent); // <- DISINI TERPAKAI
 
 btnBackDaftar.addEventListener('click', () => {
   selectedClassId = null;
