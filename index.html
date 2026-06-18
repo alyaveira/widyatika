@@ -2,1162 +2,860 @@
 <html lang="id">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description"
-    content="Widyatika — Platform Asesmen Diagnostik Numerasi. Login sebagai Guru atau Siswa untuk memulai." />
-  <title>Login — Widyatika</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Widyatika — Platform Asesmen Diagnostik Numerasi. Login sebagai Guru untuk memulai." />
+    <title>Login Guru — Widyatika</title>
 
-  <!-- Google Fonts: Inter (Guru) + Nunito (Siswa) + Fredoka One -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Nunito:wght@400;700;800;900&family=Fredoka+One&display=swap"
+    <!-- Google Fonts: Inter (Guru) + Fredoka One -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fredoka+One&display=swap"
     rel="stylesheet" />
 
-  <style>
-    /* ================================================================
-       LOGIN PAGE — INLINE STYLES
-       (Menggabungkan tema Guru [formal] dan Siswa [pop-art])
-    ================================================================= */
-
-    /* -------- 0. RESET & BASE -------- */
-    *,
-    *::before,
-    *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html {
-      height: 100%;
-      font-size: 16px;
-    }
-
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      min-height: 100vh;
-      background: #0F172A;
-      display: flex;
-      overflow: hidden;
-    }
-
-    /* ================================================================
-       1. PANEL KIRI — Hero Branding (55%)
-    ================================================================= */
-    .hero-panel {
-      flex: 0 0 55%;
-      background: linear-gradient(145deg, #1E293B 0%, #0F172A 50%, #162032 100%);
-      display: flex;
-      flex-direction: column;
-      padding: 52px 64px;
-      position: relative;
-      overflow: hidden;
-      min-height: 100vh;
-    }
-
-    /* Grid titik dekoratif */
-    .hero-panel::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle, rgba(59, 130, 246, 0.12) 1.5px, transparent 1.5px);
-      background-size: 30px 30px;
-      pointer-events: none;
-    }
-
-    /* Glow biru di sudut */
-    .hero-panel::after {
-      content: '';
-      position: absolute;
-      bottom: -100px;
-      left: -100px;
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 65%);
-      pointer-events: none;
-    }
-
-    /* Logo hero */
-    .hero-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-logo__mark {
-      width: 48px;
-      height: 48px;
-      background: #3B82F6;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.5);
-    }
-
-    .hero-logo__text {
-      font-family: 'Fredoka One', cursive;
-      font-size: 2rem;
-      color: #FFFFFF;
-      letter-spacing: -0.5px;
-    }
-
-    .hero-logo__text em {
-      color: #3B82F6;
-      font-style: normal;
-    }
-
-    /* Tagline */
-    .hero-tagline {
-      position: relative;
-      z-index: 1;
-      margin-top: 48px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 20px;
-    }
-
-    .hero-tagline__label {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(59, 130, 246, 0.15);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      border-radius: 999px;
-      padding: 5px 14px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      color: #93C5FD;
-      width: fit-content;
-    }
-
-    .hero-tagline__headline {
-      font-size: clamp(1.8rem, 3vw, 2.6rem);
-      font-weight: 800;
-      color: #FFFFFF;
-      line-height: 1.25;
-      letter-spacing: -0.5px;
-    }
-
-    .hero-tagline__headline .highlight {
-      background: linear-gradient(90deg, #60A5FA, #34D399);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-tagline__sub {
-      font-size: 1rem;
-      color: #94A3B8;
-      line-height: 1.6;
-      max-width: 420px;
-    }
-
-    /* Kartu angka mengambang (dekorasi) */
-    .floating-cards {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .float-card {
-      position: absolute;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Fredoka One', cursive;
-      border: 2.5px solid #1E1E1E;
-      border-radius: 12px;
-      box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.4);
-      animation: floatBob var(--dur, 4s) ease-in-out infinite alternate;
-    }
-
-    @keyframes floatBob {
-      from {
-        transform: translateY(0) rotate(var(--rot-start, -3deg));
-      }
-
-      to {
-        transform: translateY(-14px) rotate(var(--rot-end, 3deg));
-      }
-    }
-
-    /* Kartu angka — posisi & warna individual */
-    .float-card--n1 {
-      width: 60px;
-      height: 60px;
-      font-size: 1.8rem;
-      background: #FCD34D;
-      color: #1E1E1E;
-      top: 18%;
-      right: 28%;
-      --dur: 3.5s;
-      --rot-start: -4deg;
-      --rot-end: 4deg;
-    }
-
-    .float-card--n2 {
-      width: 52px;
-      height: 52px;
-      font-size: 1.5rem;
-      background: #34D399;
-      color: #1E1E1E;
-      top: 32%;
-      right: 14%;
-      --dur: 4.2s;
-      --rot-start: 3deg;
-      --rot-end: -3deg;
-    }
-
-    .float-card--n3 {
-      width: 68px;
-      height: 68px;
-      font-size: 2rem;
-      background: #FB7185;
-      color: #FFFFFF;
-      top: 55%;
-      right: 22%;
-      --dur: 5s;
-      --rot-start: -2deg;
-      --rot-end: 5deg;
-    }
-
-    .float-card--n4 {
-      width: 46px;
-      height: 46px;
-      font-size: 1.3rem;
-      background: #A78BFA;
-      color: #FFFFFF;
-      top: 72%;
-      right: 8%;
-      --dur: 3.8s;
-      --rot-start: 5deg;
-      --rot-end: -2deg;
-    }
-
-    .float-card--op1 {
-      width: 54px;
-      height: 54px;
-      font-size: 1.8rem;
-      background: #FFFFFF;
-      color: #1E293B;
-      top: 42%;
-      right: 38%;
-      --dur: 4.5s;
-      --rot-start: -6deg;
-      --rot-end: 3deg;
-    }
-
-    .float-card--op2 {
-      width: 48px;
-      height: 48px;
-      font-size: 1.5rem;
-      background: #FCD34D;
-      color: #1E1E1E;
-      top: 78%;
-      right: 36%;
-      --dur: 3.2s;
-      --rot-start: 4deg;
-      --rot-end: -4deg;
-    }
-
-    /* Statistik kecil di bawah hero */
-    .hero-stats {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      gap: 32px;
-      margin-top: 48px;
-    }
-
-    .hero-stat__value {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #FFFFFF;
-      letter-spacing: -0.5px;
-    }
-
-    .hero-stat__label {
-      font-size: 0.75rem;
-      color: #64748B;
-      font-weight: 500;
-      margin-top: 2px;
-    }
-
-    /* ================================================================
-       2. PANEL KANAN — Login Form (45%)
-    ================================================================= */
-    .login-panel {
-      flex: 1;
-      background: #F8FAFC;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 48px;
-      overflow-y: auto;
-      position: relative;
-    }
-
-    /* Gelombang dekorasi sudut */
-    .login-panel::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.06), transparent 70%);
-      pointer-events: none;
-    }
-
-    .login-box {
-      width: 100%;
-      max-width: 420px;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* Judul login box */
-    .login-box__header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .login-box__header-icon {
-      font-size: 2.4rem;
-      margin-bottom: 12px;
-    }
-
-    .login-box__title {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: #0F172A;
-      letter-spacing: -0.5px;
-    }
-
-    .login-box__subtitle {
-      font-size: 0.875rem;
-      color: #64748B;
-      margin-top: 6px;
-    }
-
-    /* ================================================================
-       3. TAB SWITCHER — Guru / Siswa
-    ================================================================= */
-    .tab-switcher {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: #E2E8F0;
-      border-radius: 12px;
-      padding: 4px;
-      margin-bottom: 28px;
-      gap: 4px;
-    }
-
-    .tab-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 11px 16px;
-      border-radius: 9px;
-      border: none;
-      background: transparent;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #64748B;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: 'Inter', sans-serif;
-    }
-
-    .tab-btn.is-active {
-      background: #FFFFFF;
-      color: #0F172A;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.10);
-    }
-
-    .tab-btn--siswa.is-active {
-      background: #FCD34D;
-      color: #1E1E1E;
-      font-family: 'Nunito', sans-serif;
-      font-weight: 800;
-      box-shadow: 4px 4px 0px #1E1E1E;
-      border: 2px solid #1E1E1E;
-    }
-
-    .tab-btn__icon {
-      font-size: 1.1rem;
-    }
-
-    /* ================================================================
-       4. FORM PANELS (Guru & Siswa) — Show/Hide
-    ================================================================= */
-    .form-panel {
-      display: none;
-      flex-direction: column;
-      gap: 20px;
-      animation: panelIn 0.25s ease forwards;
-    }
-
-    .form-panel.is-active {
-      display: flex;
-    }
-
-    @keyframes panelIn {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* ---- Label & Input ---- */
-    .form-field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .form-field label {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #374151;
-      letter-spacing: 0.02em;
-    }
-
-    .form-field input {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1.5px solid #E2E8F0;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      background: #FFFFFF;
-      color: #0F172A;
-      outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      font-family: 'Inter', sans-serif;
-    }
-
-    .form-field input:focus {
-      border-color: #3B82F6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    }
-
-    .form-field input.is-error {
-      border-color: #EF4444;
-      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
-    }
-
-    /* Siswa input pakai font Nunito */
-    #panelSiswa .form-field input {
-      font-family: 'Nunito', sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
-    }
-
-    /* Input password wrapper */
-    .input-password-wrap {
-      position: relative;
-    }
-
-    .input-password-wrap input {
-      padding-right: 44px;
-    }
-
-    .toggle-password-btn {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #94A3B8;
-      font-size: 1rem;
-      padding: 4px;
-      line-height: 1;
-      transition: color 0.15s;
-    }
-
-    .toggle-password-btn:hover {
-      color: #3B82F6;
-    }
-
-    /* ---- Error / Alert Message ---- */
-    .form-alert {
-      display: none;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      line-height: 1.4;
-    }
-
-    .form-alert.is-visible {
-      display: flex;
-    }
-
-    .form-alert--error {
-      background: #FEF2F2;
-      border: 1px solid #FECACA;
-      color: #DC2626;
-    }
-
-    .form-alert--success {
-      background: #F0FDF4;
-      border: 1px solid #BBF7D0;
-      color: #16A34A;
-    }
-
-    /* ---- Tombol Submit Guru ---- */
-    .submit-btn-guru {
-      width: 100%;
-      padding: 13px;
-      background: #3B82F6;
-      color: #FFFFFF;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
-      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 4px;
-    }
-
-    .submit-btn-guru:hover:not(:disabled) {
-      background: #2563EB;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.45);
-    }
-
-    .submit-btn-guru:active:not(:disabled) {
-      transform: translateY(0);
-    }
-
-    .submit-btn-guru:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    /* ---- Tombol Submit Siswa (Neubrutalism) ---- */
-    .submit-btn-siswa {
-      width: 100%;
-      padding: 14px;
-      background: #34D399;
-      color: #1E1E1E;
-      border: 2.5px solid #1E1E1E;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 800;
-      cursor: pointer;
-      font-family: 'Nunito', sans-serif;
-      box-shadow: 4px 4px 0px #1E1E1E;
-      transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 4px;
-    }
-
-    .submit-btn-siswa:hover:not(:disabled) {
-      transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0px #1E1E1E;
-    }
-
-    .submit-btn-siswa:active:not(:disabled) {
-      transform: translate(2px, 2px);
-      box-shadow: 2px 2px 0px #1E1E1E;
-    }
-
-    .submit-btn-siswa:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    /* Spinner loading di tombol */
-    .btn-spinner {
-      width: 16px;
-      height: 16px;
-      border: 2.5px solid rgba(255, 255, 255, 0.4);
-      border-top-color: currentColor;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      display: none;
-    }
-
-    .is-loading .btn-spinner {
-      display: inline-block;
-    }
-
-    .is-loading .btn-text {
-      display: none;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    /* ---- Info Siswa: kartu instruksi ---- */
-    .siswa-info-card {
-      background: #FFFBEB;
-      border: 2px solid #FCD34D;
-      border-radius: 12px;
-      padding: 14px 16px;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-    }
-
-    .siswa-info-card__icon {
-      font-size: 1.2rem;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .siswa-info-card__text {
-      font-family: 'Nunito', sans-serif;
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #78350F;
-      line-height: 1.4;
-    }
-
-    /* ---- Divider ---- */
-    .form-divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: #CBD5E1;
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-
-    .form-divider::before,
-    .form-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: #E2E8F0;
-    }
-
-    /* ====================================================================
-       5. FOOTER LOGIN PANEL
-    ==================================================================== */
-    .login-footer {
-      margin-top: 28px;
-      text-align: center;
-      font-size: 0.78rem;
-      color: #94A3B8;
-    }
-
-    .login-footer a {
-      color: #3B82F6;
-      font-weight: 600;
-      text-decoration: none;
-    }
-
-    .login-footer a:hover {
-      color: #2563EB;
-      text-decoration: underline;
-    }
-
-    /* ====================================================================
-       6. RESPONSIVE
-    ==================================================================== */
-    @media (max-width: 900px) {
-      body {
-        flex-direction: column;
-        overflow: auto;
-      }
-
-      .hero-panel {
-        flex: 0 0 auto;
-        min-height: auto;
-        padding: 36px 32px;
-      }
-
-      .floating-cards {
-        display: none;
-      }
-
-      .hero-tagline__headline {
-        font-size: 1.6rem;
-      }
-
-      .hero-stats {
-        display: none;
-      }
-
-      .hero-tagline {
-        margin-top: 24px;
-        gap: 12px;
-      }
-
-      .login-panel {
-        padding: 40px 24px 60px;
-        flex: 1;
-        justify-content: flex-start;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .hero-panel {
-        padding: 28px 20px;
-      }
-
-      .login-panel {
-        padding: 32px 20px 48px;
-      }
-
-      .login-box {
-        max-width: 100%;
-      }
-
-      .hero-logo__text {
-        font-size: 1.5rem;
-      }
-    }
-  </style>
+    <style>
+        /* ================================================================
+           LOGIN PAGE — INLINE STYLES (GURU ONLY)
+        ================================================================= */
+
+        /* -------- 0. RESET & BASE -------- */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            min-height: 100vh;
+            background: #0F172A;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ================================================================
+           1. PANEL KIRI — Hero Branding (55%)
+        ================================================================= */
+        .hero-panel {
+            flex: 0 0 55%;
+            background: linear-gradient(145deg, #1E293B 0%, #0F172A 50%, #162032 100%);
+            display: flex;
+            flex-direction: column;
+            padding: 52px 64px;
+            position: relative;
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        /* Grid titik dekoratif */
+        .hero-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(59, 130, 246, 0.12) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            pointer-events: none;
+        }
+
+        /* Glow biru di sudut */
+        .hero-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        /* Logo hero */
+        .hero-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-logo__mark {
+            width: 48px;
+            height: 48px;
+            background: #3B82F6;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .hero-logo__text {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2rem;
+            color: #FFFFFF;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-logo__text em {
+            color: #3B82F6;
+            font-style: normal;
+        }
+
+        /* Tagline */
+        .hero-tagline {
+            position: relative;
+            z-index: 1;
+            margin-top: 48px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .hero-tagline__label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 999px;
+            padding: 5px 14px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: #93C5FD;
+            width: fit-content;
+        }
+
+        .hero-tagline__headline {
+            font-size: clamp(1.8rem, 3vw, 2.6rem);
+            font-weight: 800;
+            color: #FFFFFF;
+            line-height: 1.25;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-tagline__headline .highlight {
+            background: linear-gradient(90deg, #60A5FA, #34D399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-tagline__sub {
+            font-size: 1rem;
+            color: #94A3B8;
+            line-height: 1.6;
+            max-width: 420px;
+        }
+
+        /* Kartu angka mengambang (dekorasi) */
+        .floating-cards {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .float-card {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fredoka One', cursive;
+            border: 2.5px solid #1E1E1E;
+            border-radius: 12px;
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.4);
+            animation: floatBob var(--dur, 4s) ease-in-out infinite alternate;
+        }
+
+        @keyframes floatBob {
+            from {
+                transform: translateY(0) rotate(var(--rot-start, -3deg));
+            }
+
+            to {
+                transform: translateY(-14px) rotate(var(--rot-end, 3deg));
+            }
+        }
+
+        /* Kartu angka — posisi & warna individual */
+        .float-card--n1 {
+            width: 60px;
+            height: 60px;
+            font-size: 1.8rem;
+            background: #FCD34D;
+            color: #1E1E1E;
+            top: 18%;
+            right: 28%;
+            --dur: 3.5s;
+            --rot-start: -4deg;
+            --rot-end: 4deg;
+        }
+
+        .float-card--n2 {
+            width: 52px;
+            height: 52px;
+            font-size: 1.5rem;
+            background: #34D399;
+            color: #1E1E1E;
+            top: 32%;
+            right: 14%;
+            --dur: 4.2s;
+            --rot-start: 3deg;
+            --rot-end: -3deg;
+        }
+
+        .float-card--n3 {
+            width: 68px;
+            height: 68px;
+            font-size: 2rem;
+            background: #FB7185;
+            color: #FFFFFF;
+            top: 55%;
+            right: 22%;
+            --dur: 5s;
+            --rot-start: -2deg;
+            --rot-end: 5deg;
+        }
+
+        .float-card--n4 {
+            width: 46px;
+            height: 46px;
+            font-size: 1.3rem;
+            background: #A78BFA;
+            color: #FFFFFF;
+            top: 72%;
+            right: 8%;
+            --dur: 3.8s;
+            --rot-start: 5deg;
+            --rot-end: -2deg;
+        }
+
+        .float-card--op1 {
+            width: 54px;
+            height: 54px;
+            font-size: 1.8rem;
+            background: #FFFFFF;
+            color: #1E293B;
+            top: 42%;
+            right: 38%;
+            --dur: 4.5s;
+            --rot-start: -6deg;
+            --rot-end: 3deg;
+        }
+
+        .float-card--op2 {
+            width: 48px;
+            height: 48px;
+            font-size: 1.5rem;
+            background: #FCD34D;
+            color: #1E1E1E;
+            top: 78%;
+            right: 36%;
+            --dur: 3.2s;
+            --rot-start: 4deg;
+            --rot-end: -4deg;
+        }
+
+        /* Statistik kecil di bawah hero */
+        .hero-stats {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            gap: 32px;
+            margin-top: 48px;
+        }
+
+        .hero-stat__value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-stat__label {
+            font-size: 0.75rem;
+            color: #64748B;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* ================================================================
+           2. PANEL KANAN — Login Form (45%)
+        ================================================================= */
+        .login-panel {
+            flex: 1;
+            background: #F8FAFC;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 48px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Gelombang dekorasi sudut */
+        .login-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.06), transparent 70%);
+            pointer-events: none;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Judul login box */
+        .login-box__header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-box__header-icon {
+            font-size: 2.4rem;
+            margin-bottom: 12px;
+        }
+
+        .login-box__title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #0F172A;
+            letter-spacing: -0.5px;
+        }
+
+        .login-box__subtitle {
+            font-size: 0.875rem;
+            color: #64748B;
+            margin-top: 6px;
+        }
+
+        /* ================================================================
+           3. FORM GURU
+        ================================================================= */
+        .form-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            animation: panelIn 0.25s ease forwards;
+        }
+
+        @keyframes panelIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---- Label & Input ---- */
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-field label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #374151;
+            letter-spacing: 0.02em;
+        }
+
+        .form-field input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            background: #FFFFFF;
+            color: #0F172A;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-field input:focus {
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .form-field input.is-error {
+            border-color: #EF4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+        }
+
+        /* Input password wrapper */
+        .input-password-wrap {
+            position: relative;
+        }
+
+        .input-password-wrap input {
+            padding-right: 44px;
+        }
+
+        .toggle-password-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #94A3B8;
+            font-size: 1rem;
+            padding: 4px;
+            line-height: 1;
+            transition: color 0.15s;
+        }
+
+        .toggle-password-btn:hover {
+            color: #3B82F6;
+        }
+
+        /* ---- Error / Alert Message ---- */
+        .form-alert {
+            display: none;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .form-alert.is-visible {
+            display: flex;
+        }
+
+        .form-alert--error {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: #DC2626;
+        }
+
+        /* ---- Tombol Submit Guru ---- */
+        .submit-btn-guru {
+            width: 100%;
+            padding: 13px;
+            background: #3B82F6;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .submit-btn-guru:hover:not(:disabled) {
+            background: #2563EB;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.45);
+        }
+
+        .submit-btn-guru:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .submit-btn-guru:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Spinner loading di tombol */
+        .btn-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2.5px solid rgba(255, 255, 255, 0.4);
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+
+        .is-loading .btn-spinner {
+            display: inline-block;
+        }
+
+        .is-loading .btn-text {
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ---- Divider ---- */
+        .form-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #CBD5E1;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .form-divider::before,
+        .form-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #E2E8F0;
+        }
+
+        /* ====================================================================
+           4. FOOTER LOGIN PANEL
+        ==================================================================== */
+        .login-footer {
+            margin-top: 28px;
+            text-align: center;
+            font-size: 0.78rem;
+            color: #94A3B8;
+        }
+
+        .login-footer a {
+            color: #3B82F6;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .login-footer a:hover {
+            color: #2563EB;
+            text-decoration: underline;
+        }
+
+        /* ====================================================================
+           5. RESPONSIVE
+        ==================================================================== */
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+                overflow: auto;
+            }
+
+            .hero-panel {
+                flex: 0 0 auto;
+                min-height: auto;
+                padding: 36px 32px;
+            }
+
+            .floating-cards {
+                display: none;
+            }
+
+            .hero-tagline__headline {
+                font-size: 1.6rem;
+            }
+
+            .hero-stats {
+                display: none;
+            }
+
+            .hero-tagline {
+                margin-top: 24px;
+                gap: 12px;
+            }
+
+            .login-panel {
+                padding: 40px 24px 60px;
+                flex: 1;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-panel {
+                padding: 28px 20px;
+            }
+
+            .login-panel {
+                padding: 32px 20px 48px;
+            }
+
+            .login-box {
+                max-width: 100%;
+            }
+
+            .hero-logo__text {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-  <!-- =================================================================
+    <!-- =================================================================
        PANEL KIRI — Hero Branding
-  ================================================================== -->
-  <section class="hero-panel" aria-hidden="true">
+    ================================================================== -->
+    <section class="hero-panel" aria-hidden="true">
 
-    <!-- Logo -->
-    <div class="hero-logo">
-      <div class="hero-logo__mark">🧪</div>
-      <span class="hero-logo__text">
-        <em>W</em>idyatika
-      </span>
-    </div>
-
-    <!-- Konten utama -->
-    <div class="hero-tagline">
-      <span class="hero-tagline__label">
-        ✨ Platform Numerasi Interaktif
-      </span>
-      <h1 class="hero-tagline__headline">
-        Latih <span class="highlight">Fleksibilitas</span><br />
-        Berpikir Matematika
-      </h1>
-      <p class="hero-tagline__sub">
-        Asesmen diagnostik numerasi berbasis game yang dirancang khusus untuk siswa Sekolah Dasar. Guru memantau, siswa
-        bereksplorasi.
-      </p>
-    </div>
-
-    <!-- Kartu angka mengambang (dekorasi) -->
-    <div class="floating-cards" aria-hidden="true">
-      <div class="float-card float-card--n1">24</div>
-      <div class="float-card float-card--n2">8</div>
-      <div class="float-card float-card--n3">36</div>
-      <div class="float-card float-card--n4">12</div>
-      <div class="float-card float-card--op1">×</div>
-      <div class="float-card float-card--op2">+</div>
-    </div>
-
-    <!-- Statistik mini -->
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <div class="hero-stat__value">100%</div>
-        <div class="hero-stat__label">Bebas Keyboard Fisik</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat__value">∞</div>
-        <div class="hero-stat__label">Strategi Unik / Sesi</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat__value">SD</div>
-        <div class="hero-stat__label">Kelas 4–6 Fokus Utama</div>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- =================================================================
-       PANEL KANAN — Login Form
-  ================================================================== -->
-  <main class="login-panel" role="main">
-    <div class="login-box">
-
-      <!-- Header -->
-      <div class="login-box__header">
-        <div class="login-box__header-icon" id="loginHeaderIcon" aria-hidden="true">🔐</div>
-        <h2 class="login-box__title" id="loginTitle">Masuk ke Widyatika</h2>
-        <p class="login-box__subtitle" id="loginSubtitle">
-          Pilih peranmu dan masukkan data login
-        </p>
-      </div>
-
-      <!-- Tab Switcher -->
-      <div class="tab-switcher" role="tablist" aria-label="Pilih peran login">
-        <button class="tab-btn tab-btn--guru is-active" id="tabGuru" role="tab" aria-selected="true"
-          aria-controls="panelGuru" type="button">
-          <span class="tab-btn__icon">👩‍🏫</span>
-          <span>Login Guru</span>
-        </button>
-        <button class="tab-btn tab-btn--siswa" id="tabSiswa" role="tab" aria-selected="false" aria-controls="panelSiswa"
-          type="button">
-          <span class="tab-btn__icon">🧒</span>
-          <span>Login Siswa</span>
-        </button>
-      </div>
-
-      <!-- ======================================================
-           FORM GURU
-      ====================================================== -->
-      <form class="form-panel is-active" id="panelGuru" role="tabpanel" aria-labelledby="tabGuru" novalidate>
-        <!-- Alert error -->
-        <div class="form-alert form-alert--error" id="alertGuru" role="alert" aria-live="polite">
-          <span aria-hidden="true">⚠️</span>
-          <span id="alertGuruMsg">Terjadi kesalahan.</span>
+        <!-- Logo -->
+        <div class="hero-logo">
+            <div class="hero-logo__mark">🧪</div>
+            <span class="hero-logo__text">
+                <em>W</em>idyatika
+            </span>
         </div>
 
-        <!-- Email -->
-        <div class="form-field">
-          <label for="guruEmail">Alamat Email</label>
-          <input type="email" id="guruEmail" name="email" placeholder="contoh@sekolah.sch.id" autocomplete="email"
-            required aria-required="true" />
+        <!-- Konten utama -->
+        <div class="hero-tagline">
+            <span class="hero-tagline__label">
+                ✨ Platform Numerasi Interaktif
+            </span>
+            <h1 class="hero-tagline__headline">
+                Latih <span class="highlight">Fleksibilitas</span><br />
+                Berpikir Matematika
+            </h1>
+            <p class="hero-tagline__sub">
+                Asesmen diagnostik numerasi berbasis game yang dirancang khusus untuk siswa Sekolah Dasar. Guru memantau, siswa
+                bereksplorasi.
+            </p>
         </div>
 
-        <!-- Password -->
-        <div class="form-field">
-          <label for="guruPassword">Password</label>
-          <div class="input-password-wrap">
-            <input type="password" id="guruPassword" name="password" placeholder="Masukkan password"
-              autocomplete="current-password" required aria-required="true" />
-            <button class="toggle-password-btn" type="button" id="toggleGuruPass"
-              aria-label="Tampilkan atau sembunyikan password">👁️</button>
-          </div>
+        <!-- Kartu angka mengambang (dekorasi) -->
+        <div class="floating-cards" aria-hidden="true">
+            <div class="float-card float-card--n1">24</div>
+            <div class="float-card float-card--n2">8</div>
+            <div class="float-card float-card--n3">36</div>
+            <div class="float-card float-card--n4">12</div>
+            <div class="float-card float-card--op1">×</div>
+            <div class="float-card float-card--op2">+</div>
         </div>
 
-        <!-- Submit -->
-        <button class="submit-btn-guru" type="submit" id="btnGuruLogin" aria-label="Masuk sebagai guru">
-          <span class="btn-spinner" aria-hidden="true"></span>
-          <span class="btn-text">🔑 Masuk sebagai Guru</span>
-        </button>
-
-      </form>
-
-      <!-- ======================================================
-           FORM SISWA
-      ====================================================== -->
-      <form class="form-panel" id="panelSiswa" role="tabpanel" aria-labelledby="tabSiswa" novalidate>
-        <!-- Info instruksi -->
-        <div class="siswa-info-card">
-          <span class="siswa-info-card__icon" aria-hidden="true">💡</span>
-          <p class="siswa-info-card__text">
-            Tanyakan <strong>username</strong> dan <strong>password</strong> kamu kepada Bapak/Ibu Guru ya!
-          </p>
+        <!-- Statistik mini -->
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="hero-stat__value">100%</div>
+                <div class="hero-stat__label">Bebas Keyboard Fisik</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat__value">∞</div>
+                <div class="hero-stat__label">Strategi Unik / Sesi</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat__value">SD</div>
+                <div class="hero-stat__label">Kelas 4–6 Fokus Utama</div>
+            </div>
         </div>
 
-        <!-- Alert error -->
-        <div class="form-alert form-alert--error" id="alertSiswa" role="alert" aria-live="polite">
-          <span aria-hidden="true">😅</span>
-          <span id="alertSiswaMsg">Username atau password salah.</span>
+    </section>
+
+    <!-- =================================================================
+       PANEL KANAN — Login Form (Guru Only)
+    ================================================================== -->
+    <main class="login-panel" role="main">
+        <div class="login-box">
+
+            <!-- Header -->
+            <div class="login-box__header">
+                <div class="login-box__header-icon" aria-hidden="true">🔐</div>
+                <h2 class="login-box__title">Masuk sebagai Guru</h2>
+                <p class="login-box__subtitle">Kelola kelas dan pantau progres siswa</p>
+            </div>
+
+            <!-- ======================================================
+                 FORM GURU
+            ====================================================== -->
+            <form class="form-panel" id="panelGuru" novalidate>
+                <!-- Alert error -->
+                <div class="form-alert form-alert--error" id="alertGuru" role="alert" aria-live="polite">
+                    <span aria-hidden="true">⚠️</span>
+                    <span id="alertGuruMsg">Terjadi kesalahan.</span>
+                </div>
+
+                <!-- Email -->
+                <div class="form-field">
+                    <label for="guruEmail">Alamat Email</label>
+                    <input type="email" id="guruEmail" name="email" placeholder="contoh@sekolah.sch.id" autocomplete="email"
+                    required aria-required="true" />
+                </div>
+
+                <!-- Password -->
+                <div class="form-field">
+                    <label for="guruPassword">Password</label>
+                    <div class="input-password-wrap">
+                        <input type="password" id="guruPassword" name="password" placeholder="Masukkan password"
+                        autocomplete="current-password" required aria-required="true" />
+                        <button class="toggle-password-btn" type="button" id="toggleGuruPass"
+                        aria-label="Tampilkan atau sembunyikan password">👁️</button>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <button class="submit-btn-guru" type="submit" id="btnGuruLogin" aria-label="Masuk sebagai guru">
+                    <span class="btn-spinner" aria-hidden="true"></span>
+                    <span class="btn-text">🔑 Masuk sebagai Guru</span>
+                </button>
+
+            </form>
+
+            <!-- Footer -->
+            <footer class="login-footer">
+                <p>
+                    Widyatika v1.0 &nbsp;·&nbsp;
+                    Platform Asesmen Numerasi SD
+                </p>
+                <p style="margin-top:6px;">
+                    Dibuat untuk penelitian
+                    <abbr title="Lomba Inovasi dan Desain Mahasiswa">LIDM</abbr>
+                    Telkom University Purwokerto
+                </p>
+            </footer>
+
         </div>
+    </main>
 
-        <!-- Username -->
-        <div class="form-field">
-          <label for="siswaUsername">Username</label>
-          <input type="text" id="siswaUsername" name="username" placeholder="Nama penggunamu" autocomplete="username"
-            required aria-required="true" autocapitalize="none" spellcheck="false" />
-        </div>
+    <!-- =================================================================
+       JAVASCRIPT — Auth Logic (Guru Only)
+    ================================================================== -->
+    <script type="module">
+        import { loginGuru, redirectIfLoggedIn } from './js/auth.js';
 
-        <!-- Password -->
-        <div class="form-field">
-          <label for="siswaPassword">Password</label>
-          <div class="input-password-wrap">
-            <input type="password" id="siswaPassword" name="password" placeholder="Kata sandi kamu"
-              autocomplete="current-password" required aria-required="true" />
-            <button class="toggle-password-btn" type="button" id="toggleSiswaPass"
-              aria-label="Tampilkan atau sembunyikan password">👁️</button>
-          </div>
-        </div>
+        // ----------------------------------------------------------------
+        // Jika sudah login, redirect otomatis
+        // ----------------------------------------------------------------
+        redirectIfLoggedIn();
 
-        <!-- Level Pilihan (opsional, default 1) -->
-        <div class="form-field">
-          <label for="siswaLevel">Level (opsional)</label>
-          <select id="siswaLevel" name="level" style="
-              width:100%;
-              padding: 11px 14px;
-              border: 1.5px solid #E2E8F0;
-              border-radius: 10px;
-              font-size: 0.95rem;
-              background: #FFFFFF;
-              color: #0F172A;
-              font-family: 'Nunito', sans-serif;
-              font-weight: 700;
-              outline: none;
-              cursor: pointer;
-              appearance: none;
-              background-image: url(\" data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16'
-            height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' %3E%3Cpath d='m6 9 6 6 6-6'
-            /%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 12px center; padding-right:
-            36px; "
-          >
-            <option value=" 1">Level 1 — Pemanasan 🌱</option>
-            <option value="2">Level 2 — Erksplorasi 🔥</option>
-            <option value="3">Level 3 — Mahir ⚡</option>
-            <option value="4">Level 4 — Jago 🚀</option>
-            <option value="5">Level 5 — Master 🏆</option>
-          </select>
-        </div>
+        // ----------------------------------------------------------------
+        // ELEMENT REFERENCES
+        // ----------------------------------------------------------------
+        const alertGuru = document.getElementById('alertGuru');
+        const alertGuruMsg = document.getElementById('alertGuruMsg');
+        const btnGuruLogin = document.getElementById('btnGuruLogin');
+        const guruEmail = document.getElementById('guruEmail');
+        const guruPassword = document.getElementById('guruPassword');
 
-        <!-- Submit -->
-        <button class="submit-btn-siswa" type="submit" id="btnSiswaLogin"
-          aria-label="Masuk sebagai siswa dan mulai game">
-          <span class="btn-spinner" aria-hidden="true"></span>
-          <span class="btn-text">🎮 Ayo Mulai Game!</span>
-        </button>
+        // ----------------------------------------------------------------
+        // TOGGLE PASSWORD VISIBILITY
+        // ----------------------------------------------------------------
+        const toggleBtn = document.getElementById('toggleGuruPass');
+        toggleBtn.addEventListener('click', () => {
+            const isHidden = guruPassword.type === 'password';
+            guruPassword.type = isHidden ? 'text' : 'password';
+            toggleBtn.textContent = isHidden ? '🙈' : '👁️';
+            toggleBtn.setAttribute('aria-label', isHidden ? 'Sembunyikan password' : 'Tampilkan password');
+        });
 
-      </form>
+        // ----------------------------------------------------------------
+        // UTILITY: Tampilkan / sembunyikan loading state tombol
+        // ----------------------------------------------------------------
+        function setLoading(btn, isLoading) {
+            btn.disabled = isLoading;
+            btn.classList.toggle('is-loading', isLoading);
+        }
 
-      <!-- Footer -->
-      <footer class="login-footer">
-        <p>
-          Widyatika v1.0 &nbsp;·&nbsp;
-          Platform Asesmen Numerasi SD
-        </p>
-        <p style="margin-top:6px;">
-          Dibuat untuk penelitian
-          <abbr title="Lomba Inovasi dan Desain Mahasiswa">LIDM</abbr>
-          Telkom University Purwokerto
-        </p>
-      </footer>
+        // ----------------------------------------------------------------
+        // UTILITY: Tampilkan error alert
+        // ----------------------------------------------------------------
+        function showError(alertEl, msgEl, message) {
+            msgEl.textContent = message;
+            alertEl.classList.add('is-visible');
+            alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
 
-    </div>
-  </main>
+        function hideError(alertEl) {
+            alertEl.classList.remove('is-visible');
+        }
 
-  <!-- =================================================================
-       JAVASCRIPT — Auth Logic
-  ================================================================== -->
-  <script type="module">
-    import { loginGuru, loginSiswa, redirectIfLoggedIn } from './js/auth.js';
+        // ----------------------------------------------------------------
+        // SUBMIT GURU
+        // ----------------------------------------------------------------
+        document.getElementById('panelGuru').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideError(alertGuru);
 
-    // ----------------------------------------------------------------
-    // Jika sudah login, redirect otomatis
-    // ----------------------------------------------------------------
-    redirectIfLoggedIn();
+            const email = guruEmail.value.trim();
+            const password = guruPassword.value;
 
-    // ----------------------------------------------------------------
-    // ELEMENT REFERENCES
-    // ----------------------------------------------------------------
-    const tabGuru = document.getElementById('tabGuru');
-    const tabSiswa = document.getElementById('tabSiswa');
-    const panelGuru = document.getElementById('panelGuru');
-    const panelSiswa = document.getElementById('panelSiswa');
+            // Validasi client-side minimal
+            if (!email || !password) {
+                showError(alertGuru, alertGuruMsg, 'Email dan password wajib diisi.');
+                return;
+            }
 
-    const headerIcon = document.getElementById('loginHeaderIcon');
-    const loginTitle = document.getElementById('loginTitle');
-    const loginSubtitle = document.getElementById('loginSubtitle');
+            setLoading(btnGuruLogin, true);
 
-    const alertGuru = document.getElementById('alertGuru');
-    const alertGuruMsg = document.getElementById('alertGuruMsg');
-    const alertSiswa = document.getElementById('alertSiswa');
-    const alertSiswaMsg = document.getElementById('alertSiswaMsg');
+            const result = await loginGuru(email, password);
 
-    const btnGuruLogin = document.getElementById('btnGuruLogin');
-    const btnSiswaLogin = document.getElementById('btnSiswaLogin');
+            setLoading(btnGuruLogin, false);
 
-    // ----------------------------------------------------------------
-    // TAB SWITCHER
-    // ----------------------------------------------------------------
-    function activateTab(role) {
-      const isGuru = role === 'guru';
+            if (result.success) {
+                // Redirect ke dashboard guru
+                window.location.replace('./dashboard.html');
+            } else {
+                showError(alertGuru, alertGuruMsg, result.error || 'Login gagal. Coba lagi.');
+                guruPassword.focus();
+            }
+        });
 
-      tabGuru.classList.toggle('is-active', isGuru);
-      tabSiswa.classList.toggle('is-active', !isGuru);
-      tabGuru.setAttribute('aria-selected', isGuru);
-      tabSiswa.setAttribute('aria-selected', !isGuru);
+        // ----------------------------------------------------------------
+        // Input real-time: hapus error saat user mulai mengetik lagi
+        // ----------------------------------------------------------------
+        guruEmail.addEventListener('input', () => {
+            hideError(alertGuru);
+            guruEmail.classList.remove('is-error');
+        });
 
-      panelGuru.classList.toggle('is-active', isGuru);
-      panelSiswa.classList.toggle('is-active', !isGuru);
+        guruPassword.addEventListener('input', () => {
+            hideError(alertGuru);
+            guruPassword.classList.remove('is-error');
+        });
 
-      // Sembunyikan alert saat ganti tab
-      alertGuru.classList.remove('is-visible');
-      alertSiswa.classList.remove('is-visible');
+        // ----------------------------------------------------------------
+        // Keyboard: Enter di email → pindah ke password
+        // ----------------------------------------------------------------
+        guruEmail.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                guruPassword.focus();
+            }
+        });
 
-      if (isGuru) {
-        headerIcon.textContent = '🔐';
-        loginTitle.textContent = 'Masuk sebagai Guru';
-        loginSubtitle.textContent = 'Kelola kelas dan pantau progres siswa';
-      } else {
-        headerIcon.textContent = '🎮';
-        loginTitle.textContent = 'Hai, Selamat Datang!';
-        loginSubtitle.textContent = 'Siap bermain dan menemukan banyak rumus?';
-      }
-    }
+        // ----------------------------------------------------------------
+        // Keyboard: Enter di password → submit form
+        // ----------------------------------------------------------------
+        guruPassword.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('panelGuru').dispatchEvent(new Event('submit'));
+            }
+        });
 
-    tabGuru.addEventListener('click', () => activateTab('guru'));
-    tabSiswa.addEventListener('click', () => activateTab('siswa'));
-
-    // ----------------------------------------------------------------
-    // TOGGLE PASSWORD VISIBILITY
-    // ----------------------------------------------------------------
-    function initTogglePassword(btnId, inputId) {
-      const btn = document.getElementById(btnId);
-      const input = document.getElementById(inputId);
-      btn.addEventListener('click', () => {
-        const isHidden = input.type === 'password';
-        input.type = isHidden ? 'text' : 'password';
-        btn.textContent = isHidden ? '🙈' : '👁️';
-        btn.setAttribute('aria-label', isHidden ? 'Sembunyikan password' : 'Tampilkan password');
-      });
-    }
-
-    initTogglePassword('toggleGuruPass', 'guruPassword');
-    initTogglePassword('toggleSiswaPass', 'siswaPassword');
-
-    // ----------------------------------------------------------------
-    // UTILITY: Tampilkan / sembunyikan loading state tombol
-    // ----------------------------------------------------------------
-    function setLoading(btn, isLoading) {
-      btn.disabled = isLoading;
-      btn.classList.toggle('is-loading', isLoading);
-    }
-
-    // ----------------------------------------------------------------
-    // UTILITY: Tampilkan error alert
-    // ----------------------------------------------------------------
-    function showError(alertEl, msgEl, message) {
-      msgEl.textContent = message;
-      alertEl.classList.add('is-visible');
-      alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    function hideError(alertEl) {
-      alertEl.classList.remove('is-visible');
-    }
-
-    // ----------------------------------------------------------------
-    // SUBMIT GURU
-    // ----------------------------------------------------------------
-    panelGuru.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      hideError(alertGuru);
-
-      const email = document.getElementById('guruEmail').value.trim();
-      const password = document.getElementById('guruPassword').value;
-
-      // Validasi client-side minimal
-      if (!email || !password) {
-        showError(alertGuru, alertGuruMsg, 'Email dan password wajib diisi.');
-        return;
-      }
-
-      setLoading(btnGuruLogin, true);
-
-      const result = await loginGuru(email, password);
-
-      setLoading(btnGuruLogin, false);
-
-      if (result.success) {
-        // Redirect ke dashboard guru
-        window.location.replace('./dashboard.html');
-      } else {
-        showError(alertGuru, alertGuruMsg, result.error || 'Login gagal. Coba lagi.');
-        document.getElementById('guruPassword').focus();
-      }
-    });
-
-    // ----------------------------------------------------------------
-    // SUBMIT SISWA
-    // ----------------------------------------------------------------
-    panelSiswa.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      hideError(alertSiswa);
-
-      const username = document.getElementById('siswaUsername').value.trim();
-      const password = document.getElementById('siswaPassword').value;
-      const level = parseInt(document.getElementById('siswaLevel').value, 10) || 1;
-
-      if (!username || !password) {
-        showError(alertSiswa, alertSiswaMsg, 'Username dan password wajib diisi ya!');
-        return;
-      }
-
-      setLoading(btnSiswaLogin, true);
-
-      const result = await loginSiswa(username, password, level);
-
-      setLoading(btnSiswaLogin, false);
-
-      if (result.success) {
-        // Redirect ke arena game siswa
-        window.location.replace('./game.html');
-      } else {
-        showError(alertSiswa, alertSiswaMsg, result.error || 'Login gagal. Minta bantuan gurumu ya!');
-        document.getElementById('siswaPassword').value = '';
-        document.getElementById('siswaPassword').focus();
-      }
-    });
-
-    // ----------------------------------------------------------------
-    // Input real-time: hapus error saat user mulai mengetik lagi
-    // ----------------------------------------------------------------
-    ['guruEmail', 'guruPassword'].forEach(id => {
-      document.getElementById(id).addEventListener('input', () => {
-        hideError(alertGuru);
-        document.getElementById(id).classList.remove('is-error');
-      });
-    });
-
-    ['siswaUsername', 'siswaPassword'].forEach(id => {
-      document.getElementById(id).addEventListener('input', () => {
-        hideError(alertSiswa);
-        document.getElementById(id).classList.remove('is-error');
-      });
-    });
-
-    // ----------------------------------------------------------------
-    // Keyboard: Enter di field pertama → pindah ke field berikutnya
-    // ----------------------------------------------------------------
-    document.getElementById('guruEmail').addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('guruPassword').focus();
-      }
-    });
-
-    document.getElementById('siswaUsername').addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('siswaPassword').focus();
-      }
-    });
-
-  </script>
+        console.log('✅ Widyatika — Login Guru siap digunakan.');
+    </script>
 
 </body>
 
