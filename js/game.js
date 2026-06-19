@@ -529,21 +529,46 @@ async function handleSubmit() {
   const poin = hitungPoin();
 
   try {
-    const { error: insertError } = await supabase
-      .from('detail_strategi')
-      .insert({
-        id_sesi: state.idSesi,
-        ekspresi_matematika: exprStr,
-        poin_didapat: poin,
-      });
-    if (insertError) throw insertError;
+// 🔥 PAKAI FETCH MANUAL
+const SUPABASE_URL = 'https://cezzczjzwvnncvygmbog.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
 
-    const newTotalSkor = state.session.siswa.total_skor + poin;
-    const { error: updateError } = await supabase
-      .from('siswa')
-      .update({ total_skor: newTotalSkor })
-      .eq('id_siswa', state.session.siswa.id_siswa);
-    if (updateError) throw updateError;
+// Insert detail_strategi
+const insertResponse = await fetch(`${SUPABASE_URL}/rest/v1/detail_strategi`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+    'Prefer': 'return=representation'
+  },
+  body: JSON.stringify({
+    id_sesi: state.idSesi,
+    ekspresi_matematika: exprStr,
+    poin_didapat: poin,
+  }),
+});
+if (!insertResponse.ok) {
+  const errData = await insertResponse.json();
+  throw new Error(errData.message || 'Insert detail_strategi gagal');
+}
+
+// Update total_skor siswa
+const newTotalSkor = state.session.siswa.total_skor + poin;
+const updateResponse = await fetch(`${SUPABASE_URL}/rest/v1/siswa?id_siswa=eq.${state.session.siswa.id_siswa}`, {
+  method: 'PATCH',
+  headers: {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+    'Prefer': 'return=representation'
+  },
+  body: JSON.stringify({ total_skor: newTotalSkor }),
+});
+if (!updateResponse.ok) {
+  const errData = await updateResponse.json();
+  throw new Error(errData.message || 'Update siswa gagal');
+}
 
     state.submittedExpressions.add(normalized);
     state.strategiCount++;
@@ -602,33 +627,38 @@ function closeModal(modalEl) {
 }
 
 function initModalListeners() {
-  el.btnCloseDuplicate.addEventListener('click', () => closeModal(el.modalDuplicate));
-  el.btnCloseSuccess.addEventListener('click', () => closeModal(el.modalSuccess));
-  el.btnCloseInvalid.addEventListener('click', () => closeModal(el.modalInvalid));
-  el.btnFinishMore.addEventListener('click', () => closeModal(el.modalFinish));
   el.btnFinishNext.addEventListener('click', async () => {
-    closeModal(el.modalFinish);
-    const newLevel = (state.session.sesi_game.level_ke || 1) + 1;
-    const newTarget = generateTargetAngka(newLevel);
-    try {
-      const { data: newSesi, error } = await supabase
-        .from('sesi_game')
-        .insert({
-          id_siswa: state.session.siswa.id_siswa,
-          level_ke: newLevel,
-          target_angka: newTarget,
-          status_selesai: false,
-        })
-        .select('id_sesi, level_ke, target_angka, status_selesai')
-        .single();
-      if (error) throw error;
-      patchSession({ sesi_game: { id_sesi: newSesi.id_sesi, level_ke: newSesi.level_ke, target_angka: newSesi.target_angka, status_selesai: newSesi.status_selesai } });
-      window.location.reload();
-    } catch (err) {
-      console.error('[Level Next] Error:', err);
-      showToast('Gagal membuat level berikutnya.', 'error');
-    }
-  });
+  closeModal(el.modalFinish);
+  const newLevel = (state.session.sesi_game.level_ke || 1) + 1;
+  const newTarget = generateTargetAngka(newLevel);
+  const SUPABASE_URL = 'https://cezzczjzwvnncvygmbog.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/sesi_game`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        id_siswa: state.session.siswa.id_siswa,
+        level_ke: newLevel,
+        target_angka: newTarget,
+        status_selesai: false,
+      }),
+    });
+    if (!response.ok) throw new Error(await response.text());
+    const data = await response.json();
+    const newSesi = data[0]; // karena return=representation mengembalikan array
+    patchSession({ sesi_game: { id_sesi: newSesi.id_sesi, level_ke: newSesi.level_ke, target_angka: newSesi.target_angka, status_selesai: newSesi.status_selesai } });
+    window.location.reload();
+  } catch (err) {
+    console.error('[Level Next] Error:', err);
+    showToast('Gagal membuat level berikutnya.', 'error');
+  }
+});
   [el.modalDuplicate, el.modalSuccess, el.modalInvalid, el.modalFinish].forEach(modal => {
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); });
   });
@@ -718,26 +748,31 @@ function initKeypadListeners() {
 // LOAD EXISTING STRATEGIES
 // ============================================================================
 async function loadExistingStrategies() {
-  const { data, error } = await supabase
-    .from('detail_strategi')
-    .select('id_strategi, ekspresi_matematika, poin_didapat')
-    .eq('id_sesi', state.idSesi)
-    .order('id_strategi', { ascending: true });
-  if (error) {
+  const SUPABASE_URL = 'https://cezzczjzwvnncvygmbog.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/detail_strategi?select=id_strategi,ekspresi_matematika,poin_didapat&id_sesi=eq.${state.idSesi}&order=id_strategi.asc`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      }
+    });
+    if (!response.ok) throw new Error(await response.text());
+    const data = await response.json();
+    if (!data || data.length === 0) return;
+    data.forEach((row, idx) => {
+      const normalized = normalizeExpr(row.ekspresi_matematika);
+      state.submittedExpressions.add(normalized);
+      state.strategiCount++;
+      state.sessionScore += row.poin_didapat;
+      addStrategyToHistory(row.ekspresi_matematika, row.poin_didapat, idx + 1);
+    });
+    updatePotionUI();
+    updateBadges();
+    updateInsight();
+  } catch (error) {
     console.warn('[Game] Gagal memuat strategi sebelumnya:', error.message);
-    return;
   }
-  if (!data || data.length === 0) return;
-  data.forEach((row, idx) => {
-    const normalized = normalizeExpr(row.ekspresi_matematika);
-    state.submittedExpressions.add(normalized);
-    state.strategiCount++;
-    state.sessionScore += row.poin_didapat;
-    addStrategyToHistory(row.ekspresi_matematika, row.poin_didapat, idx + 1);
-  });
-  updatePotionUI();
-  updateBadges();
-  updateInsight();
 }
 
 // ============================================================================

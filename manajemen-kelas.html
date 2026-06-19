@@ -553,26 +553,14 @@
       <button class="modal__close-btn" id="btnCloseModalLevel" type="button">✕</button>
     </div>
     <div class="modal__body">
-      <p style="margin:0 0 16px;color:var(--clr-text-muted);font-size:0.9rem;">
-        Pilih level kesulitan untuk sesi permainan siswa ini.
+      <p style="margin-bottom:16px;color:var(--clr-text-muted);font-size:0.9rem;">
+        Pilih tingkat kesulitan untuk sesi permainan siswa ini.
       </p>
-      <div class="level-options">
-        <button class="level-option-btn" data-level="1" type="button">
-          <span class="level-option-btn__title">Level 1</span>
-          <span class="level-option-btn__range">Target angka 0–20</span>
-        </button>
-        <button class="level-option-btn" data-level="2" type="button">
-          <span class="level-option-btn__title">Level 2</span>
-          <span class="level-option-btn__range">Target angka 21–100</span>
-        </button>
-        <button class="level-option-btn" data-level="3" type="button">
-          <span class="level-option-btn__title">Level 3</span>
-          <span class="level-option-btn__range">Target angka 101–500</span>
-        </button>
-        <button class="level-option-btn" data-level="4" type="button">
-          <span class="level-option-btn__title">Level 4</span>
-          <span class="level-option-btn__range">Target angka 501–1000</span>
-        </button>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn btn--primary btn--sm level-option-btn" data-level="1" style="width:100%;">Level 1 (0–20)</button>
+        <button class="btn btn--primary btn--sm level-option-btn" data-level="2" style="width:100%;">Level 2 (21–100)</button>
+        <button class="btn btn--primary btn--sm level-option-btn" data-level="3" style="width:100%;">Level 3 (101–500)</button>
+        <button class="btn btn--primary btn--sm level-option-btn" data-level="4" style="width:100%;">Level 4 (501–1000)</button>
       </div>
     </div>
     <div class="modal__footer">
