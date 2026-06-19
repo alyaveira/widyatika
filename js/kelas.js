@@ -319,7 +319,70 @@ async function submitKelas() {
     showToast('Gagal menyimpan kelas: ' + err.message, 'error');
   }
 }
+// js/kelas.js — Ganti fungsi submitSiswa dengan ini
 
+async function submitSiswa() {
+  const namaLengkap = inputNamaSiswa.value.trim();
+  const namaPanggilan = inputPanggilan.value.trim() || namaLengkap;
+  const username = inputNISN.value.trim().toLowerCase();
+  const password = inputPinSiswa.value.trim();
+  const idKelas = siswaKelasId.value;
+  const id = editSiswaId.value;
+
+  if (!namaLengkap || !username || !password || !idKelas) {
+    showToast('NISN, Nama, dan PIN wajib diisi.', 'warning');
+    return;
+  }
+
+  // 🔥 PAKAI FETCH MANUAL
+  const SUPABASE_URL = 'https://cezzczjzwvnncvygmbog.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
+
+  try {
+    let url = `${SUPABASE_URL}/rest/v1/siswa`;
+    let method = 'POST';
+    let body = {
+      id_kelas: idKelas,
+      nama_lengkap: namaLengkap,
+      nama_panggilan: namaPanggilan,
+      username: username,
+      password_plain: password,
+      total_skor: 0,
+    };
+
+    if (id) {
+      url = `${url}?id_siswa=eq.${id}`;
+      method = 'PATCH';
+    }
+
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(body),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('[Submit Siswa] Error Response:', result);
+      throw new Error(result.message || result.details || 'Gagal menyimpan');
+    }
+
+    showToast(id ? 'Siswa berhasil diperbarui.' : 'Siswa berhasil ditambahkan.', 'success');
+    closeModalSiswa();
+    await loadAllData();
+    if (selectedClassId) openDetail(selectedClassId);
+
+  } catch (err) {
+    console.error('[Siswa] Submit error:', err);
+    showToast('Gagal menyimpan siswa: ' + err.message, 'error');
+  }
+}
 // ========== TAMBAH / EDIT SISWA (DIPERBAIKI) ==========
 function openModalSiswa(editData = null) {
   modalSiswa.classList.add('is-open');
