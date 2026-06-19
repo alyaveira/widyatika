@@ -483,7 +483,7 @@ function hitungPoin() {
 function countOpsInExpr(s) {
   return {
     add: (s.match(/\+/g) || []).length,
-    sub: (s.match(/\-/g) || []).length,
+    sub: (s.match(/−/g) || []).length,    // pakai Unicode minus
     mul: (s.match(/×/g) || []).length,
     div: (s.match(/÷/g) || []).length,
   };
