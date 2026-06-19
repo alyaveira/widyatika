@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Widyatika — Detail Laporan Siswa." />
+  <meta name="description" content="Widyatika — Detail Laporan & Analisis Siswa." />
   <title>Detail Siswa — Widyatika</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -141,6 +141,29 @@
       color: var(--clr-navy);
     }
 
+    /* Analisis */
+    .analisis-body {
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .analisis-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border-radius: var(--radius-md);
+      border-left: 4px solid var(--clr-blue);
+    }
+    .analisis-item__icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+    .analisis-item__content { flex: 1; }
+    .analisis-item__label { font-weight: 700; font-size: 0.9rem; color: var(--clr-navy); }
+    .analisis-item__value { font-weight: 600; color: var(--clr-text); }
+    .analisis-item--highlight { border-left-color: var(--clr-orange); background: #fffbeb; }
+    .analisis-item--success { border-left-color: #22C55E; background: #f0fdf4; }
+
     @media (max-width: 640px) {
       .siswa-profile-card { padding: 20px; }
     }
@@ -270,7 +293,15 @@
           </div>
         </section>
 
-      </div>
+        <!-- ===== ANALISIS HASIL BELAJAR ===== -->
+        <section class="section-card" id="analisisCard">
+          <div class="section-card__header">📊 Analisis Hasil Belajar</div>
+          <div class="analisis-body" id="analisisBody">
+            <p style="color:var(--clr-text-muted);">Memuat analisis...</p>
+          </div>
+        </section>
+
+      </div><!-- /detailContent -->
 
     </main>
   </div>
