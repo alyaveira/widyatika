@@ -545,6 +545,41 @@
       </div>
     </div>
   </div>
+  <!-- ========== MODAL PILIH LEVEL ========== -->
+<div class="modal-backdrop" id="modalLevel" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal__header">
+      <h2 class="modal__title">Pilih Level Permainan</h2>
+      <button class="modal__close-btn" id="btnCloseModalLevel" type="button">✕</button>
+    </div>
+    <div class="modal__body">
+      <p style="margin:0 0 16px;color:var(--clr-text-muted);font-size:0.9rem;">
+        Pilih level kesulitan untuk sesi permainan siswa ini.
+      </p>
+      <div class="level-options">
+        <button class="level-option-btn" data-level="1" type="button">
+          <span class="level-option-btn__title">Level 1</span>
+          <span class="level-option-btn__range">Target angka 0–20</span>
+        </button>
+        <button class="level-option-btn" data-level="2" type="button">
+          <span class="level-option-btn__title">Level 2</span>
+          <span class="level-option-btn__range">Target angka 21–100</span>
+        </button>
+        <button class="level-option-btn" data-level="3" type="button">
+          <span class="level-option-btn__title">Level 3</span>
+          <span class="level-option-btn__range">Target angka 101–500</span>
+        </button>
+        <button class="level-option-btn" data-level="4" type="button">
+          <span class="level-option-btn__title">Level 4</span>
+          <span class="level-option-btn__range">Target angka 501–1000</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" id="btnCancelModalLevel" type="button">Batal</button>
+    </div>
+  </div>
+</div>
 
   <!-- ========== TOAST ========== -->
   <div class="toast-stack" id="toastStack" aria-live="polite"></div>

@@ -24,7 +24,6 @@ const elements = {
 
 async function loadLaporan() {
   try {
-    // 1. Ambil semua kelas guru
     const { data: kelas, error: kelasErr } = await supabase
       .from('kelas')
       .select('id_kelas, nama_kelas')
@@ -32,7 +31,6 @@ async function loadLaporan() {
     if (kelasErr) throw kelasErr;
     kelasList = kelas || [];
 
-    // 2. Ambil semua siswa
     const kelasIds = kelasList.map(k => k.id_kelas);
     const { data: siswa, error: siswaErr } = await supabase
       .from('siswa')
@@ -41,34 +39,28 @@ async function loadLaporan() {
     if (siswaErr) throw siswaErr;
     siswaList = siswa || [];
 
-    // 3. Ambil semua sesi
     const siswaIds = siswaList.map(s => s.id_siswa);
     const { data: sesi, error: sesiErr } = await supabase
       .from('sesi_game')
-      .select('id_sesi, id_siswa, level_ke, status_selesai')
+      .select('id_sesi, id_siswa, level_ke, status_selesai, created_at')
       .in('id_siswa', siswaIds);
     if (sesiErr) throw sesiErr;
     sesiList = sesi || [];
 
-    // 4. Ambil semua strategi
     const sesiIds = sesiList.map(s => s.id_sesi);
     let strategi = [];
     if (sesiIds.length > 0) {
       const { data: strat, error: stratErr } = await supabase
         .from('detail_strategi')
-        .select('id_strategi, id_sesi, poin_didapat')
+        .select('id_strategi, id_sesi, poin_didapat, created_at')
         .in('id_sesi', sesiIds);
       if (stratErr) throw stratErr;
       strategi = strat || [];
     }
     strategiList = strategi;
 
-    // Render filter
     renderFilter();
-
-    // Render data
     renderData('all');
-
   } catch (err) {
     console.error('[Laporan] Error:', err);
     showToast('Gagal memuat laporan.', 'error');
@@ -77,7 +69,6 @@ async function loadLaporan() {
 
 function renderFilter() {
   const container = elements.filterKelas;
-  // Hapus semua kecuali tombol "Semua Kelas"
   const allBtn = container.querySelector('[data-id="all"]');
   container.innerHTML = '';
   container.appendChild(allBtn);
@@ -105,7 +96,6 @@ function renderFilter() {
 }
 
 function renderData(filterId) {
-  // Filter siswa berdasarkan kelas
   let filteredSiswa = siswaList;
   if (filterId !== 'all') {
     filteredSiswa = siswaList.filter(s => s.id_kelas === filterId);
@@ -116,7 +106,6 @@ function renderData(filterId) {
   const filteredSesiIds = filteredSesi.map(s => s.id_sesi);
   const filteredStrategi = strategiList.filter(s => filteredSesiIds.includes(s.id_sesi));
 
-  // Summary
   const totalSesi = filteredSesi.length;
   const totalSiswa = filteredSiswa.length;
   const totalStrategi = filteredStrategi.length;
@@ -125,17 +114,14 @@ function renderData(filterId) {
     : 0;
   const siswaAktif = new Set(filteredSesi.map(s => s.id_siswa)).size;
 
-  // elements.totalSesi.textContent = totalSesi;
-  // elements.rataSkor.textContent = `${rataSkor}%`;
-  // elements.siswaAktif.textContent = siswaAktif;
-  // elements.totalStrategi.textContent = totalStrategi;
+  elements.totalSesi.textContent = totalSesi;
+  elements.rataSkor.textContent = `${rataSkor}%`;
+  elements.siswaAktif.textContent = siswaAktif;
+  elements.totalStrategi.textContent = totalStrategi;
 
-  // Render grafik
   renderChartMingguan(filteredSesi);
   renderChartPerkelas(filteredSiswa, filterId);
-  renderChartKompleksitas(filteredStrategi, filteredSesi);
-
-  // Render Leaderboard Top 5
+  renderChartKompleksitas(filteredStrategi);
   renderLeaderboard(filteredSiswa);
 }
 
@@ -145,17 +131,13 @@ function renderChartMingguan(sesi) {
     container.innerHTML = '<div class="chart-empty">Belum ada data mingguan.</div>';
     return;
   }
-
-  // Kelompokkan berdasarkan minggu (pakai level sebagai proxy sederhana)
   const levels = {};
   sesi.forEach(s => {
     const lv = s.level_ke || 1;
     levels[lv] = (levels[lv] || 0) + 1;
   });
-
   const sorted = Object.keys(levels).sort((a, b) => a - b);
   const maxVal = Math.max(...Object.values(levels), 1);
-
   container.innerHTML = sorted.map(lv => {
     const count = levels[lv];
     const pct = Math.round((count / maxVal) * 100);
@@ -177,8 +159,6 @@ function renderChartPerkelas(siswa, filterId) {
     container.innerHTML = '<div class="chart-empty">Belum ada data perkelas.</div>';
     return;
   }
-
-  // Kelompokkan berdasarkan kelas
   const kelasMap = Object.fromEntries(kelasList.map(k => [k.id_kelas, k.nama_kelas]));
   const classStats = {};
   siswa.forEach(s => {
@@ -186,15 +166,12 @@ function renderChartPerkelas(siswa, filterId) {
     classStats[s.id_kelas].total += (s.total_skor || 0);
     classStats[s.id_kelas].count += 1;
   });
-
   const entries = Object.entries(classStats);
   if (entries.length === 0) {
     container.innerHTML = '<div class="chart-empty">Belum ada data perkelas.</div>';
     return;
   }
-
   const maxAvg = Math.max(...entries.map(([_, v]) => v.count > 0 ? v.total / v.count : 0), 1);
-
   container.innerHTML = entries.map(([id, stats]) => {
     const avg = stats.count > 0 ? Math.round(stats.total / stats.count) : 0;
     const pct = Math.round((avg / maxAvg) * 100);
@@ -211,56 +188,73 @@ function renderChartPerkelas(siswa, filterId) {
   }).join('');
 }
 
-function renderChartKompleksitas(strategi, sesi) {
+// ============================================================
+// KOMPLEKSITAS STRATEGI – per hari dalam 7 hari terakhir
+// ============================================================
+function renderChartKompleksitas(strategi) {
   const container = elements.chartKompleksitas;
-  if (strategi.length === 0) {
-    container.innerHTML = '<div class="chart-empty">Belum ada data strategi.</div>';
+  if (!strategi || strategi.length === 0) {
+    container.innerHTML = '<div class="chart-empty">Belum ada data strategi dalam 7 hari terakhir.</div>';
     return;
   }
 
-  // Hitung rata-rata poin per sesi (semakin tinggi = semakin kompleks)
-  const sesiPoin = {};
-  strategi.forEach(s => {
-    sesiPoin[s.id_sesi] = (sesiPoin[s.id_sesi] || 0) + (s.poin_didapat || 0);
+  const now = new Date();
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const recentStrategi = strategi.filter(s => {
+    if (!s.created_at) return false;
+    const created = new Date(s.created_at);
+    return created >= sevenDaysAgo && created <= now;
   });
 
-  const entries = Object.entries(sesiPoin);
-  const maxPoin = Math.max(...entries.map(([_, v]) => v), 1);
-
-  // Ambil 5 teratas untuk ditampilkan
-  const sorted = entries.sort((a, b) => b[1] - a[1]).slice(0, 5);
-
-  if (sorted.length === 0) {
-    container.innerHTML = '<div class="chart-empty">Belum ada data kompleksitas.</div>';
+  if (recentStrategi.length === 0) {
+    container.innerHTML = '<div class="chart-empty">Tidak ada strategi dalam 7 hari terakhir.</div>';
     return;
   }
 
-  container.innerHTML = sorted.map(([idSesi, poin]) => {
-    const pct = Math.round((poin / maxPoin) * 100);
-    const sesiData = sesi.find(s => s.id_sesi === idSesi);
-    const label = sesiData ? `Sesi ${idSesi.slice(0, 6)}` : 'Sesi';
+  const dailyCount = {};
+  recentStrategi.forEach(s => {
+    const date = new Date(s.created_at).toLocaleDateString('id-ID', {
+      weekday: 'short', day: 'numeric', month: 'short'
+    });
+    dailyCount[date] = (dailyCount[date] || 0) + 1;
+  });
+
+  const sortedDates = Object.keys(dailyCount).sort((a, b) => {
+    const da = new Date(a.split(' ').reverse().join(' '));
+    const db = new Date(b.split(' ').reverse().join(' '));
+    return da - db;
+  });
+
+  const maxCount = Math.max(...Object.values(dailyCount), 1);
+  container.innerHTML = sortedDates.map(date => {
+    const count = dailyCount[date];
+    const pct = Math.round((count / maxCount) * 100);
     return `
       <div class="chart-bar-wrap">
-        <span class="chart-bar-label">${label}</span>
+        <span class="chart-bar-label">${date}</span>
         <div class="chart-bar-track">
           <div class="chart-bar-fill chart-bar-fill--orange" style="width:${pct}%"></div>
         </div>
-        <span class="chart-bar-value">${poin}</span>
+        <span class="chart-bar-value">${count}</span>
       </div>
     `;
   }).join('');
 }
 
+// ============================================================
+// LEADERBOARD dengan tombol Detail ke detailsiswa.html
+// ============================================================
 function renderLeaderboard(siswa) {
   const tbody = elements.leaderboardBody;
   if (!siswa || siswa.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#64748B;">Belum ada data siswa.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:#64748B;">Belum ada data siswa.</td></tr>';
     return;
   }
 
   const kelasMap = Object.fromEntries(kelasList.map(k => [k.id_kelas, k.nama_kelas]));
 
-  // Ambil 5 siswa dengan skor tertinggi
   const top5 = [...siswa]
     .sort((a, b) => (b.total_skor || 0) - (a.total_skor || 0))
     .slice(0, 5);
@@ -271,7 +265,6 @@ function renderLeaderboard(siswa) {
     const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
     const kelas = kelasMap[siswa.id_kelas] || '—';
 
-    // Detail: jumlah strategi yang ditemukan
     const siswaSesi = sesiList.filter(s => s.id_siswa === siswa.id_siswa);
     const siswaSesiIds = siswaSesi.map(s => s.id_sesi);
     const jmlStrategi = strategiList.filter(s => siswaSesiIds.includes(s.id_sesi)).length;
@@ -283,6 +276,13 @@ function renderLeaderboard(siswa) {
         <td><span class="student-class">${escHtml(kelas)}</span></td>
         <td class="score">${siswa.total_skor || 0}</td>
         <td><span class="detail-badge">${jmlStrategi} strategi</span></td>
+        <td>
+          <a href="detailsiswa.html?siswa=${siswa.id_siswa}" 
+             class="btn btn--primary btn--sm" 
+             style="font-size:0.7rem; padding:4px 12px; text-decoration:none;">
+            📋 Detail
+          </a>
+        </td>
       </tr>
     `;
   }).join('');
@@ -293,10 +293,5 @@ function escHtml(str) {
   return String(str).replace(/[&<>"']/g, c => m[c]);
 }
 
-// ========== INIT ==========
 loadLaporan();
-
-// Refresh
-document.getElementById('btnRefreshData')?.addEventListener('click', () => {
-  loadLaporan();
-});
+document.getElementById('btnRefreshData')?.addEventListener('click', loadLaporan);
