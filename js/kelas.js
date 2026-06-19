@@ -2,6 +2,7 @@ import { supabase } from './supabase-config.js';
 import { initGuruPage, showToast } from './guru.js';
 import { generateTargetAngka } from './auth.js';
 
+
 const session = initGuruPage('manajemen');
 const guruId = session.guru.id_guru;
 

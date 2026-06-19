@@ -36,7 +36,6 @@
  */
 
 import { supabase } from './supabase-config.js';
-import { generateTargetAngka } from './auth.js';
 
 // ---------------------------------------------------------------------------
 // KONSTANTA
