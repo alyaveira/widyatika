@@ -9,31 +9,20 @@
  *   5. Duplikat Guard — cek riwayat sesi di tabel detail_strategi
  *   6. Supabase Integration — insert detail_strategi, update siswa.total_skor
  *   7. UI Reactivity — Tabung Ramuan, bintang, riwayat, toast, modal
- *   8. Timer & Result Overlay — saat waktu habis / quit
- *   9. Badge & Insight — update real-time
  * =============================================================================
  */
 
-import { supabase }          from './supabase-config.js';
-import { requireSiswaSession, patchSession, logout } from './auth.js';
+import { supabase } from './supabase-config.js';
+import { requireSiswaSession, patchSession, logout, generateTargetAngka } from './auth.js';
 
 // ============================================================================
 // §1. KONFIGURASI GAMEPLAY
 // ============================================================================
 
-/** Jumlah strategi unik minimum untuk memicu modal "Selesai" */
 const STRATEGI_TARGET_MIN = 5;
-
-/** Poin dasar per strategi yang berhasil */
 const POIN_DASAR = 10;
-
-/** Poin bonus per operator yang digunakan (reward kompleksitas) */
 const POIN_BONUS_OPERATOR = 2;
-
-/** Poin bonus tambahan jika menggunakan tanda kurung */
 const POIN_BONUS_KURUNG = 5;
-
-/** Batas maksimum token dalam satu formula */
 const MAX_TOKEN = 20;
 
 // ============================================================================
@@ -41,69 +30,38 @@ const MAX_TOKEN = 20;
 // ============================================================================
 
 const el = {
-  // Loading
-  loadingScreen:      document.getElementById('loadingScreen'),
-
-  // Topbar
+  loadingScreen: document.getElementById('loadingScreen'),
   displayStudentName: document.getElementById('displayStudentName'),
-  displayLevel:       document.getElementById('displayLevel'),
-  displayScore:       document.getElementById('displayScore'),
-
-  // Target
+  displayLevel: document.getElementById('displayLevel'),
+  displayScore: document.getElementById('displayScore'),
   displayTargetNumber: document.getElementById('displayTargetNumber'),
-  targetHint:          document.getElementById('targetHint'),
-
-  // Formula workspace
-  formulaDisplay:  document.getElementById('formulaDisplay'),
-  resultValue:     document.getElementById('resultValue'),
+  targetHint: document.getElementById('targetHint'),
+  formulaDisplay: document.getElementById('formulaDisplay'),
+  resultValue: document.getElementById('resultValue'),
   resultStatusMsg: document.getElementById('resultStatusMsg'),
-
-  // Keypad tombol aksi
   btnSubmit: document.getElementById('btnSubmit'),
   btnDelete: document.getElementById('btnDelete'),
-  btnReset:  document.getElementById('btnReset'),
-
-  // Potion tube
-  potionLiquid:      document.getElementById('potionLiquid'),
+  btnReset: document.getElementById('btnReset'),
+  potionLiquid: document.getElementById('potionLiquid'),
   potionCountCurrent: document.getElementById('potionCountCurrent'),
-  potionCountMax:     document.getElementById('potionCountMax'),
-  potionStars:        document.getElementById('potionStars'),
-
-  // Strategy history
-  strategyList:     document.getElementById('strategyList'),
+  potionCountMax: document.getElementById('potionCountMax'),
+  potionStars: document.getElementById('potionStars'),
+  strategyList: document.getElementById('strategyList'),
   strategyEmptyMsg: document.getElementById('strategyEmptyMsg'),
-
-  // Modals
   modalDuplicate: document.getElementById('modalDuplicate'),
-  modalSuccess:   document.getElementById('modalSuccess'),
-  modalInvalid:   document.getElementById('modalInvalid'),
-  modalFinish:    document.getElementById('modalFinish'),
-
-  // Modal inner elements
+  modalSuccess: document.getElementById('modalSuccess'), // tidak dipakai tapi tetap ada
+  modalInvalid: document.getElementById('modalInvalid'),
+  modalFinish: document.getElementById('modalFinish'),
   modalSuccessFormula: document.getElementById('modalSuccessFormula'),
-  modalSuccessPoints:  document.getElementById('modalSuccessPoints'),
-  modalFinishScore:    document.getElementById('modalFinishScore'),
-  modalFinishStars:    document.getElementById('modalFinishStars'),
-
-  // Modal buttons
+  modalSuccessPoints: document.getElementById('modalSuccessPoints'),
+  modalFinishScore: document.getElementById('modalFinishScore'),
+  modalFinishStars: document.getElementById('modalFinishStars'),
   btnCloseDuplicate: document.getElementById('btnCloseDuplicate'),
-  btnCloseSuccess:   document.getElementById('btnCloseSuccess'),
-  btnCloseInvalid:   document.getElementById('btnCloseInvalid'),
-  btnFinishNext:     document.getElementById('btnFinishNext'),
-  btnFinishMore:     document.getElementById('btnFinishMore'),
-
-  // Toast container
+  btnCloseSuccess: document.getElementById('btnCloseSuccess'),
+  btnCloseInvalid: document.getElementById('btnCloseInvalid'),
+  btnFinishNext: document.getElementById('btnFinishNext'),
+  btnFinishMore: document.getElementById('btnFinishMore'),
   toastContainer: document.getElementById('toastContainer'),
-
-  // Result overlay (dari game.html)
-  resultOverlay: document.getElementById('result-overlay'),
-  resPoin: document.getElementById('res-poin'),
-  resStrat: document.getElementById('res-strat'),
-  resAcc: document.getElementById('res-acc'),
-  resSub: document.getElementById('res-sub'),
-  resEmoji: document.getElementById('res-emoji'),
-  resTitle: document.getElementById('res-title'),
-  resBtns: document.getElementById('res-btns'),
 };
 
 // ============================================================================
@@ -121,23 +79,17 @@ const state = {
   strategiCount: 0,
   finishModalShown: false,
   isSubmitting: false,
-  // Untuk insight / cara berpikir
-  opCount: { add: 0, sub: 0, mul: 0, div: 0 },
-  totalAttempts: 0, // total percobaan (untuk akurasi)
+  opCount: { add: 0, sub: 0, mul: 0, div: 0 }, // untuk insight
 };
 
 // ============================================================================
-// §4. MATH PARSER — Recursive Descent (tanpa eval())
+// §4. MATH PARSER (tidak diubah)
 // ============================================================================
 
 function tokenizeExpr(expr) {
   const tokens = [];
   let i = 0;
-  const s = expr
-    .replace(/×/g, '*')
-    .replace(/÷/g, '/')
-    .replace(/−/g, '-');
-
+  const s = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
   while (i < s.length) {
     const ch = s[i];
     if (ch === ' ') { i++; continue; }
@@ -160,9 +112,9 @@ function tokenizeExpr(expr) {
 class MathParser {
   constructor(exprStr) {
     this._tokens = tokenizeExpr(exprStr);
-    this._pos    = 0;
+    this._pos = 0;
   }
-  _peek()    { return this._tokens[this._pos] ?? null; }
+  _peek() { return this._tokens[this._pos] ?? null; }
   _consume() { return this._tokens[this._pos++]; }
   _expect(val) {
     const t = this._consume();
@@ -219,7 +171,7 @@ function evaluateExpr(exprStr) {
   if (!exprStr.trim()) return { ok: false, value: null, error: 'Kosong' };
   try {
     const parser = new MathParser(exprStr);
-    const value  = parser.parse();
+    const value = parser.parse();
     if (!isFinite(value)) return { ok: false, value: null, error: 'Hasil tidak terbatas' };
     return { ok: true, value: Math.round(value * 1e9) / 1e9, error: null };
   } catch (e) {
@@ -228,7 +180,7 @@ function evaluateExpr(exprStr) {
 }
 
 // ============================================================================
-// §5. FORMULA TOKEN MANAGEMENT
+// §5. TOKEN MANAGEMENT & RENDER
 // ============================================================================
 
 function tokensToExprString() {
@@ -236,22 +188,18 @@ function tokensToExprString() {
 }
 
 function normalizeExpr(expr) {
-  return expr
-    .replace(/\s+/g, '')
-    .replace(/×/g, '*')
-    .replace(/÷/g, '/')
-    .replace(/−/g, '-');
+  return expr.replace(/\s+/g, '').replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
 }
 
 function pushToken(token) {
   if (state.tokens.length >= MAX_TOKEN) {
-    showToast('Formula terlalu panjang! Sederhanakan dulu.', 'warn');
+    showToast('Formula terlalu panjang!', 'warn');
     return false;
   }
   const lastToken = state.tokens[state.tokens.length - 1] ?? null;
-  const isLastNum        = lastToken?.type === 'digit';
-  const isLastOp         = lastToken?.type === 'operator';
-  const isLastParenOpen  = lastToken?.type === 'paren_open';
+  const isLastNum = lastToken?.type === 'digit';
+  const isLastOp = lastToken?.type === 'operator';
+  const isLastParenOpen = lastToken?.type === 'paren_open';
   const isLastParenClose = lastToken?.type === 'paren_close';
 
   switch (token.type) {
@@ -278,18 +226,14 @@ function pushToken(token) {
 function popToken() {
   if (state.tokens.length === 0) return;
   const removed = state.tokens.pop();
-  if (removed.type === 'paren_open')  state.openParens = Math.max(0, state.openParens - 1);
+  if (removed.type === 'paren_open') state.openParens = Math.max(0, state.openParens - 1);
   if (removed.type === 'paren_close') state.openParens++;
 }
 
 function clearTokens() {
-  state.tokens     = [];
+  state.tokens = [];
   state.openParens = 0;
 }
-
-// ============================================================================
-// §6. RENDER UI — Formula Display & Result Preview
-// ============================================================================
 
 function renderFormula() {
   const display = el.formulaDisplay;
@@ -307,10 +251,10 @@ function renderFormula() {
     const span = document.createElement('span');
     span.textContent = token.value;
     switch (token.type) {
-      case 'digit':       span.className = 'formula-token formula-token--number';   break;
-      case 'operator':    span.className = 'formula-token formula-token--operator'; break;
+      case 'digit': span.className = 'formula-token formula-token--number'; break;
+      case 'operator': span.className = 'formula-token formula-token--operator'; break;
       case 'paren_open':
-      case 'paren_close': span.className = 'formula-token formula-token--paren';   break;
+      case 'paren_close': span.className = 'formula-token formula-token--paren'; break;
     }
     fragment.appendChild(span);
   });
@@ -321,79 +265,115 @@ function renderFormula() {
   display.appendChild(fragment);
 
   const exprStr = tokensToExprString();
-  const result  = evaluateExpr(exprStr);
+  const result = evaluateExpr(exprStr);
   updateResultPreview(result);
-
-  const hasNumber   = state.tokens.some(t => t.type === 'digit');
-  const lastToken   = state.tokens[state.tokens.length - 1];
-  const endsValid   = lastToken?.type === 'digit' || lastToken?.type === 'paren_close';
-  const parensOk    = state.openParens === 0;
+  const hasNumber = state.tokens.some(t => t.type === 'digit');
+  const lastToken = state.tokens[state.tokens.length - 1];
+  const endsValid = lastToken?.type === 'digit' || lastToken?.type === 'paren_close';
+  const parensOk = state.openParens === 0;
   el.btnSubmit.disabled = !(hasNumber && endsValid && parensOk && result.ok);
 }
 
 function updateResultPreview(result) {
-  const valEl  = el.resultValue;
-  const msgEl  = el.resultStatusMsg;
+  const valEl = el.resultValue;
+  const msgEl = el.resultStatusMsg;
   if (!result || !result.ok) {
-    valEl.textContent  = '?';
-    valEl.className    = 'result-preview__value';
-    msgEl.textContent  = '';
+    valEl.textContent = '?';
+    valEl.className = 'result-preview__value';
+    msgEl.textContent = '';
     return;
   }
-  const displayed = Number.isInteger(result.value)
-    ? result.value.toString()
-    : result.value.toFixed(2);
+  const displayed = Number.isInteger(result.value) ? result.value.toString() : result.value.toFixed(2);
   valEl.textContent = displayed;
   if (result.value === state.targetAngka) {
-    valEl.className   = 'result-preview__value state--match';
+    valEl.className = 'result-preview__value state--match';
     msgEl.textContent = '✅ Cocok!';
     msgEl.style.color = 'var(--color-correct)';
   } else {
-    valEl.className   = 'result-preview__value state--mismatch';
+    valEl.className = 'result-preview__value state--mismatch';
     msgEl.textContent = `🎯 Target: ${state.targetAngka}`;
     msgEl.style.color = 'var(--color-muted)';
   }
 }
 
 // ============================================================================
-// §7. POTION TUBE & BINTANG
+// §6. UI HELPERS
+// ============================================================================
+
+function setFeedback(msg, className) {
+  const fb = document.getElementById('feedback');
+  if (!fb) return;
+  fb.className = 'fb-bar ' + className;
+  fb.innerHTML = msg;
+}
+
+function setMascot(stateClass, msg) {
+  const speech = document.getElementById('speech');
+  if (!speech) return;
+  speech.className = 'speech';
+  speech.innerHTML = msg;
+  // tambahkan animasi jika diperlukan
+}
+
+function flashFormula(stateClass) {
+  el.formulaDisplay.classList.remove('state--error', 'state--correct');
+  void el.formulaDisplay.offsetWidth;
+  el.formulaDisplay.classList.add(`state--${stateClass}`);
+  setTimeout(() => el.formulaDisplay.classList.remove(`state--${stateClass}`), 500);
+}
+
+function spawnScorePopup(poin) {
+  const popup = document.createElement('div');
+  popup.className = 'score-popup';
+  popup.textContent = `+${poin}`;
+  popup.style.left = `${Math.random() * 40 + 30}%`;
+  popup.style.top = '80px';
+  document.body.appendChild(popup);
+  setTimeout(() => popup.remove(), 900);
+}
+
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast--${type}`;
+  toast.textContent = message;
+  toast.setAttribute('role', 'alert');
+  el.toastContainer.appendChild(toast);
+  setTimeout(() => toast.remove(), 2800);
+}
+
+// ============================================================================
+// §7. POTION & HISTORY
 // ============================================================================
 
 function updatePotionUI() {
-  const count    = state.strategiCount;
-  const max      = STRATEGI_TARGET_MIN;
-  const pct      = Math.min((count / max) * 100, 100);
+  const count = state.strategiCount;
+  const max = STRATEGI_TARGET_MIN;
+  const pct = Math.min((count / max) * 100, 100);
   el.potionCountCurrent.textContent = count;
-  el.potionCountMax.textContent     = max;
+  el.potionCountMax.textContent = max;
   el.potionLiquid.style.height = `${pct}%`;
 
-  const stars  = Math.min(Math.floor(count / (max / 3)), 3);
+  const stars = Math.min(Math.floor(count / (max / 3)), 3);
   const starEl = el.potionStars;
   starEl.innerHTML = '';
   for (let i = 0; i < 3; i++) {
     const s = document.createElement('span');
     if (i < stars) {
-      s.textContent     = '⭐';
-      s.style.filter    = 'none';
+      s.textContent = '⭐';
+      s.style.filter = 'none';
       s.style.transform = 'scale(1.2)';
-      s.style.display   = 'inline-block';
+      s.style.display = 'inline-block';
       s.style.animation = `bounceIn 0.4s ${i * 0.1}s ease both`;
     } else {
-      s.textContent   = '⭐';
-      s.style.filter  = 'grayscale(1) opacity(0.35)';
+      s.textContent = '⭐';
+      s.style.filter = 'grayscale(1) opacity(0.35)';
     }
     starEl.appendChild(s);
   }
 }
 
-// ============================================================================
-// §8. STRATEGY HISTORY LIST
-// ============================================================================
-
 function addStrategyToHistory(formula, poin, index) {
-  if (el.strategyEmptyMsg) {
-    el.strategyEmptyMsg.remove();
-  }
+  if (el.strategyEmptyMsg) el.strategyEmptyMsg.remove();
   const li = document.createElement('li');
   li.className = 'strategy-item';
   li.setAttribute('role', 'listitem');
@@ -406,31 +386,84 @@ function addStrategyToHistory(formula, poin, index) {
   el.strategyList.scrollTop = el.strategyList.scrollHeight;
 }
 
+function escapeHtml(str) {
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+  return String(str).replace(/[&<>"']/g, m => map[m]);
+}
+
 // ============================================================================
-// §9. POIN CALCULATION
+// §8. INSIGHT (CARA BERPIKIRMU)
+// ============================================================================
+
+function updateInsight() {
+  const total = state.opCount.add + state.opCount.sub + state.opCount.mul + state.opCount.div || 1;
+  const pct = k => Math.round(state.opCount[k] / total * 100);
+  document.getElementById('pctAdd').textContent = pct('add') + '%';
+  document.getElementById('barAdd').style.width = pct('add') + '%';
+  document.getElementById('pctMul').textContent = pct('mul') + '%';
+  document.getElementById('barMul').style.width = pct('mul') + '%';
+  document.getElementById('pctSub').textContent = pct('sub') + '%';
+  document.getElementById('barSub').style.width = pct('sub') + '%';
+  document.getElementById('pctDiv').textContent = pct('div') + '%';
+  document.getElementById('barDiv').style.width = pct('div') + '%';
+
+  const tipEl = document.getElementById('insightTip');
+  if (tipEl) {
+    const tips = [
+      `Coba gunakan <b>perkalian</b> lebih sering!`,
+      `Hebat! Kamu sudah coba banyak cara. 🌟`,
+      `<b>Pembagian</b> bisa menghasilkan ${state.targetAngka} juga lho!`,
+      `Coba kombinasikan <b>+ dan ×</b>!`,
+      `Kamu makin kreatif berpikir matematika! 🧠`,
+    ];
+    tipEl.innerHTML = tips[Math.floor(Math.random() * tips.length)];
+  }
+}
+
+// ============================================================================
+// §9. BADGE
+// ============================================================================
+
+function updateBadges() {
+  const badges = {
+    explorer: document.getElementById('badgeExplorer'),
+    thinker: document.getElementById('badgeThinker'),
+    star: document.getElementById('badgeStar'),
+    master: document.getElementById('badgeMaster'),
+  };
+  Object.values(badges).forEach(el => el?.classList.remove('earned'));
+  if (state.strategiCount >= 1) badges.explorer?.classList.add('earned');
+  if (state.strategiCount >= 3) badges.thinker?.classList.add('earned');
+  if (state.sessionScore >= 50) badges.star?.classList.add('earned');
+  if (state.strategiCount >= 5) badges.master?.classList.add('earned');
+}
+
+// ============================================================================
+// §10. SUBMIT FORMULA (TANPA MODAL SUKSES)
 // ============================================================================
 
 function hitungPoin() {
   const operatorCount = state.tokens.filter(t => t.type === 'operator').length;
-  const hasParen      = state.tokens.some(t => t.type === 'paren_open');
-  return POIN_DASAR
-    + (operatorCount * POIN_BONUS_OPERATOR)
-    + (hasParen ? POIN_BONUS_KURUNG : 0);
+  const hasParen = state.tokens.some(t => t.type === 'paren_open');
+  return POIN_DASAR + (operatorCount * POIN_BONUS_OPERATOR) + (hasParen ? POIN_BONUS_KURUNG : 0);
 }
 
-// ============================================================================
-// §10. SUBMIT FORMULA (tanpa modal sukses)
-// ============================================================================
+function countOpsInExpr(s) {
+  return {
+    add: (s.match(/\+/g) || []).length,
+    sub: (s.match(/\-/g) || []).length,
+    mul: (s.match(/×/g) || []).length,
+    div: (s.match(/÷/g) || []).length,
+  };
+}
 
 async function handleSubmit() {
   if (state.isSubmitting) return;
   if (state.tokens.length === 0) return;
 
   const exprStr = tokensToExprString();
-  const result  = evaluateExpr(exprStr);
-  state.totalAttempts++; // untuk akurasi
+  const result = evaluateExpr(exprStr);
 
-  // Validasi
   if (!result.ok) {
     flashFormula('error');
     showToast('Formula belum lengkap!', 'error');
@@ -448,11 +481,9 @@ async function handleSubmit() {
     return;
   }
 
-  // Commit ke Supabase
   state.isSubmitting = true;
   el.btnSubmit.disabled = true;
   el.btnSubmit.textContent = '⏳ Menyimpan...';
-
   const poin = hitungPoin();
 
   try {
@@ -486,18 +517,17 @@ async function handleSubmit() {
     state.opCount.mul += oc.mul;
     state.opCount.div += oc.div;
 
-    // Update UI
     el.displayScore.textContent = newTotalSkor;
     spawnScorePopup(poin);
     addStrategyToHistory(exprStr, poin, state.strategiCount);
     updatePotionUI();
-    updateBadges();
     updateInsight();
+    updateBadges();
     clearTokens();
     renderFormula();
     flashFormula('correct');
 
-    // Feedback langsung (tanpa modal)
+    // Feedback langsung
     setFeedback(`🎉 <strong>${exprStr} = ${state.targetAngka}</strong>! +${poin} Poin!`, 'fb-ok');
     setMascot('correct', 'Keren! 🚀');
 
@@ -509,7 +539,6 @@ async function handleSubmit() {
       el.modalFinishStars.innerHTML = '⭐'.repeat(stars) + '🌟'.repeat(3 - stars);
       setTimeout(() => openModal(el.modalFinish), 400);
     }
-
   } catch (err) {
     console.error('[Game] Submit error:', err);
     showToast('Gagal menyimpan. Periksa koneksi!', 'error');
@@ -519,21 +548,12 @@ async function handleSubmit() {
   }
 }
 
-// Helper untuk menghitung operator dalam ekspresi
-function countOpsInExpr(s) {
-  return {
-    add: (s.match(/\+/g) || []).length,
-    sub: (s.match(/\-/g) || []).length,
-    mul: (s.match(/×/g) || []).length,
-    div: (s.match(/÷/g) || []).length,
-  };
-}
-
 // ============================================================================
 // §11. MODAL MANAGEMENT
 // ============================================================================
 
 function openModal(modalEl) {
+  if (modalEl.classList.contains('is-open')) return; // cegah double
   modalEl.classList.add('is-open');
   const firstBtn = modalEl.querySelector('button');
   if (firstBtn) setTimeout(() => firstBtn.focus(), 250);
@@ -541,26 +561,63 @@ function openModal(modalEl) {
 
 function closeModal(modalEl) {
   modalEl.classList.remove('is-open');
-  // finish modal handling
-  if (modalEl === el.modalFinish) {
-    // tidak ada aksi khusus
-  }
 }
 
 function initModalListeners() {
   el.btnCloseDuplicate.addEventListener('click', () => closeModal(el.modalDuplicate));
-  el.btnCloseSuccess.addEventListener('click',   () => closeModal(el.modalSuccess));
-  el.btnCloseInvalid.addEventListener('click',   () => closeModal(el.modalInvalid));
-  el.btnFinishMore.addEventListener('click', () => closeModal(el.modalFinish));
-  el.btnFinishNext.addEventListener('click', () => {
+  el.btnCloseSuccess.addEventListener('click', () => closeModal(el.modalSuccess));
+  el.btnCloseInvalid.addEventListener('click', () => closeModal(el.modalInvalid));
+
+  // Tombol "Cari Lebih Banyak" di modal finish
+  el.btnFinishMore.addEventListener('click', () => {
     closeModal(el.modalFinish);
-    showToast('Fitur level berikutnya segera hadir! 🚀', 'warn');
+    // tetap di game, target sama
   });
-  [el.modalDuplicate, el.modalSuccess, el.modalInvalid].forEach(modal => {
+
+  // Tombol "Level Berikutnya"
+  el.btnFinishNext.addEventListener('click', async () => {
+    closeModal(el.modalFinish);
+    // Buat sesi baru dengan level+1
+    const newLevel = (state.session.sesi_game.level_ke || 1) + 1;
+    const newTarget = generateTargetAngka(newLevel);
+    try {
+      const { data: newSesi, error } = await supabase
+        .from('sesi_game')
+        .insert({
+          id_siswa: state.session.siswa.id_siswa,
+          level_ke: newLevel,
+          target_angka: newTarget,
+          status_selesai: false,
+        })
+        .select('id_sesi, level_ke, target_angka, status_selesai')
+        .single();
+      if (error) throw error;
+      // Update session di sessionStorage
+      const updatedSession = {
+        ...state.session,
+        sesi_game: {
+          id_sesi: newSesi.id_sesi,
+          level_ke: newSesi.level_ke,
+          target_angka: newSesi.target_angka,
+          status_selesai: newSesi.status_selesai,
+        },
+      };
+      patchSession({ sesi_game: updatedSession.sesi_game });
+      // Reload halaman agar state baru
+      window.location.reload();
+    } catch (err) {
+      console.error('[Level Next] Error:', err);
+      showToast('Gagal membuat level berikutnya.', 'error');
+    }
+  });
+
+  // Tutup modal dengan backdrop
+  [el.modalDuplicate, el.modalSuccess, el.modalInvalid, el.modalFinish].forEach(modal => {
     modal.addEventListener('click', e => {
       if (e.target === modal) closeModal(modal);
     });
   });
+
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     [el.modalDuplicate, el.modalSuccess, el.modalInvalid, el.modalFinish].forEach(m => {
@@ -570,84 +627,21 @@ function initModalListeners() {
 }
 
 // ============================================================================
-// §12. TOAST NOTIFICATIONS
-// ============================================================================
-
-function showToast(message, type = 'info') {
-  const toast = document.createElement('div');
-  toast.className = `toast toast--${type}`;
-  toast.textContent = message;
-  toast.setAttribute('role', 'alert');
-  el.toastContainer.appendChild(toast);
-  setTimeout(() => toast.remove(), 2800);
-}
-
-// ============================================================================
-// §13. VISUAL FX
-// ============================================================================
-
-function flashFormula(stateClass) {
-  el.formulaDisplay.classList.remove('state--error', 'state--correct');
-  void el.formulaDisplay.offsetWidth;
-  el.formulaDisplay.classList.add(`state--${stateClass}`);
-  setTimeout(() => el.formulaDisplay.classList.remove(`state--${stateClass}`), 500);
-}
-
-function spawnScorePopup(poin) {
-  const popup = document.createElement('div');
-  popup.className   = 'score-popup';
-  popup.textContent = `+${poin}`;
-  popup.style.left  = `${Math.random() * 40 + 30}%`;
-  popup.style.top   = '80px';
-  document.body.appendChild(popup);
-  setTimeout(() => popup.remove(), 900);
-}
-
-// ============================================================================
-// §14. FEEDBACK & MASCOT (tanpa modal)
-// ============================================================================
-
-function setFeedback(msg, className) {
-  const fb = document.getElementById('feedback');
-  if (!fb) return;
-  fb.className = 'fb-bar ' + className;
-  fb.innerHTML = msg;
-}
-
-function setMascot(stateType, msg) {
-  const speech = document.getElementById('speech');
-  if (!speech) return;
-  speech.className = 'speech';
-  speech.innerHTML = msg;
-  // (opsional) tambahkan animasi mascot jika mau
-}
-
-// ============================================================================
-// §15. VIRTUAL KEYPAD — Event Listeners
+// §12. KEYPAD
 // ============================================================================
 
 function initKeypadListeners() {
   document.getElementById('virtualKeypad').addEventListener('click', e => {
     const btn = e.target.closest('button');
     if (!btn || btn.disabled) return;
-    const type   = btn.dataset.type;
-    const value  = btn.dataset.value;
+    const type = btn.dataset.type;
+    const value = btn.dataset.value;
     const action = btn.dataset.action;
 
-    if (action === 'delete') {
-      popToken();
-      renderFormula();
-      return;
-    }
-    if (action === 'reset') {
-      clearTokens();
-      renderFormula();
-      return;
-    }
-    if (action === 'submit') {
-      handleSubmit();
-      return;
-    }
+    if (action === 'delete') { popToken(); renderFormula(); return; }
+    if (action === 'reset') { clearTokens(); renderFormula(); return; }
+    if (action === 'submit') { handleSubmit(); return; }
+
     if (type === 'digit') {
       const last = state.tokens[state.tokens.length - 1];
       if (last?.type === 'digit') {
@@ -667,8 +661,7 @@ function initKeypadListeners() {
     }
     if (type === 'paren') {
       const last = state.tokens[state.tokens.length - 1];
-      const needClose = state.openParens > 0 &&
-        (last?.type === 'digit' || last?.type === 'paren_close');
+      const needClose = state.openParens > 0 && (last?.type === 'digit' || last?.type === 'paren_close');
       if (needClose) {
         const ok = pushToken({ type: 'paren_close', value: ')' });
         if (ok) renderFormula();
@@ -681,7 +674,6 @@ function initKeypadListeners() {
     }
   });
 
-  // Keyboard fisik
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT') return;
     const map = {
@@ -712,7 +704,7 @@ function initKeypadListeners() {
 }
 
 // ============================================================================
-// §16. SUPABASE — Muat Strategi yang Sudah Ada
+// §13. SUPABASE — LOAD EXISTING STRATEGIES
 // ============================================================================
 
 async function loadExistingStrategies() {
@@ -721,18 +713,19 @@ async function loadExistingStrategies() {
     .select('id_strategi, ekspresi_matematika, poin_didapat')
     .eq('id_sesi', state.idSesi)
     .order('id_strategi', { ascending: true });
+
   if (error) {
     console.warn('[Game] Gagal memuat strategi sebelumnya:', error.message);
     return;
   }
   if (!data || data.length === 0) return;
+
   data.forEach((row, idx) => {
     const normalized = normalizeExpr(row.ekspresi_matematika);
     state.submittedExpressions.add(normalized);
     state.strategiCount++;
     state.sessionScore += row.poin_didapat;
     addStrategyToHistory(row.ekspresi_matematika, row.poin_didapat, idx + 1);
-    // Akumulasi opCount dari history (jika perlu)
   });
   updatePotionUI();
   updateBadges();
@@ -740,51 +733,37 @@ async function loadExistingStrategies() {
 }
 
 // ============================================================================
-// §17. BADGE & INSIGHT
+// §14. RESULT OVERLAY (saat timer habis)
 // ============================================================================
 
-function updateBadges() {
-  const badges = {
-    explorer: document.getElementById('badgeExplorer'),
-    thinker: document.getElementById('badgeThinker'),
-    star: document.getElementById('badgeStar'),
-    master: document.getElementById('badgeMaster'),
-  };
-  Object.values(badges).forEach(el => el?.classList.remove('earned'));
-  if (state.strategiCount >= 1) badges.explorer?.classList.add('earned');
-  if (state.strategiCount >= 3) badges.thinker?.classList.add('earned');
-  if (state.sessionScore >= 50) badges.star?.classList.add('earned');
-  if (state.strategiCount >= 5) badges.master?.classList.add('earned');
-}
+function showResult() {
+  // Jika sudah finish (modal finish muncul), jangan tampilkan result overlay
+  if (state.finishModalShown) return;
 
-function updateInsight() {
+  const acc = state.strategiCount > 0 ? 100 : 0;
+  document.getElementById('res-poin').textContent = state.sessionScore;
+  document.getElementById('res-strat').textContent = state.strategiCount;
+  document.getElementById('res-acc').textContent = acc + '%';
+
+  const studentName = state.session?.siswa?.nama_panggilan || 'Siswa';
+  document.getElementById('res-sub').textContent = `${studentName} menemukan ${state.strategiCount} cara! Total poin: ${state.sessionScore}`;
+
+  const emoji = state.strategiCount >= 5 ? '🏆' : state.strategiCount >= 3 ? '🎉' : '⭐';
+  const title = state.strategiCount >= 5 ? 'Luar Biasa!' : state.strategiCount >= 3 ? 'Kerja Bagus!' : 'Tetap Semangat!';
+  document.getElementById('res-emoji').textContent = emoji;
+  document.getElementById('res-title').textContent = title;
+
+  // Update operasi di result
   const total = state.opCount.add + state.opCount.sub + state.opCount.mul + state.opCount.div || 1;
-  const pct = k => Math.round(state.opCount[k] / total * 100);
-  document.getElementById('pctAdd').textContent = pct('add') + '%';
-  document.getElementById('barAdd').style.width = pct('add') + '%';
-  document.getElementById('pctMul').textContent = pct('mul') + '%';
-  document.getElementById('barMul').style.width = pct('mul') + '%';
-  document.getElementById('pctSub').textContent = pct('sub') + '%';
-  document.getElementById('barSub').style.width = pct('sub') + '%';
-  document.getElementById('pctDiv').textContent = pct('div') + '%';
-  document.getElementById('barDiv').style.width = pct('div') + '%';
+  const pctOf = k => Math.round(state.opCount[k] / total * 100);
+  ['add', 'mul', 'sub', 'div'].forEach(k => {
+    const p = pctOf(k);
+    document.getElementById('ro-' + k).textContent = p + '%';
+    setTimeout(() => document.getElementById('rb-' + k).style.width = p + '%', 300);
+  });
 
-  const tipEl = document.getElementById('insightTip');
-  if (tipEl) {
-    const tips = [
-      `Coba gunakan <b>perkalian</b> lebih sering!`,
-      `Hebat! Kamu sudah coba banyak cara. 🌟`,
-      `<b>Pembagian</b> bisa menghasilkan ${state.targetAngka} juga lho!`,
-      `Coba kombinasikan <b>+ dan ×</b>!`,
-      `Kamu makin kreatif berpikir matematika! 🧠`,
-    ];
-    tipEl.innerHTML = tips[Math.floor(Math.random() * tips.length)];
-  }
+  document.getElementById('result-overlay').classList.add('open');
 }
-
-// ============================================================================
-// §18. TIMER & RESULT OVERLAY
-// ============================================================================
 
 function endGame() {
   if (window._timerInterval) {
@@ -794,38 +773,8 @@ function endGame() {
   showResult();
 }
 
-function showResult() {
-  const correct = state.strategiCount;
-  const acc = state.totalAttempts > 0 ? Math.round((correct / state.totalAttempts) * 100) : 0;
-  const total = state.opCount.add + state.opCount.sub + state.opCount.mul + state.opCount.div || 1;
-  const pctOf = k => Math.round(state.opCount[k] / total * 100);
-
-  el.resPoin.textContent = state.sessionScore;
-  el.resStrat.textContent = state.strategiCount;
-  el.resAcc.textContent = acc + '%';
-
-  const studentName = state.session?.siswa?.nama_panggilan || 'Siswa';
-  el.resSub.textContent = `${studentName} menemukan ${state.strategiCount} cara! Total poin: ${state.sessionScore}`;
-
-  const emoji = state.strategiCount >= 5 ? '🏆' : state.strategiCount >= 3 ? '🎉' : '⭐';
-  const title = state.strategiCount >= 5 ? 'Luar Biasa!' : state.strategiCount >= 3 ? 'Kerja Bagus!' : 'Tetap Semangat!';
-  el.resEmoji.textContent = emoji;
-  el.resTitle.textContent = title;
-
-  // Update op bars di result
-  ['add', 'mul', 'sub', 'div'].forEach(k => {
-    const p = pctOf(k);
-    document.getElementById('ro-' + k).textContent = p + '%';
-    setTimeout(() => document.getElementById('rb-' + k).style.width = p + '%', 300);
-  });
-
-  updateBadges();
-  el.resultOverlay.classList.add('open');
-}
-
 function restartGame() {
-  el.resultOverlay.classList.remove('open');
-  // Reset state
+  document.getElementById('result-overlay').classList.remove('open');
   state.tokens = [];
   state.openParens = 0;
   state.submittedExpressions = new Set();
@@ -834,21 +783,23 @@ function restartGame() {
   state.finishModalShown = false;
   state.isSubmitting = false;
   state.opCount = { add: 0, sub: 0, mul: 0, div: 0 };
-  state.totalAttempts = 0;
 
-  // Reset UI
   el.displayScore.textContent = state.session.siswa.total_skor;
   el.strategyList.innerHTML = `<li class="strategy-history__empty" id="strategyEmptyMsg">Belum ada rumus. Yuk, mulai temukan!</li>`;
   updatePotionUI();
   renderFormula();
-  if (window._resetTimer) window._resetTimer();
-  const fb = document.getElementById('feedback');
-  if (fb) {
-    fb.className = 'fb-bar fb-idle';
-    fb.innerHTML = '✏️ Buat ekspresi matematika yang hasilnya target!';
-  }
-  updateBadges();
   updateInsight();
+  updateBadges();
+  setFeedback('✏️ Buat ekspresi matematika yang hasilnya target!', 'fb-idle');
+  setMascot('idle', 'Yuk cari semua cara membuat target! 🤖');
+
+  if (window._resetTimer) window._resetTimer();
+  // Generate target baru (level tetap sama)
+  const newTarget = generateTargetAngka(state.session.sesi_game.level_ke || 1);
+  state.targetAngka = newTarget;
+  document.getElementById('displayTargetNumber').textContent = newTarget;
+  document.getElementById('stratBadge').textContent = '🔎 0 cara ditemukan';
+  document.getElementById('targetHint').textContent = 'Cari cara membuat ' + newTarget;
 }
 
 function goToDashboard() {
@@ -856,19 +807,19 @@ function goToDashboard() {
 }
 
 // ============================================================================
-// §19. INISIALISASI UTAMA
+// §15. INIT
 // ============================================================================
 
 async function init() {
   try {
     const session = requireSiswaSession();
-    state.session    = session;
-    state.idSesi     = session.sesi_game.id_sesi;
+    state.session = session;
+    state.idSesi = session.sesi_game.id_sesi;
     state.targetAngka = session.sesi_game.target_angka;
 
     el.displayStudentName.textContent = session.siswa.nama_panggilan;
-    el.displayLevel.textContent       = session.sesi_game.level_ke;
-    el.displayScore.textContent       = session.siswa.total_skor;
+    el.displayLevel.textContent = session.sesi_game.level_ke;
+    el.displayScore.textContent = session.siswa.total_skor;
 
     el.displayTargetNumber.textContent = state.targetAngka;
     el.displayTargetNumber.classList.remove('animate-in');
@@ -878,19 +829,18 @@ async function init() {
     el.potionCountMax.textContent = STRATEGI_TARGET_MIN;
 
     await loadExistingStrategies();
-
     initKeypadListeners();
     initModalListeners();
     renderFormula();
+
+    // Sembunyikan loading
     el.loadingScreen.classList.add('is-hidden');
 
-    // Inisialisasi result listeners (tombol Main Lagi & Ke Dashboard)
-    const btnAgain = document.querySelector('.rbtn-again');
-    const btnDash = document.querySelector('.rbtn-dash');
-    if (btnAgain) btnAgain.addEventListener('click', restartGame);
-    if (btnDash) btnDash.addEventListener('click', goToDashboard);
+    // Inisialisasi result buttons
+    document.querySelector('.rbtn-again')?.addEventListener('click', restartGame);
+    document.querySelector('.rbtn-dash')?.addEventListener('click', goToDashboard);
 
-    // Ekspos fungsi ke window untuk timer
+    // Ekspose ke window untuk timer
     window.endGame = endGame;
     window.restartGame = restartGame;
     window.goToDashboard = goToDashboard;
@@ -906,16 +856,7 @@ async function init() {
 }
 
 // ============================================================================
-// §20. UTILITY HELPERS
-// ============================================================================
-
-function escapeHtml(str) {
-  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-  return String(str).replace(/[&<>"']/g, m => map[m]);
-}
-
-// ============================================================================
-// §21. BOOTSTRAP
+// §16. BOOTSTRAP
 // ============================================================================
 
 if (document.readyState === 'loading') {
