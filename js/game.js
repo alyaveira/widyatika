@@ -40,6 +40,7 @@ const el = {
   potionStars: document.getElementById('potionStars'),
   strategyList: document.getElementById('strategyList'),
   strategyEmptyMsg: document.getElementById('strategyEmptyMsg'),
+  stratBadge: document.getElementById('stratBadge'),
   historyAllList: document.getElementById('historyAllList'),
   modalDuplicate: document.getElementById('modalDuplicate'),
   modalSuccess: document.getElementById('modalSuccess'),
@@ -572,6 +573,7 @@ if (!updateResponse.ok) {
 
     state.submittedExpressions.add(normalized);
     state.strategiCount++;
+    el.stratBadge.textContent = `🔎 ${state.strategiCount} cara ditemukan`;
     state.sessionScore += poin;
     state.session.siswa.total_skor = newTotalSkor;
     patchSession({ siswa: state.session.siswa });
@@ -764,6 +766,7 @@ async function loadExistingStrategies() {
       const normalized = normalizeExpr(row.ekspresi_matematika);
       state.submittedExpressions.add(normalized);
       state.strategiCount++;
+      el.stratBadge.textContent = `🔎 ${state.strategiCount} cara ditemukan`;
       state.sessionScore += row.poin_didapat;
       addStrategyToHistory(row.ekspresi_matematika, row.poin_didapat, idx + 1);
     });
