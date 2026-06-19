@@ -8,6 +8,7 @@
  *   - Badge, insight (Cara Berpikirmu)
  *   - Tanpa "Koleksi Rumusku"
  *   - Tanpa modal finish – hanya result overlay saat timer habis
+ *   - Validasi: ekspresi HARUS mengandung setidaknya 1 operator (+, −, ×, ÷)
  * =============================================================================
  */
 import { supabase } from './supabase-config.js';
@@ -89,7 +90,6 @@ const state = {
   submittedExpressions: new Set(),
   sessionScore: 0,
   strategiCount: 0,
-  // finishModalShown tidak digunakan lagi
   isSubmitting: false,
   opCount: { add: 0, sub: 0, mul: 0, div: 0 },
   allHistory: [],
@@ -490,6 +490,18 @@ async function handleSubmit() {
     return;
   }
 
+  // 🔥 VALIDASI: HARUS ADA MINIMAL 1 OPERATOR
+  const oc = countOpsInExpr(exprStr);
+  const totalOps = oc.add + oc.sub + oc.mul + oc.div;
+  if (totalOps === 0) {
+    flashFormula('error');
+    showToast('Gunakan operator! (+ - × ÷)', 'warn');
+    setFeedback('😅 Ekspresi harus mengandung operator!', 'fb-used');
+    clearTokens();
+    renderFormula();
+    return;
+  }
+
   const ok = Math.abs(result.value - state.targetAngka) < 0.0001;
   state.allHistory.unshift({ expr: exprStr, ok, val: result.value });
   renderAllHistory();
@@ -563,7 +575,7 @@ async function handleSubmit() {
     state.session.siswa.total_skor = newTotalSkor;
     patchSession({ siswa: state.session.siswa });
 
-    const oc = countOpsInExpr(exprStr);
+    // Akumulasi operator untuk insight
     state.opCount.add += oc.add;
     state.opCount.sub += oc.sub;
     state.opCount.mul += oc.mul;
@@ -582,7 +594,7 @@ async function handleSubmit() {
     setFeedback(`🎉 <strong>${exprStr} = ${state.targetAngka}</strong>! +${poin} Poin!`, 'fb-ok');
     setMascot('correct', 'Keren! 🚀');
 
-    // TIDAK ADA MODAL FINISH DISINI – hanya result overlay saat timer habis
+    // TIDAK ADA MODAL FINISH DI SINI
 
   } catch (err) {
     console.error('[Game] Submit error:', err);
@@ -608,8 +620,6 @@ function closeModal(modalEl) {
 }
 
 function initModalListeners() {
-  // Tombol "Level Berikutnya" dan "Cari Lebih Banyak" di modal finish tidak akan digunakan,
-  // tapi kita tetap pasang event listener untuk berjaga-jaga jika modal finish muncul dari kode lain.
   el.btnFinishNext.addEventListener('click', async () => {
     closeModal(el.modalFinish);
     const newLevel = (state.session.sesi_game.level_ke || 1) + 1;
@@ -644,7 +654,6 @@ function initModalListeners() {
   });
   el.btnFinishMore.addEventListener('click', () => closeModal(el.modalFinish));
 
-  // Modal lainnya
   el.btnCloseDuplicate.addEventListener('click', () => closeModal(el.modalDuplicate));
   el.btnCloseSuccess.addEventListener('click', () => closeModal(el.modalSuccess));
   el.btnCloseInvalid.addEventListener('click', () => closeModal(el.modalInvalid));
@@ -774,7 +783,6 @@ async function loadExistingStrategies() {
 // RESULT OVERLAY – HANYA DIPANGGIL SAAT TIMER HABIS ATAU QUIT
 // ============================================================================
 function showResult() {
-  // Hitung akurasi berdasarkan history (semua percobaan)
   const totalAttempts = state.allHistory.length;
   const correctCount = state.allHistory.filter(h => h.ok).length;
   const acc = totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 0;
@@ -786,13 +794,11 @@ function showResult() {
   const studentName = state.session?.siswa?.nama_panggilan || 'Siswa';
   el.resSub.textContent = `${studentName} menemukan ${state.strategiCount} cara! Total poin: ${state.sessionScore}`;
 
-  // Emoji dan judul berdasarkan jumlah strategi
   const emoji = state.strategiCount >= 5 ? '🏆' : state.strategiCount >= 3 ? '🎉' : '⭐';
   const title = state.strategiCount >= 5 ? 'Luar Biasa!' : state.strategiCount >= 3 ? 'Kerja Bagus!' : 'Tetap Semangat!';
   el.resEmoji.textContent = emoji;
   el.resTitle.textContent = title;
 
-  // Update operasi bars
   const total = state.opCount.add + state.opCount.sub + state.opCount.mul + state.opCount.div || 1;
   const pctOf = k => Math.round(state.opCount[k] / total * 100);
   ['add', 'mul', 'sub', 'div'].forEach(k => {
@@ -807,12 +813,10 @@ function showResult() {
 }
 
 function endGame() {
-  // Hentikan timer
   if (window._timerInterval) {
     clearInterval(window._timerInterval);
     window._timerInterval = null;
   }
-  // Tampilkan result overlay
   showResult();
 }
 
