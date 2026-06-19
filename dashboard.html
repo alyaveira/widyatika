@@ -683,7 +683,7 @@
   <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
   <!-- ================================================================
-       SCRIPT — Dashboard Logic + Gemini Chat
+       SCRIPT — Dashboard Logic + Gemini Chat (DIPERBAIKI)
   ================================================================ -->
   <script type="module">
     import { supabase } from './js/supabase-config.js';
@@ -735,7 +735,7 @@
     let dashboardStats = { totalKelas: 0, totalSiswa: 0, rataSkor: 0, highestClass: null, lowestClass: null };
 
     // ----------------------------------------------------------------
-    // LOAD DATA & RENDER
+    // LOAD DATA & RENDER (VERSI DIPERBAIKI)
     // ----------------------------------------------------------------
     async function fetchDashboardData() {
       const { data: kelasList, error: kelasErr } = await supabase
@@ -757,9 +757,9 @@
         siswaList = sd || [];
       }
 
-      // Sesi: untuk menghitung "Sesi Selesai" & siapa saja yang sudah main
+      // 🔥 HITUNG SISWA YANG SUDAH PERNAH MAIN (punya sesi_game)
+      let siswaSudahMainCount = 0;
       let totalSesiSelesai = 0;
-      let siswaSudahMainIds = new Set();
       let sesiList = [];
       if (siswaList.length > 0) {
         const siswaIds = siswaList.map(s => s.id_siswa);
@@ -770,7 +770,9 @@
         if (!sesiErr && sd2) {
           sesiList = sd2;
           totalSesiSelesai = sd2.filter(s => s.status_selesai).length;
-          sd2.forEach(s => siswaSudahMainIds.add(s.id_siswa));
+          // 🔥 Ambil id_siswa unik yang punya sesi
+          const siswaWithSesi = new Set(sd2.map(s => s.id_siswa));
+          siswaSudahMainCount = siswaWithSesi.size;
         }
       }
 
@@ -796,7 +798,6 @@
       const rataSkor = totalSiswa > 0
         ? Math.round(siswaList.reduce((s, sw) => s + (sw.total_skor || 0), 0) / totalSiswa)
         : 0;
-      const siswaSudahMainCount = siswaSudahMainIds.size;
 
       // Hitung highest/lowest
       const classScores = {};
@@ -814,6 +815,11 @@
         if (avg < lowestAvg) { lowestAvg = avg; lowestClass = nama; }
       });
 
+      // 🔥 LOG untuk debugging (bisa dilihat di console browser)
+      console.log('[Dashboard] Total siswa:', totalSiswa);
+      console.log('[Dashboard] Siswa sudah main:', siswaSudahMainCount);
+      console.log('[Dashboard] Progress:', totalSiswa > 0 ? Math.round((siswaSudahMainCount / totalSiswa) * 100) : 0);
+
       return {
         kelasList, siswaList, totalKelas, totalSiswa, rataSkor,
         totalSesiSelesai, siswaSudahMainCount, highestClass, lowestClass,
@@ -826,8 +832,11 @@
 
       dashboardStats = { totalKelas: data.totalKelas, totalSiswa, rataSkor, highestClass: data.highestClass, lowestClass: data.lowestClass };
 
-      // Aktivitas Belajar: persentase siswa yang SUDAH PERNAH MAIN (punya sesi_game), sesuai data nyata
+      // ============================================================
+      // AKTIVITAS BELAJAR — berdasarkan data nyata
+      // ============================================================
       const progress = totalSiswa > 0 ? Math.round((siswaSudahMainCount / totalSiswa) * 100) : 0;
+      
       // Update circle
       const circle = document.getElementById('progressCircle');
       if (circle) {
@@ -846,7 +855,7 @@
           activityTitle.textContent = 'Belum ada siswa';
           activityDesc.textContent = 'Tambahkan siswa untuk mulai memantau aktivitas belajar.';
         } else if (progress === 100) {
-          activityTitle.textContent = 'Semua siswa sudah main!';
+          activityTitle.textContent = 'Semua siswa sudah main! 🎉';
           activityDesc.textContent = 'Semua siswa sudah mencoba permainan ini.';
         } else {
           activityTitle.textContent = `${siswaSudahMainCount} dari ${totalSiswa} siswa sudah main`;
@@ -855,7 +864,7 @@
       }
 
       // ============================================================
-      // INSIGHT AI — Detail laporan 1 siswa (yang paling perlu perhatian / skor terendah)
+      // INSIGHT AI — (tetap sama)
       // ============================================================
       const insightBody = document.getElementById('insightBody');
       const insightTags = document.querySelector('.insight-card__tags');
@@ -879,7 +888,7 @@
       }
 
       // ============================================================
-      // KELAS SAYA — Card dengan Event Klik (warna disesuaikan dengan halaman Kelas)
+      // KELAS SAYA — (tetap sama)
       // ============================================================
       const grid = document.getElementById('kelasGrid');
       if (!kelasList || kelasList.length === 0) {
@@ -890,7 +899,6 @@
           </div>
         `;
       } else {
-        // Hitung rata-rata per kelas
         const classStats = {};
         siswaList.forEach(s => {
           if (!classStats[s.id_kelas]) classStats[s.id_kelas] = { total: 0, count: 0 };
@@ -917,10 +925,8 @@
           `;
         }).join('');
 
-        // Tambahkan event listener klik pada setiap card kelas
         grid.querySelectorAll('.kelas-card').forEach(card => {
           card.addEventListener('click', function(e) {
-            // Cegah jika yang diklik adalah link di dalam card (tidak ada, tapi safety)
             if (e.target.closest('a')) return;
             const kelasId = this.dataset.id;
             if (kelasId) {
