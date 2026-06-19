@@ -489,6 +489,7 @@
       padding: 20px 24px;
       box-shadow: var(--shadow-sm);
       transition: transform var(--ease-fast), box-shadow var(--ease-fast);
+      cursor: pointer;
     }
     .kelas-card:hover {
       transform: translateY(-2px);
@@ -543,7 +544,7 @@
 
     <!-- ================================================================
          SIDEBAR — Biru Tua #1E293B
-    ================================================================= -->
+    ================================================================ -->
     <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu navigasi guru">
       <div class="sidebar__brand">
         <div class="sidebar__logo-icon" aria-hidden="true">◈</div>
@@ -582,7 +583,7 @@
 
     <!-- ================================================================
          TOPBAR
-    ================================================================= -->
+    ================================================================ -->
     <header class="topbar" role="banner">
       <div class="topbar__left">
         <button class="btn btn--ghost btn--icon" id="btnToggleSidebar" aria-label="Toggle sidebar" aria-expanded="true" style="display:none;" type="button">☰</button>
@@ -596,7 +597,7 @@
 
     <!-- ================================================================
          MAIN CONTENT
-    ================================================================= -->
+    ================================================================ -->
     <main class="main-content" id="mainContent" role="main" aria-label="Konten dashboard">
 
       <!-- Loading State -->
@@ -696,7 +697,7 @@
 
   <!-- ================================================================
        GEMINI FAB & CHAT
-  ================================================================= -->
+  ================================================================ -->
   <button class="gemini-fab" id="geminiFab" aria-label="Buka asisten AI Widy" aria-haspopup="dialog" aria-expanded="false" type="button">
     <span id="fabIcon" aria-hidden="true">💬</span>
     <span class="gemini-fab__tooltip">Tanya Widy AI</span>
@@ -740,7 +741,7 @@
 
   <!-- ================================================================
        SCRIPT — Dashboard Logic + Gemini Chat
-  ================================================================= -->
+  ================================================================ -->
   <script type="module">
     import { supabase } from './js/supabase-config.js';
     import { initGuruPage } from './js/guru.js';
@@ -863,14 +864,8 @@
       dashboardStats = { totalKelas, totalSiswa, rataSkor, highestClass, lowestClass };
 
       // Aktivitas Belajar: persentase siswa yang sudah punya sesi
-      // Kita asumsikan jika ada siswa, dan ada sesi, maka 100% jika semua sudah main.
-      // Untuk demo, kita hitung dari total siswa vs siswa yang punya sesi.
       let progress = 0;
       if (siswaList.length > 0) {
-        // Cek apakah setiap siswa punya minimal 1 sesi
-        // Untuk sederhana, kita ambil dari data sesi (tapi kita tidak punya list sesi di sini)
-        // Kita akan gunakan totalSesiSelesai sebagai indikator, tapi lebih baik kita ambil jumlah siswa yang punya sesi.
-        // Karena kita tidak punya data itu, kita set 100% jika ada siswa.
         progress = 100;
       }
       // Update circle
@@ -897,7 +892,9 @@
         Coba dorong mereka eksplorasi lebih banyak cara!`;
       }
 
-      // Kelas Saya
+      // ============================================================
+      // KELAS SAYA — Card dengan Event Klik
+      // ============================================================
       const grid = document.getElementById('kelasGrid');
       if (!kelasList || kelasList.length === 0) {
         grid.innerHTML = `
@@ -915,15 +912,12 @@
           classStats[s.id_kelas].count += 1;
         });
 
-        // Tentukan skor maks untuk progress bar (misal 100)
-        const maxSkor = Math.max(...Object.values(classStats).map(c => c.count > 0 ? c.total / c.count : 0), 1);
-
         grid.innerHTML = kelasList.map(kelas => {
           const stats = classStats[kelas.id_kelas] || { total: 0, count: 0 };
           const avg = stats.count > 0 ? Math.round(stats.total / stats.count) : 0;
           const pct = Math.min(Math.round((avg / 100) * 100), 100);
           return `
-            <div class="kelas-card">
+            <div class="kelas-card" data-id="${kelas.id_kelas}">
               <div class="kelas-card__name">${escHtml(kelas.nama_kelas)}</div>
               <div class="kelas-card__meta">
                 <span>${stats.count}</span> siswa · rata-rata <span>${avg}%</span>
@@ -934,6 +928,18 @@
             </div>
           `;
         }).join('');
+
+        // Tambahkan event listener klik pada setiap card kelas
+        grid.querySelectorAll('.kelas-card').forEach(card => {
+          card.addEventListener('click', function(e) {
+            // Cegah jika yang diklik adalah link di dalam card (tidak ada, tapi safety)
+            if (e.target.closest('a')) return;
+            const kelasId = this.dataset.id;
+            if (kelasId) {
+              window.location.href = `manajemen-kelas.html?kelas=${kelasId}`;
+            }
+          });
+        });
       }
 
       // Tampilkan konten
@@ -971,7 +977,7 @@
     }
 
     // ----------------------------------------------------------------
-    // GEMINI CHAT LOGIC (sama seperti sebelumnya)
+    // GEMINI CHAT LOGIC
     // ----------------------------------------------------------------
     const chatHistory = [];
 

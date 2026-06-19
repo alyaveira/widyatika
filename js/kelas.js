@@ -1,5 +1,6 @@
 import { supabase } from './supabase-config.js';
 import { initGuruPage, showToast } from './guru.js';
+import { generateTargetAngka } from './auth.js';
 
 const session = initGuruPage('manajemen');
 const guruId = session.guru.id_guru;
@@ -122,6 +123,17 @@ function renderDaftar() {
     return;
   }
 
+  // Setelah renderDaftar();
+const urlParams = new URLSearchParams(window.location.search);
+const kelasId = urlParams.get('kelas');
+if (kelasId) {
+  const found = kelasList.find(k => k.id_kelas === kelasId);
+  if (found) {
+    // Tunggu sebentar agar render selesai, lalu buka detail
+    setTimeout(() => openDetail(kelasId), 100);
+  }
+}
+
   // Hitung statistik per kelas
   const kelasStats = {};
   siswaList.forEach(s => {
@@ -231,7 +243,7 @@ function renderSiswa(kelasId) {
       const id = btn.dataset.id;
       const action = btn.dataset.action;
       if (action === 'play') {
-        showToast('Fitur Play Game akan segera hadir.', 'info');
+        startGameForSiswa(id);
       } else if (action === 'edit') {
         openEditSiswa(id);
       } else if (action === 'delete') {
@@ -493,6 +505,61 @@ async function deleteSiswa(siswaId) {
   } catch (err) {
     console.error('[Siswa] Delete error:', err);
     showToast('Gagal menghapus siswa.', 'error');
+  }
+}
+
+// ========== MULAI GAME UNTUK SISWA ==========
+async function startGameForSiswa(siswaId) {
+  try {
+    // 1. Cari data siswa dari state (siswaList)
+    const siswa = siswaList.find(s => s.id_siswa === siswaId);
+    if (!siswa) {
+      showToast('Data siswa tidak ditemukan.', 'error');
+      return;
+    }
+
+    // 2. Tentukan level (misal level 1)
+    const levelKe = 1;
+    const targetAngka = generateTargetAngka(levelKe);
+
+    // 3. Buat sesi_game baru
+    const { data: sesi, error: insertError } = await supabase
+      .from('sesi_game')
+      .insert({
+        id_siswa: siswaId,
+        level_ke: levelKe,
+        target_angka: targetAngka,
+        status_selesai: false,
+      })
+      .select('id_sesi, level_ke, target_angka, status_selesai')
+      .single();
+
+    if (insertError) throw insertError;
+
+    // 4. Simpan session ke sessionStorage (format yang sama dengan auth.js)
+    const sessionData = {
+      role: 'siswa',
+      siswa: {
+        id_siswa: siswa.id_siswa,
+        nama_panggilan: siswa.nama_panggilan || siswa.nama_lengkap,
+        total_skor: siswa.total_skor || 0,
+        id_kelas: siswa.id_kelas,
+      },
+      sesi_game: {
+        id_sesi: sesi.id_sesi,
+        level_ke: sesi.level_ke,
+        target_angka: sesi.target_angka,
+        status_selesai: sesi.status_selesai,
+      },
+    };
+    sessionStorage.setItem('widyatika_session', JSON.stringify(sessionData));
+
+    // 5. Redirect ke game.html
+    window.location.href = 'game.html';
+
+  } catch (err) {
+    console.error('[Start Game] Error:', err);
+    showToast('Gagal memulai game: ' + err.message, 'error');
   }
 }
 
