@@ -3,451 +3,1432 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Widyatika - Arena Numerasi Interaktif: Temukan sebanyak mungkin cara untuk mencapai target angka dan latih fleksibilitas berpikir matematikamu!" />
+  <meta name="description" content="Widyatika - Arena Numerasi Interaktif" />
   <title>Arena Numerasi – Widyatika</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================================
+       RESET & GLOBAL (dari gameplay.html)
+    ============================================================ */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    :root {
+      --p: #6c3ef4;
+      --pd: #4f46e5;
+      --pl: #ede9fe;
+      --pm: #a78bfa;
+      --pp: #f5f3ff;
+      --g: #10b981;
+      --gd: #059669;
+      --gl: #d1fae5;
+      --o: #f97316;
+      --ol: #ffedd5;
+      --y: #fbbf24;
+      --yl: #fef9c3;
+      --r: #ef4444;
+      --rl: #fee2e2;
+      --b: #3b82f6;
+      --bl: #dbeafe;
+      --pk: #ec4899;
+      --pkl: #fce7f3;
+      --card: rgba(255, 255, 255, 0.92);
+      --border: #e5e7eb;
+      --text: #1f2937;
+      --sub: #6b7280;
+      --font: 'Nunito', sans-serif;
+      --rsm: 10px;
+      --rmd: 16px;
+      --rlg: 22px;
+      --rpill: 100px;
+    }
+    body {
+      font-family: var(--font);
+      background: linear-gradient(180deg, #b8e4ff 0%, #dff0ff 45%, #c6f0c2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 14px 12px 40px;
+    }
+    /* ===== CLOUDS ===== */
+    .sky {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 200px;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .cloud {
+      position: absolute;
+      background: #fff;
+      border-radius: 50px;
+      opacity: .82;
+      animation: drift linear infinite;
+    }
+    @keyframes drift {
+      from {
+        transform: translateX(-200px)
+      }
+      to {
+        transform: translateX(110vw)
+      }
+    }
+    /* ===== ROOT ===== */
+    .root {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .full-row {
+      grid-column: 1/-1;
+    }
+    /* ===== TOPBAR ===== */
+    .topbar {
+      background: var(--card);
+      border-radius: var(--rlg);
+      border: 2.5px solid rgba(108, 62, 244, 0.14);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(8px);
+      flex-wrap: wrap;
+    }
+    .tb-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .back-btn {
+      background: var(--pl);
+      border: 2px solid rgba(108, 62, 244, 0.2);
+      border-radius: var(--rpill);
+      padding: 6px 13px;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--p);
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .back-btn:hover {
+      background: #ddd6fe;
+    }
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #c084fc, #818cf8);
+      border: 3px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 3px 8px rgba(108, 62, 244, 0.28);
+      flex-shrink: 0;
+    }
+    .player-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--p);
+    }
+    .player-sub {
+      font-size: 11px;
+      font-weight: 700;
+      color: #7c3aed;
+      margin-top: 1px;
+    }
+    .tb-right {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .stat-pill {
+      background: var(--pl);
+      border-radius: var(--rpill);
+      padding: 5px 13px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--p);
+      border: 2px solid rgba(108, 62, 244, 0.18);
+    }
+    .stat-pill.bump {
+      animation: bump .3s;
+    }
+    @keyframes bump {
+      0%,
+      100% {
+        transform: scale(1)
+      }
+      50% {
+        transform: scale(1.22)
+      }
+    }
 
-  <!-- Preconnect Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    /* ===== GAMEPLAY ===== */
+    .gameplay {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+    /* Target */
+    .target-sec {
+      text-align: center;
+    }
+    .target-lbl {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--p);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+    }
+    .target-card {
+      display: inline-block;
+      background: #fff;
+      border-radius: var(--rlg);
+      border: 3px solid #c4b5fd;
+      padding: 6px 48px 10px;
+      box-shadow: 0 6px 0 #c4b5fd;
+    }
+    .target-num {
+      font-size: 76px;
+      font-weight: 900;
+      color: var(--p);
+      line-height: 1;
+      animation: floatN 3s ease-in-out infinite;
+    }
+    @keyframes floatN {
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+      50% {
+        transform: translateY(-6px)
+      }
+    }
+    .strat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--gl);
+      border: 2px solid #6ee7b7;
+      border-radius: var(--rpill);
+      padding: 4px 13px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #065f46;
+      margin-top: 7px;
+    }
 
-  <!-- Game Stylesheet -->
-  <link rel="stylesheet" href="css/game.css" />
+    /* Timer + hint */
+    .th-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+    .timer-card {
+      background: var(--card);
+      border-radius: var(--rmd);
+      border: 2.5px solid #bbf7d0;
+      padding: 9px 13px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+    .ring-wrap {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+    .ring-wrap svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: rotate(-90deg);
+    }
+    .ring-lbl {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+    .timer-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--sub);
+    }
+    .timer-val {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--g);
+      font-variant-numeric: tabular-nums;
+    }
+    .hint-card {
+      background: var(--yl);
+      border-radius: var(--rmd);
+      border: 2.5px solid #fde68a;
+      padding: 9px 13px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+    }
+    .hint-hd {
+      font-size: 11px;
+      font-weight: 800;
+      color: #92400e;
+    }
+    .hint-body {
+      font-size: 12px;
+      font-weight: 700;
+      color: #78350f;
+      line-height: 1.35;
+    }
+
+    /* Mascot + Speech */
+    .mascot-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 11px;
+    }
+    .mascot-wrap {
+      flex-shrink: 0;
+      width: 84px;
+      height: 84px;
+      animation: mFloat 3s ease-in-out infinite;
+      filter: drop-shadow(0 6px 10px rgba(108, 62, 244, 0.2));
+      cursor: pointer;
+    }
+    .mascot-wrap:hover {
+      filter: drop-shadow(0 8px 14px rgba(108, 62, 244, 0.35));
+    }
+    @keyframes mFloat {
+      0%,
+      100% {
+        transform: translateY(0) rotate(0)
+      }
+      50% {
+        transform: translateY(-7px) rotate(2deg)
+      }
+    }
+    .speech {
+      flex: 1;
+      min-height: 52px;
+      background: #fff;
+      border-radius: 18px;
+      border: 2.5px solid #c4b5fd;
+      box-shadow: 0 4px 0 #c4b5fd;
+      padding: 9px 13px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--p);
+      line-height: 1.4;
+      display: flex;
+      align-items: center;
+      position: relative;
+      transition: background .2s, border-color .2s, color .2s;
+    }
+    .speech::before {
+      content: '';
+      position: absolute;
+      left: -13px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 7px solid transparent;
+      border-right-color: #c4b5fd;
+    }
+    .speech::after {
+      content: '';
+      position: absolute;
+      left: -9px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 6px solid transparent;
+      border-right-color: #fff;
+    }
+
+    /* Formula Display (token) */
+    .workspace {
+      background: #fff;
+      border-radius: var(--rmd);
+      border: 3px solid #c4b5fd;
+      padding: 9px 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .formula-display {
+      min-height: 48px;
+      font-size: 28px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 2px;
+      padding: 4px 0;
+    }
+    .formula-display.state--empty {
+      color: #9ca3af;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .formula-display.state--empty::before {
+      content: 'Ketik ekspresimu...';
+      color: #9ca3af;
+    }
+    .formula-display.state--error {
+      animation: shake .3s;
+      border-color: var(--r);
+    }
+    .formula-display.state--correct {
+      animation: popIn .3s;
+      border-color: var(--g);
+    }
+    .formula-token {
+      display: inline-block;
+      padding: 2px 4px;
+    }
+    .formula-token--number {
+      color: var(--p);
+    }
+    .formula-token--operator {
+      color: var(--o);
+    }
+    .formula-token--paren {
+      color: var(--pk);
+    }
+    .formula-token--cursor {
+      display: inline-block;
+      width: 3px;
+      height: 28px;
+      background: var(--p);
+      border-radius: 2px;
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+    @keyframes blink {
+      0%,
+      100% {
+        opacity: 1
+      }
+      50% {
+        opacity: 0
+      }
+    }
+    .result-preview {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--sub);
+      min-height: 28px;
+    }
+    .result-preview .equals {
+      font-weight: 900;
+      color: var(--text);
+    }
+    .result-preview .value {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--p);
+      transition: color .2s;
+    }
+    .result-preview .value.state--match {
+      color: var(--g);
+    }
+    .result-preview .value.state--mismatch {
+      color: var(--r);
+    }
+
+    /* Feedback */
+    .fb-bar {
+      border-radius: 13px;
+      padding: 9px 15px;
+      font-size: 14px;
+      font-weight: 800;
+      text-align: center;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.35;
+      transition: background .2s, border-color .2s;
+    }
+    .fb-idle {
+      background: rgba(255, 255, 255, .5);
+      color: #9ca3af;
+      border: 2px dashed var(--border);
+    }
+    .fb-ok {
+      background: var(--gl);
+      color: #065f46;
+      border: 2px solid #6ee7b7;
+      animation: popIn .3s;
+    }
+    .fb-bad {
+      background: var(--rl);
+      color: #991b1b;
+      border: 2px solid #fca5a5;
+      animation: shake .3s;
+    }
+    .fb-used {
+      background: var(--ol);
+      color: #9a3412;
+      border: 2px solid #fdba74;
+    }
+    @keyframes popIn {
+      0% {
+        transform: scale(.93)
+      }
+      60% {
+        transform: scale(1.04)
+      }
+      100% {
+        transform: scale(1)
+      }
+    }
+    @keyframes shake {
+      0%,
+      100% {
+        transform: translateX(0)
+      }
+      25% {
+        transform: translateX(-7px)
+      }
+      75% {
+        transform: translateX(7px)
+      }
+    }
+
+    /* ===== KEYPAD ===== */
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+    }
+    .key {
+      border: none;
+      border-radius: 13px;
+      font-family: var(--font);
+      font-size: 21px;
+      font-weight: 900;
+      cursor: pointer;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .08s, box-shadow .08s;
+      user-select: none;
+    }
+    .key:active {
+      transform: translateY(4px);
+      box-shadow: none !important;
+    }
+    .key--digit {
+      background: #fff;
+      color: var(--p);
+      border: 2.5px solid #c4b5fd;
+      box-shadow: 0 4px 0 #c4b5fd;
+    }
+    .key--digit:hover {
+      background: var(--pp);
+    }
+    .key--operator {
+      background: var(--ol);
+      color: #c2410c;
+      border: 2.5px solid #fdba74;
+      box-shadow: 0 4px 0 #fdba74;
+      font-size: 19px;
+    }
+    .key--operator:hover {
+      background: #fed7aa;
+    }
+    .key--paren {
+      background: var(--pkl);
+      color: #9d174d;
+      border: 2.5px solid #f9a8d4;
+      box-shadow: 0 4px 0 #f9a8d4;
+      font-size: 16px;
+    }
+    .key--delete {
+      background: var(--rl);
+      color: var(--r);
+      border: 2.5px solid #fca5a5;
+      box-shadow: 0 4px 0 #fca5a5;
+      font-size: 13px;
+    }
+    .key--submit {
+      background: linear-gradient(135deg, var(--g), var(--gd));
+      color: #fff;
+      border: none;
+      box-shadow: 0 4px 0 var(--gd);
+      font-size: 21px;
+    }
+    .key--submit:hover {
+      filter: brightness(1.07);
+    }
+    .key--submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: 0 4px 0 var(--gd);
+    }
+    .key--span2 {
+      grid-column: span 2;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+    .side-card {
+      background: var(--card);
+      border-radius: var(--rlg);
+      border: 2px solid rgba(255, 255, 255, 0.85);
+      padding: 13px 15px;
+      backdrop-filter: blur(6px);
+    }
+    .side-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--p);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 9px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    /* Potion */
+    .potion-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .potion-tube {
+      position: relative;
+      width: 56px;
+      height: 120px;
+      background: #f3f4f6;
+      border: 3px solid #1e293b;
+      border-radius: 0 0 30px 30px;
+      border-top: none;
+      overflow: hidden;
+      box-shadow: 0 4px 0 #1e293b;
+    }
+    .potion-liquid {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, #7c3aed, #a78bfa);
+      height: 0%;
+      border-radius: 0 0 27px 27px;
+      transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .potion-cap {
+      width: 66px;
+      height: 8px;
+      background: #1e293b;
+      border-radius: 4px 4px 0 0;
+      margin-top: -2px;
+    }
+    .potion-stopper {
+      width: 22px;
+      height: 14px;
+      background: #92400e;
+      border: 2px solid #1e293b;
+      border-radius: 4px 4px 8px 8px;
+      margin-top: -2px;
+    }
+    .potion-count {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--p);
+    }
+    .potion-count span {
+      font-size: 18px;
+    }
+    .potion-stars {
+      display: flex;
+      gap: 3px;
+      font-size: 18px;
+    }
+    .potion-stars .star-empty {
+      filter: grayscale(1) opacity(0.3);
+    }
+
+    /* History */
+    .hist-list {
+      max-height: 160px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .hist-list::-webkit-scrollbar {
+      width: 4px;
+    }
+    .hist-list::-webkit-scrollbar-thumb {
+      background: #c4b5fd;
+      border-radius: 99px;
+    }
+    .hist-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 4px 10px;
+      border-left: 3px solid var(--g);
+      font-size: 12px;
+    }
+    .hi-expr {
+      font-weight: 800;
+      color: #1f2937;
+    }
+    .hi-points {
+      font-weight: 800;
+      color: var(--g);
+      background: var(--gl);
+      padding: 0 6px;
+      border-radius: 99px;
+      font-size: 11px;
+    }
+    .empty-msg {
+      font-size: 12px;
+      color: #9ca3af;
+      font-weight: 600;
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    /* Insight */
+    .insight-item {
+      background: var(--pp);
+      border-radius: var(--rsm);
+      padding: 8px 11px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+    .insight-item:last-child {
+      margin-bottom: 0;
+    }
+    .ii-ico {
+      font-size: 17px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .ii-txt {
+      font-size: 11px;
+      font-weight: 700;
+      color: #4c1d95;
+      line-height: 1.4;
+    }
+    .ii-txt b {
+      color: var(--p);
+      font-weight: 900;
+    }
+    .prog-wrap {
+      margin-top: 4px;
+    }
+    .prog-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--sub);
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .prog-track {
+      height: 7px;
+      background: #e5e7eb;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .prog-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width .5s;
+    }
+
+    /* Badge */
+    .badge-shelf {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: #fff;
+      border-radius: var(--rsm);
+      border: 2px solid var(--border);
+      padding: 7px 9px;
+      flex: 1;
+      min-width: 56px;
+      opacity: .35;
+      transition: opacity .3s, border-color .3s;
+    }
+    .badge.earned {
+      opacity: 1;
+      border-color: var(--y);
+      box-shadow: 0 2px 0 var(--y);
+    }
+    .badge-ico {
+      font-size: 19px;
+    }
+    .badge-lbl {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--text);
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    /* ============================================================
+       MODAL & TOAST (dari game.css)
+    ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(30, 30, 30, 0.55);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-lg, 24px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+    .modal-overlay.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-box {
+      background: #fff;
+      border: 2.5px solid #1e1e1e;
+      border-radius: 16px;
+      box-shadow: 6px 6px 0px #1e1e1e;
+      padding: 28px 24px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      transform: scale(0.85) translateY(20px);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-overlay.is-open .modal-box {
+      transform: scale(1) translateY(0);
+    }
+    .modal-box--duplicate {
+      border-color: #fbbf24;
+      background: #fffbeb;
+    }
+    .modal-box--success {
+      border-color: #10b981;
+      background: #f0fdf4;
+    }
+    .modal-box--finish {
+      border-color: #ec4899;
+      background: #fff1f2;
+    }
+    .modal-box--error {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+    .modal__emoji {
+      font-size: 4rem;
+      line-height: 1;
+      animation: popIn 0.4s ease;
+    }
+    .modal__title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 1.5rem;
+      color: #1e1e1e;
+      line-height: 1.2;
+    }
+    .modal__body {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #374151;
+      line-height: 1.5;
+    }
+    .modal__points-badge {
+      background: #34d399;
+      border: 2.5px solid #1e1e1e;
+      border-radius: 999px;
+      box-shadow: 3px 3px 0px #1e1e1e;
+      padding: 6px 20px;
+      font-weight: 900;
+      font-size: 1.2rem;
+      color: #1e1e1e;
+    }
+    .modal__btn {
+      padding: 12px 32px;
+      border: 2.5px solid #1e1e1e;
+      border-radius: 12px;
+      box-shadow: 4px 4px 0px #1e1e1e;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.12s, box-shadow 0.12s;
+      background: #fb7185;
+      color: #fff;
+    }
+    .modal__btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #1e1e1e;
+    }
+    .modal__btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #1e1e1e;
+    }
+    .modal__btn--secondary {
+      background: #fff;
+      color: #1e1e1e;
+    }
+    .modal__btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .modal-box .potion-card__stars {
+      display: flex;
+      gap: 4px;
+      font-size: 1.8rem;
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      background: #1e1e1e;
+      color: #fff;
+      border-radius: 12px;
+      border: 2.5px solid #1e1e1e;
+      box-shadow: 4px 4px 0px #1e1e1e;
+      padding: 10px 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: toastIn 0.25s ease forwards, toastOut 0.25s ease 2.5s forwards;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .toast--success {
+      background: #10b981;
+      color: #fff;
+    }
+    .toast--error {
+      background: #ef4444;
+      color: #fff;
+    }
+    .toast--warn {
+      background: #fbbf24;
+      color: #1e1e1e;
+    }
+    @keyframes toastIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @keyframes toastOut {
+      to {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+    }
+
+    /* Loading screen (dari game.css) */
+    .loading-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #fffbeb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    .loading-screen.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .loading-screen__logo {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.5rem;
+      color: #1e1e1e;
+    }
+    .loading-screen__spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(30, 30, 30, 0.15);
+      border-top-color: #fb7185;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    .loading-screen__text {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #6b7280;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media(max-width:780px) {
+      .root {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        order: 3;
+      }
+      .th-row {
+        grid-template-columns: 1fr 1fr;
+      }
+      .target-num {
+        font-size: 60px;
+      }
+      .key {
+        height: 48px;
+        font-size: 18px;
+      }
+    }
+    @media(max-width:440px) {
+      .th-row {
+        grid-template-columns: 1fr;
+      }
+      .stat-pill {
+        font-size: 11px;
+        padding: 5px 10px;
+      }
+      .key {
+        height: 44px;
+        font-size: 16px;
+      }
+      .target-num {
+        font-size: 50px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- =====================================================================
-       LOADING SCREEN
-       Ditampilkan sementara sesi game dimuat dari Supabase.
-       game.js akan menambahkan class "is-hidden" setelah data siap.
-  ====================================================================== -->
+  <!-- ===== CLOUDS ===== -->
+  <div class="sky" aria-hidden="true">
+    <div class="cloud" style="width:90px;height:28px;top:20px;left:4%;animation-duration:30s;animation-delay:-4s;">
+      <div style="position:absolute;width:52px;height:52px;border-radius:50%;background:#fff;top:-24px;left:12px;"></div>
+      <div style="position:absolute;width:36px;height:36px;border-radius:50%;background:#fff;top:-15px;left:38px;"></div>
+    </div>
+    <div class="cloud" style="width:68px;height:22px;top:54px;left:28%;animation-duration:38s;animation-delay:-14s;">
+      <div style="position:absolute;width:38px;height:38px;border-radius:50%;background:#fff;top:-17px;left:10px;"></div>
+    </div>
+    <div class="cloud" style="width:82px;height:26px;top:16px;right:18%;animation-duration:33s;animation-delay:-22s;">
+      <div style="position:absolute;width:46px;height:46px;border-radius:50%;background:#fff;top:-21px;left:10px;"></div>
+      <div style="position:absolute;width:30px;height:30px;border-radius:50%;background:#fff;top:-12px;left:38px;"></div>
+    </div>
+  </div>
+
+  <!-- ===== LOADING SCREEN ===== -->
   <div class="loading-screen" id="loadingScreen" role="status" aria-live="polite">
     <div class="loading-screen__logo">🧪 Widyatika</div>
     <div class="loading-screen__spinner" aria-hidden="true"></div>
     <p class="loading-screen__text">Memuat sesi game kamu...</p>
   </div>
 
-  <!-- =====================================================================
-       TOPBAR — Header Sesi
-  ====================================================================== -->
-  <header class="topbar" role="banner">
-    <div class="topbar__brand">
-      <a href="#" class="topbar__logo" id="topbarBrand" aria-label="Widyatika">
-        <span>W</span>idyatika
-      </a>
-    </div>
+  <!-- =============================================================
+       ROOT LAYOUT
+  ============================================================= -->
+  <div class="root">
 
-    <div class="topbar__session-info" role="group" aria-label="Informasi sesi aktif">
-      <!-- Nama Siswa -->
-      <div class="topbar__badge topbar__badge--student" id="badgeStudentName">
-        <span class="badge-icon" aria-hidden="true">👤</span>
-        <span id="displayStudentName">Memuat...</span>
-      </div>
-
-      <!-- Level Ke -->
-      <div class="topbar__badge topbar__badge--level" id="badgeLevel">
-        <span class="badge-icon" aria-hidden="true">🎯</span>
-        Level <span id="displayLevel">1</span>
-      </div>
-
-      <!-- Total Skor -->
-      <div class="topbar__badge topbar__badge--score" id="badgeScore">
-        <span class="badge-icon" aria-hidden="true">⭐</span>
-        <span id="displayScore">0</span> Poin
-      </div>
-    </div>
-  </header>
-
-  <!-- =====================================================================
-       LAYOUT UTAMA GAME
-  ====================================================================== -->
-  <main class="game-layout" id="gameLayout" aria-label="Arena game numerasi">
-
-    <!-- ----------------------------------------------------------------
-         KOLOM KIRI — Area Permainan Utama
-    ----------------------------------------------------------------- -->
-    <section class="game-layout__main" aria-label="Area permainan">
-
-      <!-- KARTU TARGET ANGKA -->
-      <div class="target-card" id="targetCard" role="region" aria-label="Target angka sesi ini">
-        <div>
-          <p class="target-card__label">🎯 Target Angka</p>
-        </div>
-        <div
-          class="target-card__number animate-in"
-          id="displayTargetNumber"
-          aria-live="polite"
-          aria-label="Target angka"
-        >
-          —
-        </div>
-        <p class="target-card__hint" id="targetHint">
-          Temukan sebanyak mungkin cara berbeda untuk mencapai angka ini!
-        </p>
-      </div>
-
-      <!-- WORKSPACE — Area Input Formula -->
-      <div class="workspace" id="workspace" role="region" aria-label="Area input rumus matematika">
-
-        <!-- Display Formula yang Sedang Dibangun -->
-        <div
-          class="workspace__formula-display state--empty"
-          id="formulaDisplay"
-          role="textbox"
-          aria-label="Formula yang sedang dibangun"
-          aria-readonly="true"
-          aria-live="polite"
-        >
-          <!-- Token formula akan dirender oleh game.js di sini -->
-          <!-- Contoh token yang dihasilkan oleh JS:
-               <span class="formula-token formula-token--number">7</span>
-               <span class="formula-token formula-token--operator">+</span>
-               <span class="formula-token formula-token--number">3</span>
-               <span class="formula-token formula-token--cursor"></span>
-          -->
-        </div>
-
-        <!-- Preview Hasil Kalkulasi Real-time -->
-        <div class="workspace__result-preview" id="resultPreview" aria-live="polite" aria-label="Hasil kalkulasi sementara">
-          <span class="result-preview__equals" aria-hidden="true">=</span>
-          <span class="result-preview__value" id="resultValue" aria-label="Hasil sementara">?</span>
-          <span id="resultStatusMsg" style="font-weight:700; font-size:0.8rem;"></span>
-        </div>
-
-        <!-- ============================================================
-             VIRTUAL KEYPAD
-             Semua interaksi siswa terjadi di sini — tanpa keyboard fisik.
-        ============================================================= -->
-        <div class="keypad" id="virtualKeypad" role="group" aria-label="Papan tombol virtual">
-
-          <!-- Baris Operator & Tanda Kurung -->
-          <div class="keypad__operators" role="group" aria-label="Tombol operator">
-            <button
-              class="key-btn key-btn--operator"
-              id="btnOp_plus"
-              data-value="+"
-              data-type="operator"
-              aria-label="Tambah"
-              type="button"
-            >+</button>
-            <button
-              class="key-btn key-btn--operator"
-              id="btnOp_minus"
-              data-value="-"
-              data-type="operator"
-              aria-label="Kurang"
-              type="button"
-            >−</button>
-            <button
-              class="key-btn key-btn--operator"
-              id="btnOp_multiply"
-              data-value="×"
-              data-type="operator"
-              aria-label="Kali"
-              type="button"
-            >×</button>
-            <button
-              class="key-btn key-btn--operator"
-              id="btnOp_divide"
-              data-value="÷"
-              data-type="operator"
-              aria-label="Bagi"
-              type="button"
-            >÷</button>
-            <button
-              class="key-btn key-btn--paren"
-              id="btnOp_paren"
-              data-value="()"
-              data-type="paren"
-              aria-label="Tambah kurung"
-              type="button"
-            >( )</button>
+    <!-- ===== TOPBAR ===== -->
+    <header class="full-row">
+      <div class="topbar">
+        <div class="tb-left">
+          <button class="back-btn" id="btnBackDashboard">← Dashboard</button>
+          <div class="avatar" id="tbAvatar">👤</div>
+          <div>
+            <div class="player-name" id="displayStudentName">Memuat...</div>
+            <div class="player-sub" id="tbSub">Level <span id="displayLevel">1</span> · <span id="displayScore">0</span> Poin</div>
           </div>
-
-          <!-- Baris Digit 7 8 9 / 4 5 6 / 1 2 3 / 0 -->
-          <div class="keypad__digits" role="group" aria-label="Tombol angka">
-            <button class="key-btn key-btn--digit" id="btnDigit_7" data-value="7" data-type="digit" aria-label="Angka 7" type="button">7</button>
-            <button class="key-btn key-btn--digit" id="btnDigit_8" data-value="8" data-type="digit" aria-label="Angka 8" type="button">8</button>
-            <button class="key-btn key-btn--digit" id="btnDigit_9" data-value="9" data-type="digit" aria-label="Angka 9" type="button">9</button>
-
-            <button class="key-btn key-btn--digit" id="btnDigit_4" data-value="4" data-type="digit" aria-label="Angka 4" type="button">4</button>
-            <button class="key-btn key-btn--digit" id="btnDigit_5" data-value="5" data-type="digit" aria-label="Angka 5" type="button">5</button>
-            <button class="key-btn key-btn--digit" id="btnDigit_6" data-value="6" data-type="digit" aria-label="Angka 6" type="button">6</button>
-
-            <button class="key-btn key-btn--digit" id="btnDigit_1" data-value="1" data-type="digit" aria-label="Angka 1" type="button">1</button>
-            <button class="key-btn key-btn--digit" id="btnDigit_2" data-value="2" data-type="digit" aria-label="Angka 2" type="button">2</button>
-            <button class="key-btn key-btn--digit" id="btnDigit_3" data-value="3" data-type="digit" aria-label="Angka 3" type="button">3</button>
-          </div>
-
-          <!-- Baris Aksi: Hapus / Reset / 0 / Kirim -->
-          <div class="keypad__actions" role="group" aria-label="Tombol aksi">
-            <button
-              class="key-btn key-btn--delete"
-              id="btnDelete"
-              data-action="delete"
-              aria-label="Hapus satu karakter"
-              type="button"
-            >⌫ Hapus</button>
-            <button
-              class="key-btn key-btn--reset"
-              id="btnReset"
-              data-action="reset"
-              aria-label="Kosongkan formula"
-              type="button"
-            >🔄 Ulang</button>
-            <button
-              class="key-btn key-btn--submit"
-              id="btnSubmit"
-              data-action="submit"
-              aria-label="Kirim rumus untuk dinilai"
-              type="button"
-              disabled
-            >✅ Kirim Rumus!</button>
-          </div>
-
-          <!-- Tombol Digit 0 (terpisah, lebar penuh pada keypad digit) -->
-          <div role="group" aria-label="Angka nol">
-            <button
-              class="key-btn key-btn--digit"
-              id="btnDigit_0"
-              data-value="0"
-              data-type="digit"
-              aria-label="Angka 0"
-              type="button"
-              style="width:100%;"
-            >0</button>
-          </div>
-
         </div>
-        <!-- /virtualKeypad -->
-
+        <div class="tb-right">
+          <div class="stat-pill" id="pillPoin">🌟 <span id="poinVal">0</span> Poin</div>
+          <div class="stat-pill" id="pillStrat">💡 <span id="stratVal">0</span> Cara</div>
+        </div>
       </div>
-      <!-- /workspace -->
+    </header>
 
-    </section>
-    <!-- /game-layout__main -->
+    <!-- ===== GAMEPLAY ===== -->
+    <main class="gameplay">
 
-    <!-- ----------------------------------------------------------------
-         KOLOM KANAN — Sidebar Tabung & Riwayat
-    ----------------------------------------------------------------- -->
-    <aside class="game-layout__sidebar" aria-label="Progres dan riwayat strategi">
+      <!-- Target -->
+      <div class="target-sec">
+        <div class="target-lbl">🎯 Target Angka</div>
+        <div class="target-card">
+          <div class="target-num" id="displayTargetNumber">—</div>
+        </div>
+        <div><span class="strat-badge" id="stratBadge">🔎 0 cara ditemukan</span></div>
+      </div>
 
-      <!-- 9. TABUNG RAMUAN AJAIB — Indikator Progres Gamifikasi -->
-      <div class="potion-card" id="potionCard" role="region" aria-label="Tabung ramuan progres">
-        <h2 class="potion-card__title">🧪 Ramuan Strategiku</h2>
+      <!-- Timer + Hint -->
+      <div class="th-row">
+        <div class="timer-card">
+          <div class="ring-wrap">
+            <svg width="48" height="48" viewBox="0 0 48 48">
+              <circle cx="24" cy="24" r="20" fill="none" stroke="#d1fae5" stroke-width="5" />
+              <circle id="timerArc" cx="24" cy="24" r="20" fill="none" stroke="#10b981" stroke-width="5"
+                stroke-linecap="round" stroke-dasharray="125.66 125.66" stroke-dashoffset="0"
+                style="transition:stroke-dashoffset 1s linear,stroke .4s;" />
+            </svg>
+            <div class="ring-lbl">⏱</div>
+          </div>
+          <div>
+            <div class="timer-lbl">Sisa Waktu</div>
+            <div class="timer-val" id="timerDisp">01:00</div>
+          </div>
+        </div>
+        <div class="hint-card">
+          <div class="hint-hd">💡 Petunjuk</div>
+          <div class="hint-body" id="targetHint">Temukan cara membuat angka target!</div>
+        </div>
+      </div>
 
-        <div class="potion-tube__wrapper">
-          <div class="potion-tube" aria-hidden="true">
-            <!-- Tutup botol (atas) -->
-            <div class="potion-tube__stopper"></div>
-            <div class="potion-tube__cap"></div>
-            <!-- Badan tabung kaca -->
-            <div class="potion-tube__glass" id="potionGlass">
-              <!-- Cairan yang naik sesuai progres -->
-              <div
-                class="potion-tube__liquid"
-                id="potionLiquid"
-                style="height: 0%;"
-                aria-label="Level cairan ramuan"
-              ></div>
-              <!-- Gelembung animasi -->
-              <div class="potion-tube__bubble"></div>
-              <div class="potion-tube__bubble"></div>
-              <div class="potion-tube__bubble"></div>
+      <!-- Mascot + Speech -->
+      <div class="mascot-row">
+        <div class="mascot-wrap" id="mascot">
+          <svg viewBox="0 0 88 88" xmlns="http://www.w3.org/2000/svg" width="84" height="84">
+            <ellipse cx="44" cy="83" rx="20" ry="4" fill="rgba(0,0,0,0.09)" />
+            <line x1="44" y1="10" x2="44" y2="18" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" />
+            <circle cx="44" cy="8" r="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5" />
+            <rect x="18" y="30" width="52" height="38" rx="14" fill="#ede9fe" stroke="#a78bfa" stroke-width="2.5" />
+            <rect x="22" y="14" width="44" height="32" rx="13" fill="#6c3ef4" stroke="#4f46e5" stroke-width="2" />
+            <rect x="27" y="19" width="34" height="22" rx="8" fill="white" opacity="0.16" />
+            <g class="eye-l" style="transform-origin:34px 28px">
+              <circle cx="34" cy="28" r="6" fill="white" />
+              <circle cx="34" cy="28" r="3.5" fill="#6c3ef4" />
+              <circle cx="35.5" cy="26.5" r="1.2" fill="white" />
+            </g>
+            <g class="eye-r" style="transform-origin:54px 28px">
+              <circle cx="54" cy="28" r="6" fill="white" />
+              <circle cx="54" cy="28" r="3.5" fill="#6c3ef4" />
+              <circle cx="55.5" cy="26.5" r="1.2" fill="white" />
+            </g>
+            <g id="mouthIdle">
+              <path d="M37 37 Q44 42 51 37" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" />
+            </g>
+            <g id="mouthHappy" style="display:none">
+              <path d="M36 36 Q44 44 52 36" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" />
+            </g>
+            <g id="mouthSad" style="display:none">
+              <path d="M37 40 Q44 35 51 40" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" />
+            </g>
+            <circle cx="26" cy="33" r="5" fill="#f9a8d4" opacity="0.7" />
+            <circle cx="62" cy="33" r="5" fill="#f9a8d4" opacity="0.7" />
+            <rect x="13" y="20" width="9" height="14" rx="4" fill="#818cf8" stroke="#6366f1" stroke-width="1.5" />
+            <rect x="15" y="24" width="5" height="6" rx="2" fill="#a5b4fc" />
+            <rect x="66" y="20" width="9" height="14" rx="4" fill="#818cf8" stroke="#6366f1" stroke-width="1.5" />
+            <rect x="68" y="24" width="5" height="6" rx="2" fill="#a5b4fc" />
+            <rect x="30" y="40" width="28" height="16" rx="6" fill="white" opacity="0.45" />
+            <circle cx="38" cy="48" r="4" fill="#6c3ef4" opacity="0.7" />
+            <circle cx="50" cy="48" r="4" fill="#10b981" opacity="0.8" />
+            <text x="36.5" y="51" font-size="5" text-anchor="middle" fill="white">★</text>
+            <text x="50.5" y="51" font-size="5" text-anchor="middle" fill="white">♪</text>
+            <rect x="26" y="66" width="14" height="12" rx="6" fill="#818cf8" stroke="#6366f1" stroke-width="1.5" />
+            <rect x="48" y="66" width="14" height="12" rx="6" fill="#818cf8" stroke="#6366f1" stroke-width="1.5" />
+            <rect x="8" y="38" width="11" height="20" rx="5" fill="#a78bfa" stroke="#7c3aed" stroke-width="1.5" />
+            <circle cx="13.5" cy="60" r="5" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5" />
+            <rect x="69" y="38" width="11" height="20" rx="5" fill="#a78bfa" stroke="#7c3aed" stroke-width="1.5" />
+            <circle cx="74.5" cy="60" r="5" fill="#c4b5fd" stroke="#7c3aed" stroke-width="1.5" />
+            <text id="starL" x="5" y="18" font-size="9" fill="#fbbf24" style="opacity:0">★</text>
+            <text id="starR" x="76" y="18" font-size="9" fill="#fbbf24" style="opacity:0">★</text>
+          </svg>
+        </div>
+        <div class="speech" id="speech">Hai! Aku <strong>Robby</strong> 🤖 Yuk cari semua cara untuk membuat target!</div>
+      </div>
+
+      <!-- Workspace (Formula + Result) -->
+      <div class="workspace">
+        <div class="formula-display state--empty" id="formulaDisplay"></div>
+        <div class="result-preview" id="resultPreview">
+          <span class="equals">=</span>
+          <span class="value" id="resultValue">?</span>
+          <span id="resultStatusMsg" style="font-size:0.8rem;font-weight:700;color:var(--sub);"></span>
+        </div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="fb-bar fb-idle" id="feedback" role="status" aria-live="polite">
+        ✏️ Buat ekspresi matematika yang hasilnya target!
+      </div>
+
+      <!-- ===== KEYPAD ===== -->
+      <div class="keypad" id="virtualKeypad">
+        <button class="key key--digit" data-type="digit" data-value="7">7</button>
+        <button class="key key--digit" data-type="digit" data-value="8">8</button>
+        <button class="key key--digit" data-type="digit" data-value="9">9</button>
+        <button class="key key--operator" data-type="operator" data-value="+">＋</button>
+        <button class="key key--delete" data-action="delete">⌫ Del</button>
+
+        <button class="key key--digit" data-type="digit" data-value="4">4</button>
+        <button class="key key--digit" data-type="digit" data-value="5">5</button>
+        <button class="key key--digit" data-type="digit" data-value="6">6</button>
+        <button class="key key--operator" data-type="operator" data-value="−">－</button>
+        <button class="key key--paren" data-type="paren" data-value="()">( )</button>
+
+        <button class="key key--digit" data-type="digit" data-value="1">1</button>
+        <button class="key key--digit" data-type="digit" data-value="2">2</button>
+        <button class="key key--digit" data-type="digit" data-value="3">3</button>
+        <button class="key key--operator" data-type="operator" data-value="×">×</button>
+        <button class="key key--paren" data-type="paren" data-value="()">( )</button>
+
+        <button class="key key--digit key--span2" data-type="digit" data-value="0">0</button>
+        <button class="key key--digit" data-type="digit" data-value=".">•</button>
+        <button class="key key--operator" data-type="operator" data-value="÷">÷</button>
+        <button class="key key--submit" id="btnSubmit" data-action="submit" disabled>✓</button>
+      </div>
+
+    </main>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+
+      <!-- Potion -->
+      <div class="side-card">
+        <div class="side-title">🧪 Ramuan Strategiku</div>
+        <div class="potion-wrap">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div class="potion-stopper"></div>
+            <div class="potion-cap"></div>
+            <div class="potion-tube">
+              <div class="potion-liquid" id="potionLiquid" style="height:0%;"></div>
             </div>
           </div>
-        </div>
-
-        <p class="potion-card__progress-label" id="potionLabel">Strategi Unik Ditemukan</p>
-        <div class="potion-card__count" aria-live="polite">
-          <span id="potionCountCurrent">0</span>
-          <span>/ <span id="potionCountMax">5</span></span>
-        </div>
-
-        <!-- Bintang reward (diisi oleh game.js) -->
-        <div class="potion-card__stars" id="potionStars" aria-label="Bintang reward" aria-live="polite">
-          <span aria-label="Bintang kosong">⭐</span>
-          <span aria-label="Bintang kosong">⭐</span>
-          <span aria-label="Bintang kosong">⭐</span>
+          <div class="potion-count">Strategi Unik Ditemukan <br><span id="potionCountCurrent">0</span> / <span id="potionCountMax">5</span></div>
+          <div class="potion-stars" id="potionStars">
+            <span class="star-empty">⭐</span>
+            <span class="star-empty">⭐</span>
+            <span class="star-empty">⭐</span>
+          </div>
         </div>
       </div>
 
-      <!-- 10. RIWAYAT STRATEGI YANG SUDAH DITEMUKAN -->
-      <div class="strategy-history" id="strategyHistory" role="region" aria-label="Daftar rumus yang sudah ditemukan">
-        <h2 class="strategy-history__title">
-          📜 Koleksi Rumusku
-        </h2>
+      <!-- History -->
+      <div class="side-card">
+        <div class="side-title">📜 Koleksi Rumusku</div>
+        <div class="hist-list" id="strategyList">
+          <div class="empty-msg" id="strategyEmptyMsg">Belum ada rumus.<br>Ayo mulai! 💪</div>
+        </div>
+      </div>
 
-        <ul
-          class="strategy-history__list"
-          id="strategyList"
-          aria-label="Daftar strategi yang berhasil ditemukan"
-          aria-live="polite"
-        >
-          <!-- Item dirender oleh game.js, contoh struktur:
-            <li class="strategy-item">
-              <span class="strategy-item__index">1</span>
-              <span class="strategy-item__formula">5 + 3 = 8</span>
-              <span class="strategy-item__points">+10</span>
-            </li>
-          -->
-          <li class="strategy-history__empty" id="strategyEmptyMsg" aria-live="polite">
-            Belum ada rumus. Yuk, mulai temukan!
-          </li>
-        </ul>
+      <!-- Insight -->
+      <div class="side-card">
+        <div class="side-title">🧠 Cara Berpikirmu</div>
+        <div class="insight-item">
+          <div class="ii-ico">📊</div>
+          <div class="ii-txt">Operasi yang digunakan:
+            <div class="prog-wrap"><div class="prog-lbl"><span>➕ Penjumlahan</span><span id="pctAdd">0%</span></div><div class="prog-track"><div class="prog-fill" id="barAdd" style="background:var(--g);width:0%"></div></div></div>
+            <div class="prog-wrap"><div class="prog-lbl"><span>✖️ Perkalian</span><span id="pctMul">0%</span></div><div class="prog-track"><div class="prog-fill" id="barMul" style="background:var(--p);width:0%"></div></div></div>
+            <div class="prog-wrap"><div class="prog-lbl"><span>➖ Pengurangan</span><span id="pctSub">0%</span></div><div class="prog-track"><div class="prog-fill" id="barSub" style="background:var(--o);width:0%"></div></div></div>
+            <div class="prog-wrap"><div class="prog-lbl"><span>➗ Pembagian</span><span id="pctDiv">0%</span></div><div class="prog-track"><div class="prog-fill" id="barDiv" style="background:var(--b);width:0%"></div></div></div>
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="ii-ico">💬</div>
+          <div class="ii-txt" id="insightTip">Belum ada jawaban. Ayo coba dulu!</div>
+        </div>
+      </div>
+
+      <!-- Badges -->
+      <div class="side-card">
+        <div class="side-title">🏅 Koleksi Badge</div>
+        <div class="badge-shelf">
+          <div class="badge" id="badgeExplorer"><div class="badge-ico">🗺️</div><div class="badge-lbl">Explorer</div></div>
+          <div class="badge" id="badgeThinker"><div class="badge-ico">🧠</div><div class="badge-lbl">Thinker</div></div>
+          <div class="badge" id="badgeStar"><div class="badge-ico">⭐</div><div class="badge-lbl">Math Star</div></div>
+          <div class="badge" id="badgeMaster"><div class="badge-ico">👑</div><div class="badge-lbl">Master</div></div>
+        </div>
       </div>
 
     </aside>
-    <!-- /game-layout__sidebar -->
 
-  </main>
-  <!-- /game-layout -->
+  </div><!-- end root -->
 
-  <!-- =====================================================================
-       MODAL: DUPLIKAT STRATEGI
-       Muncul jika siswa mengirim rumus yang identik dalam sesi yang sama.
-  ====================================================================== -->
-  <div
-    class="modal-overlay"
-    id="modalDuplicate"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="modalDupTitle"
-    aria-describedby="modalDupBody"
-  >
+  <!-- =============================================================
+       MODALS (dari game.js)
+  ============================================================= -->
+  <!-- Duplicate -->
+  <div class="modal-overlay" id="modalDuplicate" role="dialog" aria-modal="true">
     <div class="modal-box modal-box--duplicate">
-      <div class="modal__emoji" aria-hidden="true">🤔</div>
-      <h3 class="modal__title" id="modalDupTitle">Sudah Pernah Coba!</h3>
-      <p class="modal__body" id="modalDupBody">
-        Rumus ini mirip dengan yang sudah kamu coba sebelumnya. Coba cari kombinasi angka yang berbeda ya!
-      </p>
-      <button
-        class="modal__btn"
-        id="btnCloseDuplicate"
-        type="button"
-        aria-label="Tutup peringatan duplikat dan coba lagi"
-      >
-        💡 Oke, Coba Cara Lain!
-      </button>
+      <div class="modal__emoji">🤔</div>
+      <h3 class="modal__title">Sudah Pernah Coba!</h3>
+      <p class="modal__body">Rumus ini mirip dengan yang sudah kamu coba sebelumnya. Coba cari kombinasi angka yang berbeda ya!</p>
+      <button class="modal__btn" id="btnCloseDuplicate">💡 Oke, Coba Cara Lain!</button>
     </div>
   </div>
 
-  <!-- =====================================================================
-       MODAL: RUMUS BERHASIL (Strategi Baru Ditemukan)
-  ====================================================================== -->
-  <div
-    class="modal-overlay"
-    id="modalSuccess"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="modalSuccessTitle"
-    aria-describedby="modalSuccessBody"
-  >
+  <!-- Success -->
+  <div class="modal-overlay" id="modalSuccess" role="dialog" aria-modal="true">
     <div class="modal-box modal-box--success">
-      <div class="modal__emoji" id="modalSuccessEmoji" aria-hidden="true">🎉</div>
-      <h3 class="modal__title" id="modalSuccessTitle">Strategi Baru!</h3>
-      <p class="modal__body" id="modalSuccessBody">
-        Rumus <strong id="modalSuccessFormula"></strong> berhasil! Kamu menemukan cara baru yang keren!
-      </p>
-      <div class="modal__points-badge" id="modalSuccessPoints" aria-live="polite">+10 Poin</div>
-      <button
-        class="modal__btn"
-        id="btnCloseSuccess"
-        type="button"
-        aria-label="Lanjutkan mencari strategi baru"
-      >
-        🚀 Cari Lagi!
-      </button>
+      <div class="modal__emoji">🎉</div>
+      <h3 class="modal__title">Strategi Baru!</h3>
+      <p class="modal__body">Rumus <strong id="modalSuccessFormula"></strong> berhasil! Kamu menemukan cara baru yang keren!</p>
+      <div class="modal__points-badge" id="modalSuccessPoints">+10 Poin</div>
+      <button class="modal__btn" id="btnCloseSuccess">🚀 Cari Lagi!</button>
     </div>
   </div>
 
-  <!-- =====================================================================
-       MODAL: RUMUS TIDAK VALID (Hasil Tidak Sama dengan Target)
-  ====================================================================== -->
-  <div
-    class="modal-overlay"
-    id="modalInvalid"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="modalInvalidTitle"
-    aria-describedby="modalInvalidBody"
-  >
+  <!-- Invalid -->
+  <div class="modal-overlay" id="modalInvalid" role="dialog" aria-modal="true">
     <div class="modal-box modal-box--error">
-      <div class="modal__emoji" aria-hidden="true">❌</div>
-      <h3 class="modal__title" id="modalInvalidTitle">Belum Tepat!</h3>
-      <p class="modal__body" id="modalInvalidBody">
-        Hasil rumusmu belum sama dengan target. Periksa lagi kombinasinya ya!
-      </p>
-      <button
-        class="modal__btn modal__btn--secondary"
-        id="btnCloseInvalid"
-        type="button"
-        aria-label="Tutup dan perbaiki rumus"
-      >
-        ✏️ Perbaiki Rumus
-      </button>
+      <div class="modal__emoji">❌</div>
+      <h3 class="modal__title">Belum Tepat!</h3>
+      <p class="modal__body">Hasil rumusmu belum sama dengan target. Periksa lagi kombinasinya ya!</p>
+      <button class="modal__btn modal__btn--secondary" id="btnCloseInvalid">✏️ Perbaiki Rumus</button>
     </div>
   </div>
 
-  <!-- =====================================================================
-       MODAL: SESI SELESAI (Semua Strategi Minimum Tercapai)
-  ====================================================================== -->
-  <div
-    class="modal-overlay"
-    id="modalFinish"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="modalFinishTitle"
-    aria-describedby="modalFinishBody"
-  >
+  <!-- Finish -->
+  <div class="modal-overlay" id="modalFinish" role="dialog" aria-modal="true">
     <div class="modal-box modal-box--finish">
-      <div class="modal__emoji" aria-hidden="true">🏆</div>
-      <h3 class="modal__title" id="modalFinishTitle">Luar Biasa!</h3>
-      <p class="modal__body" id="modalFinishBody">
-        Kamu berhasil menemukan semua strategi! Skor akhirmu:
-      </p>
-      <div class="modal__points-badge" id="modalFinishScore" aria-live="polite">0 Poin</div>
-      <div class="potion-card__stars" id="modalFinishStars" aria-label="Bintang yang diraih">
-        <span>⭐</span><span>⭐</span><span>⭐</span>
-      </div>
+      <div class="modal__emoji">🏆</div>
+      <h3 class="modal__title">Luar Biasa!</h3>
+      <p class="modal__body">Kamu berhasil menemukan semua strategi! Skor akhirmu:</p>
+      <div class="modal__points-badge" id="modalFinishScore">0 Poin</div>
+      <div class="potion-card__stars" id="modalFinishStars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
       <div class="modal__btn-group">
-        <button
-          class="modal__btn"
-          id="btnFinishNext"
-          type="button"
-          aria-label="Lanjut ke level berikutnya"
-        >
-          ➡️ Level Berikutnya
-        </button>
-        <button
-          class="modal__btn modal__btn--secondary"
-          id="btnFinishMore"
-          type="button"
-          aria-label="Terus temukan lebih banyak strategi"
-        >
-          🔍 Cari Lebih Banyak
-        </button>
+        <button class="modal__btn" id="btnFinishNext">➡️ Level Berikutnya</button>
+        <button class="modal__btn modal__btn--secondary" id="btnFinishMore">🔍 Cari Lebih Banyak</button>
       </div>
     </div>
   </div>
 
-  <!-- =====================================================================
-       TOAST CONTAINER — Notifikasi singkat non-modal
-  ====================================================================== -->
-  <div
-    class="toast-container"
-    id="toastContainer"
-    role="status"
-    aria-live="polite"
-    aria-atomic="false"
-  ></div>
+  <!-- ===== TOAST CONTAINER ===== -->
+  <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
 
-  <!-- =====================================================================
+  <!-- =============================================================
        SCRIPTS
-       Rantai impor: game.js → auth.js → supabase-config.js
-       Semua dependensi dikelola via ES Module import — tidak perlu
-       mendefinisikan Supabase di level global window.
-  ====================================================================== -->
-  <script type="module" src="js/game.js"></script>
+  ============================================================= -->
+  <!-- Timer script (berjalan paralel, tidak mengganggu game.js) -->
+  <script>
+    (function() {
+      const TIMER_MAX = 60;
+      let timeLeft = TIMER_MAX;
+      const timerDisp = document.getElementById('timerDisp');
+      const timerArc = document.getElementById('timerArc');
+      const CIRC = 2 * Math.PI * 20;
 
+      function updateDisplay() {
+        const m = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+        const s = String(timeLeft % 60).padStart(2, '0');
+        timerDisp.textContent = `${m}:${s}`;
+        const pct = timeLeft / TIMER_MAX;
+        timerArc.setAttribute('stroke-dashoffset', CIRC * (1 - pct));
+        timerArc.setAttribute('stroke', pct < 0.25 ? '#ef4444' : pct < 0.5 ? '#f59e0b' : '#10b981');
+      }
+
+      function startTimer() {
+        if (window._timerInterval) clearInterval(window._timerInterval);
+        updateDisplay();
+        window._timerInterval = setInterval(() => {
+          if (timeLeft <= 0) {
+            clearInterval(window._timerInterval);
+            // Tampilkan toast peringatan
+            const container = document.getElementById('toastContainer');
+            if (container) {
+              const toast = document.createElement('div');
+              toast.className = 'toast toast--warn';
+              toast.textContent = '⏰ Waktu habis! Tetap semangat!';
+              container.appendChild(toast);
+              setTimeout(() => toast.remove(), 3000);
+            }
+            return;
+          }
+          timeLeft--;
+          updateDisplay();
+        }, 1000);
+      }
+
+      // Reset timer saat halaman dimuat ulang atau game restart (dipanggil dari game.js)
+      window._resetTimer = function() {
+        timeLeft = TIMER_MAX;
+        if (window._timerInterval) {
+          clearInterval(window._timerInterval);
+        }
+        startTimer();
+      };
+
+      // Mulai timer
+      startTimer();
+
+      // Redirect tombol back
+      document.getElementById('btnBackDashboard').addEventListener('click', function() {
+        if (confirm('Yakin ingin keluar dari permainan?')) {
+          window.location.href = 'dashboard.html';
+        }
+      });
+    })();
+  </script>
+
+  <!-- Main game module -->
+  <script type="module" src="js/game.js"></script>
 </body>
 </html>
