@@ -278,18 +278,28 @@ async function submitKelas() {
     return;
   }
 
-  // 🔥 PAKAI FETCH MANUAL dengan key yang BENAR
   const SUPABASE_URL = 'https://cezzczjzwvnncvygmbog.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
+
+  // 🔥 TAMBAHKAN TAHUN AJARAN
+  const tahunAjaran = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`;
 
   try {
     let url = `${SUPABASE_URL}/rest/v1/kelas`;
     let method = 'POST';
-    let body = { id_guru: guruId, nama_kelas: nama, tingkat, warna };
+    let body = {
+      id_guru: guruId,
+      nama_kelas: nama,
+      tingkat: tingkat,
+      warna: warna,
+      tahun_ajaran: tahunAjaran // <-- INI DITAMBAHKAN
+    };
 
     if (id) {
       url = `${url}?id_kelas=eq.${id}`;
       method = 'PATCH';
+      // Untuk PATCH, kita tidak perlu kirim tahun_ajaran lagi (kecuali mau diubah)
+      // Tapi lebih aman kirim saja semua field
     }
 
     const response = await fetch(url, {
