@@ -197,5 +197,5 @@ document.getElementById('btnRefreshData')?.addEventListener('click', () => {
 });
 
 // ========== INIT ==========
-document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+// document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 loadDetail();
