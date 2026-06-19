@@ -247,6 +247,7 @@ function renderSiswa(kelasId) {
       <td>${s.jumlahMain}</td>
       <td>
         <button class="action-btn-sm action-btn-sm--success" data-id="${s.id_siswa}" data-action="play">▶ Main</button>
+        <button class="action-btn-sm" data-id="${s.id_siswa}" data-action="detail">📊 Detail</button>
         <button class="action-btn-sm" data-id="${s.id_siswa}" data-action="edit">✎ Edit</button>
         <button class="action-btn-sm action-btn-sm--danger" data-id="${s.id_siswa}" data-action="delete">✕ Hapus</button>
       </td>
@@ -261,6 +262,8 @@ function renderSiswa(kelasId) {
       const action = btn.dataset.action;
       if (action === 'play') {
         openModalLevel(id);
+      } else if (action === 'detail') {
+        window.location.href = `detail-siswa.html?siswa=${id}`;
       } else if (action === 'edit') {
         openEditSiswa(id);
       } else if (action === 'delete') {

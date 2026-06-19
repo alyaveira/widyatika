@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Widyatika — Detail Laporan Siswa." />
+  <title>Detail Siswa — Widyatika</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <style>
+    /* ============================================================
+       DETAIL SISWA — Tambahan gaya
+    ============================================================ */
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .detail-header__back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: var(--clr-text-muted);
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      transition: background var(--ease-fast);
+      font-size: 0.95rem;
+    }
+    .detail-header__back:hover {
+      background: var(--clr-bg);
+      color: var(--clr-text);
+    }
+
+    /* Profil siswa */
+    .siswa-profile-card {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-xl);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .siswa-profile-card__avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4F46E5, #7C3AED);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .siswa-profile-card__info { flex: 1; min-width: 180px; }
+    .siswa-profile-card__name {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--clr-navy);
+      margin: 0 0 2px;
+    }
+    .siswa-profile-card__meta {
+      font-size: 0.9rem;
+      color: var(--clr-text-muted);
+      font-weight: 500;
+    }
+    .badge-kategori {
+      display: inline-flex;
+      padding: 3px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      margin-left: 8px;
+    }
+    .badge-kategori--tinggi { background: #DCFCE7; color: #15803D; }
+    .badge-kategori--sedang { background: #FEF9C3; color: #A16207; }
+    .badge-kategori--rendah { background: #FEE2E2; color: #B91C1C; }
+
+    /* Tabel */
+    .student-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .student-table thead th {
+      text-align: left;
+      padding: 12px 14px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--clr-navy);
+      border-bottom: 1px solid var(--clr-border-strong);
+      background: var(--clr-bg);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .student-table tbody tr:nth-child(odd) { background: #FFFFFF; }
+    .student-table tbody tr:nth-child(even) { background: #F8FAFC; }
+    .student-table td {
+      padding: 12px 14px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--clr-border);
+      vertical-align: middle;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .status-pill--selesai { background: #DCFCE7; color: #15803D; }
+    .status-pill--berjalan { background: #FEF9C3; color: #A16207; }
+
+    .section-card {
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .section-card__header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--clr-border);
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--clr-navy);
+    }
+
+    @media (max-width: 640px) {
+      .siswa-profile-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu navigasi guru">
+      <div class="sidebar__brand">
+        <div class="sidebar__logo-icon" aria-hidden="true">◈</div>
+        <span class="sidebar__logo-text">Widy<em>atika</em></span>
+      </div>
+      <div class="sidebar__profile" id="sidebarProfile">
+        <div class="sidebar__avatar" id="sidebarAvatar" aria-hidden="true">G</div>
+        <div>
+          <p class="sidebar__profile-name" id="sidebarName">Memuat...</p>
+          <p class="sidebar__profile-role">Guru</p>
+        </div>
+      </div>
+      <nav class="sidebar__nav" aria-label="Menu utama">
+        <div class="sidebar__nav-group">
+          <p class="sidebar__nav-label">Menu Utama</p>
+          <a href="dashboard.html" class="sidebar__nav-item" id="navDashboard">
+            <span class="sidebar__nav-icon" aria-hidden="true">⊞</span>
+            Beranda
+          </a>
+          <a href="manajemen-kelas.html" class="sidebar__nav-item" id="navKelas">
+            <span class="sidebar__nav-icon" aria-hidden="true">⌂</span>
+            Kelas
+          </a>
+          <a href="laporan.html" class="sidebar__nav-item" id="navLaporan">
+            <span class="sidebar__nav-icon" aria-hidden="true">▤</span>
+            Laporan
+          </a>
+        </div>
+      </nav>
+      <div class="sidebar__footer">
+        <button class="sidebar__logout-btn" id="btnLogout" type="button" aria-label="Keluar dari akun">
+          <span aria-hidden="true">⏻</span> Keluar
+        </button>
+      </div>
+    </aside>
+
+    <!-- ========== TOPBAR ========== -->
+    <header class="topbar" role="banner">
+      <div class="topbar__left">
+        <button class="btn btn--ghost btn--icon" id="btnToggleSidebar" aria-label="Toggle sidebar" aria-expanded="true" style="display:none;" type="button">☰</button>
+        <h1 class="topbar__page-title">Detail Siswa</h1>
+      </div>
+      <div class="topbar__right">
+        <div style="font-size:0.8rem; color:var(--clr-text-muted); font-weight:500;" id="topbarDate"></div>
+        <button class="topbar__icon-btn" id="btnRefreshData" aria-label="Muat ulang data" type="button" title="Refresh data">⟳</button>
+      </div>
+    </header>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="mainContent" role="main">
+
+      <div class="detail-header">
+        <button class="detail-header__back" id="btnBackKelas" type="button">
+          <span>←</span> Kembali ke Kelas
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div id="detailLoading" style="display:flex; align-items:center; gap:12px; padding:40px 0; color:var(--clr-text-muted);">
+        <div style="width:20px;height:20px;border:2.5px solid #CBD5E1;border-top-color:var(--clr-blue);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;"></div>
+        <span style="font-weight:600;">Memuat data siswa...</span>
+      </div>
+
+      <div id="detailContent" style="display:none;">
+
+        <!-- Profil Siswa -->
+        <div class="siswa-profile-card">
+          <div class="siswa-profile-card__avatar" id="profileAvatar">S</div>
+          <div class="siswa-profile-card__info">
+            <p class="siswa-profile-card__name" id="profileNama">Memuat...</p>
+            <p class="siswa-profile-card__meta">
+              <span id="profileKelas">—</span>
+              <span class="badge-kategori" id="profileKategori"></span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stats-grid" id="profileStats" style="margin-bottom:24px;"></div>
+
+        <!-- Riwayat Sesi -->
+        <section class="section-card">
+          <div class="section-card__header">🎮 Riwayat Sesi Bermain</div>
+          <div class="table-wrapper">
+            <table class="student-table">
+              <thead>
+                <tr>
+                  <th>Level</th>
+                  <th>Target Angka</th>
+                  <th>Status</th>
+                  <th>Jumlah Strategi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodySesi">
+                <tr><td colspan="4" style="text-align:center;padding:24px;color:#64748B;">Memuat data sesi...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Daftar Strategi -->
+        <section class="section-card">
+          <div class="section-card__header">🧩 Daftar Strategi Ditemukan</div>
+          <div class="table-wrapper">
+            <table class="student-table">
+              <thead>
+                <tr>
+                  <th>Level</th>
+                  <th>Ekspresi Matematika</th>
+                  <th>Poin</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyStrategi">
+                <tr><td colspan="3" style="text-align:center;padding:24px;color:#64748B;">Memuat data strategi...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ========== TOAST ========== -->
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <!-- ========== SCRIPTS ========== -->
+  <script type="module" src="js/detail-siswa.js"></script>
+
+</body>
+</html>
