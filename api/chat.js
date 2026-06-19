@@ -1,20 +1,20 @@
-// api/chat.js — Fixed with CORS + OPTIONS
+// api/chat.js — Vercel Serverless Function untuk Gemini AI
 
 export default async function handler(req, res) {
   // =============================================
   // 1. SET CORS HEADERS
   // =============================================
   const allowedOrigins = [
-    'https://widyatika.vercel.app',    // Ganti dengan domain Anda
+    'https://widyatika.vercel.app', // ganti dengan domain Anda
     'http://localhost:3000',
     'http://localhost:5500',
+    'http://localhost:5501',
   ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   } else {
-    // Izin semua origin untuk sementara (tidak aman di production, tapi untuk debug)
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', '*'); // untuk debug (tidak aman di production)
   }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
@@ -38,31 +38,58 @@ export default async function handler(req, res) {
   // =============================================
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    console.error('[Chat API] GEMINI_API_KEY not set');
+    console.error('[Chat API] GEMINI_API_KEY tidak diset di environment Vercel.');
     return res.status(500).json({
       success: false,
-      error: 'Server configuration error: missing API key',
+      error: 'Server configuration error: missing API key.',
     });
   }
 
   // =============================================
   // 5. PARSE BODY
   // =============================================
-  const { mode = 'chat', message, context = {} } = req.body || {};
+  let body;
+  try {
+    body = req.body; // Vercel sudah parse JSON
+  } catch (err) {
+    return res.status(400).json({ success: false, error: 'Invalid JSON body' });
+  }
+
+  const { mode = 'chat', message, context = {} } = body;
 
   if (mode !== 'chat' && mode !== 'analyse') {
-    return res.status(400).json({ success: false, error: 'Mode must be "chat" or "analyse"' });
+    return res.status(400).json({ success: false, error: 'Mode harus "chat" atau "analyse"' });
   }
 
   if (mode === 'chat' && (!message || typeof message !== 'string' || !message.trim())) {
-    return res.status(400).json({ success: false, error: 'Message is required' });
+    return res.status(400).json({ success: false, error: 'Pesan tidak boleh kosong' });
   }
 
   // =============================================
   // 6. BUILD PROMPT
   // =============================================
-  const systemPrompt = `Kamu adalah Widy, asisten pedagogis AI untuk platform Widyatika...
-  (sama seperti sebelumnya, tidak diubah)`;
+  const systemPrompt = `Kamu adalah Widy, asisten pedagogis AI untuk platform Widyatika, platform asesmen diagnostik numerasi berbasis game untuk siswa Sekolah Dasar (SD).
+
+Platform ini mengimplementasikan metode Number Talks — di mana siswa menemukan banyak cara berbeda untuk mencapai satu angka target.
+
+Data konteks guru yang sedang login:
+- Nama guru: ${context.nama_lengkap || 'Guru'}
+- Total kelas: ${context.totalKelas || 0}
+- Total siswa: ${context.totalSiswa || 0}
+- Rata-rata skor siswa: ${context.rataSkor || 0} poin
+- Kelas dengan skor tertinggi: ${context.highestClass || '-'}
+- Kelas dengan skor terendah: ${context.lowestClass || '-'}
+
+Tugasmu:
+1. Membantu guru memahami data dan progres siswa
+2. Memberikan saran pedagogis berbasis bukti untuk meningkatkan kemampuan numerasi
+3. Menjelaskan konsep Number Talks dengan bahasa yang mudah dipahami
+4. Merekomendasikan strategi diferensiasi untuk siswa dengan berbagai kemampuan
+5. Menjawab pertanyaan umum tentang asesmen diagnostik matematika SD
+
+Selalu gunakan Bahasa Indonesia yang hangat, profesional, dan ramah.
+Jawaban harus singkat, actionable, dan relevan dengan konteks SD.
+Jika ditanya di luar topik pendidikan/numerasi, tolak dengan sopan dan kembalikan ke topik yang relevan.`;
 
   let userMessage = message;
   if (mode === 'analyse') {
@@ -80,23 +107,41 @@ Fokus pada:
   }
 
   // =============================================
-  // 7. CALL GEMINI API
+  // 7. PANGGIL GEMINI API
   // =============================================
   try {
+    // Gunakan model gemini-1.5-flash dengan API key di URL
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const payload = {
-      system: systemPrompt,
-      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-      generationConfig: {
-        temperature: 0.75,
-        maxOutputTokens: 512,
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: userMessage }]
+        }
+      ],
+      systemInstruction: {
+        parts: [{ text: systemPrompt }]
       },
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 512,
+        topP: 0.9,
+        topK: 40,
+      },
+      safetySettings: [
+        {
+          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+          threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+        },
+      ],
     };
 
     const response = await fetch(geminiUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(payload),
     });
 
@@ -110,8 +155,8 @@ Fokus pada:
       });
     }
 
-    const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text
-      || 'Maaf, saya tidak dapat menghasilkan respons.';
+    // Ambil teks dari response
+    const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Maaf, saya tidak dapat memberikan respons.';
 
     return res.status(200).json({
       success: true,
