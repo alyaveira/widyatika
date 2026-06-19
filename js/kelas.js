@@ -265,6 +265,8 @@ function closeModalKelas() {
   modalKelas.classList.remove('is-open');
 }
 
+// js/kelas.js - GANTI fungsi submitKelas dengan ini
+
 async function submitKelas() {
   const nama = inputNamaKelas.value.trim();
   const tingkat = inputTingkat.value;
@@ -276,26 +278,45 @@ async function submitKelas() {
     return;
   }
 
+  // 🔥 PAKAI FETCH MANUAL dengan key yang BENAR
+  const SUPABASE_URL = 'https://cezzczjzwvnncvygmbog.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
+
   try {
+    let url = `${SUPABASE_URL}/rest/v1/kelas`;
+    let method = 'POST';
+    let body = { id_guru: guruId, nama_kelas: nama, tingkat, warna };
+
     if (id) {
-      const { error } = await supabase
-        .from('kelas')
-        .update({ nama_kelas: nama, tingkat, warna })
-        .eq('id_kelas', id);
-      if (error) throw error;
-      showToast('Kelas berhasil diperbarui.', 'success');
-    } else {
-      const { error } = await supabase
-        .from('kelas')
-        .insert([{ id_guru: guruId, nama_kelas: nama, tingkat, warna }]);
-      if (error) throw error;
-      showToast('Kelas berhasil ditambahkan.', 'success');
+      url = `${url}?id_kelas=eq.${id}`;
+      method = 'PATCH';
     }
+
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(body),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('[Submit Kelas] Error Response:', result);
+      throw new Error(result.message || result.details || 'Gagal menyimpan');
+    }
+
+    showToast(id ? 'Kelas berhasil diperbarui.' : 'Kelas berhasil ditambahkan.', 'success');
     closeModalKelas();
     await loadAllData();
+
   } catch (err) {
     console.error('[Kelas] Submit error:', err);
-    showToast('Gagal menyimpan kelas.', 'error');
+    showToast('Gagal menyimpan kelas: ' + err.message, 'error');
   }
 }
 
