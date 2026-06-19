@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     /* ============================================================
-       RESET & GLOBAL (dari gameplay.html)
+       RESET & GLOBAL
     ============================================================ */
     *,
     *::before,
@@ -76,6 +76,23 @@
     @keyframes drift {
       from { transform: translateX(-200px); }
       to   { transform: translateX(110vw); }
+    }
+    /* ===== CONFETTI LAYER ===== */
+    .confetti-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute;
+      border-radius: 2px;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      from { transform: translateY(-20px) rotate(0); opacity: 1; }
+      to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
     }
     /* ===== ROOT ===== */
     .root {
@@ -718,7 +735,7 @@
     }
 
     /* ============================================================
-       MODAL & TOAST (dari game.css)
+       MODAL & TOAST
     ============================================================ */
     .modal-overlay {
       position: fixed;
@@ -1022,23 +1039,14 @@
     </div>
   </div>
 
-  <!-- ===== LOADING SCREEN ===== -->
-  <div class="loading-screen" id="loadingScreen" role="status" aria-live="polite">
-    <div class="loading-screen__logo">🧪 Widyatika</div>
-    <div class="loading-screen__spinner" aria-hidden="true"></div>
-    <p class="loading-screen__text">Memuat sesi game kamu...</p>
-  </div>
-    <!-- ===== CLOUDS ===== -->
-  <div class="sky" aria-hidden="true">
-    ... (isi cloud)
-  </div>
-
   <!-- ===== CONFETTI LAYER ===== -->
   <div class="confetti-layer" id="confetti-layer"></div>
 
   <!-- ===== LOADING SCREEN ===== -->
   <div class="loading-screen" id="loadingScreen" role="status" aria-live="polite">
-    ...
+    <div class="loading-screen__logo">🧪 Widyatika</div>
+    <div class="loading-screen__spinner" aria-hidden="true"></div>
+    <p class="loading-screen__text">Memuat sesi game kamu...</p>
   </div>
 
   <!-- =============================================================
@@ -1102,7 +1110,6 @@
       <!-- Mascot + Speech -->
       <div class="mascot-row">
         <div class="mascot-wrap" id="mascot">
-          <!-- SVG mascot disisipkan di sini (sama seperti sebelumnya) -->
           <svg viewBox="0 0 88 88" xmlns="http://www.w3.org/2000/svg" width="84" height="84">
             <ellipse cx="44" cy="83" rx="20" ry="4" fill="rgba(0,0,0,0.09)" />
             <line x1="44" y1="10" x2="44" y2="18" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" />
@@ -1381,7 +1388,7 @@
   <!-- =============================================================
        SCRIPTS
   ============================================================= -->
-  <!-- Timer script (berjalan paralel, tidak mengganggu game.js) -->
+  <!-- Timer script -->
   <script>
     (function() {
       const TIMER_MAX = 60;
