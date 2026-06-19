@@ -56,6 +56,24 @@ const el = {
   btnFinishMore: document.getElementById('btnFinishMore'),
   toastContainer: document.getElementById('toastContainer'),
   confettiLayer: document.getElementById('confettiLayer'),
+  // Result overlay
+  resultOverlay: document.getElementById('result-overlay'),
+  resPoin: document.getElementById('res-poin'),
+  resStrat: document.getElementById('res-strat'),
+  resAcc: document.getElementById('res-acc'),
+  resEmoji: document.getElementById('res-emoji'),
+  resTitle: document.getElementById('res-title'),
+  resSub: document.getElementById('res-sub'),
+  rbtnAgain: document.getElementById('rbtn-again'),
+  rbtnDash: document.getElementById('rbtn-dash'),
+  roAdd: document.getElementById('ro-add'),
+  roMul: document.getElementById('ro-mul'),
+  roSub: document.getElementById('ro-sub'),
+  roDiv: document.getElementById('ro-div'),
+  rbAdd: document.getElementById('rb-add'),
+  rbMul: document.getElementById('rb-mul'),
+  rbSub: document.getElementById('rb-sub'),
+  rbDiv: document.getElementById('rb-div'),
 };
 
 // ============================================================================
@@ -67,17 +85,17 @@ const state = {
   openParens: 0,
   targetAngka: null,
   idSesi: null,
-  submittedExpressions: new Set(), // untuk cek duplikat strategi
+  submittedExpressions: new Set(),
   sessionScore: 0,
   strategiCount: 0,
   finishModalShown: false,
   isSubmitting: false,
   opCount: { add: 0, sub: 0, mul: 0, div: 0 },
-  allHistory: [], // semua percobaan { expr, ok, val }
+  allHistory: [],
 };
 
 // ============================================================================
-// MATH PARSER
+// MATH PARSER (tidak diubah, tetap sama)
 // ============================================================================
 function tokenizeExpr(expr) {
   const tokens = [];
@@ -483,7 +501,6 @@ async function handleSubmit() {
     return;
   }
 
-  // Catat semua percobaan ke riwayat
   const ok = Math.abs(result.value - state.targetAngka) < 0.0001;
   state.allHistory.unshift({ expr: exprStr, ok, val: result.value });
   renderAllHistory();
@@ -497,7 +514,6 @@ async function handleSubmit() {
     return;
   }
 
-  // --- Jawaban benar ---
   const normalized = normalizeExpr(exprStr);
   if (state.submittedExpressions.has(normalized)) {
     flashFormula('error');
@@ -507,7 +523,6 @@ async function handleSubmit() {
     return;
   }
 
-  // Commit ke Supabase
   state.isSubmitting = true;
   el.btnSubmit.disabled = true;
   el.btnSubmit.textContent = '⏳ Menyimpan...';
@@ -530,7 +545,6 @@ async function handleSubmit() {
       .eq('id_siswa', state.session.siswa.id_siswa);
     if (updateError) throw updateError;
 
-    // Update state
     state.submittedExpressions.add(normalized);
     state.strategiCount++;
     state.sessionScore += poin;
@@ -557,7 +571,6 @@ async function handleSubmit() {
     setFeedback(`🎉 <strong>${exprStr} = ${state.targetAngka}</strong>! +${poin} Poin!`, 'fb-ok');
     setMascot('correct', 'Keren! 🚀');
 
-    // Cek finish
     if (state.strategiCount >= STRATEGI_TARGET_MIN && !state.finishModalShown) {
       state.finishModalShown = true;
       el.modalFinishScore.textContent = `${state.sessionScore} Poin! 🏆`;
@@ -733,23 +746,24 @@ async function loadExistingStrategies() {
 function showResult() {
   if (state.finishModalShown) return;
   const acc = state.strategiCount > 0 ? 100 : 0;
-  document.getElementById('resPoin').textContent = state.sessionScore;
-  document.getElementById('resStrat').textContent = state.strategiCount;
-  document.getElementById('resAcc').textContent = acc + '%';
+  el.resPoin.textContent = state.sessionScore;
+  el.resStrat.textContent = state.strategiCount;
+  el.resAcc.textContent = acc + '%';
   const studentName = state.session?.siswa?.nama_panggilan || 'Siswa';
-  document.getElementById('resSub').textContent = `${studentName} menemukan ${state.strategiCount} cara! Total poin: ${state.sessionScore}`;
+  el.resSub.textContent = `${studentName} menemukan ${state.strategiCount} cara! Total poin: ${state.sessionScore}`;
   const emoji = state.strategiCount >= 5 ? '🏆' : state.strategiCount >= 3 ? '🎉' : '⭐';
-  const title = state.strategiCount >= 5 ? 'Luar Biasa!' : state.strategiCount >= 3 ? 'Kerja Bagus!' : 'Tetap Semangat!';
-  document.getElementById('resEmoji').textContent = emoji;
-  document.getElementById('resTitle').textContent = title;
+  el.resEmoji.textContent = emoji;
+  el.resTitle.textContent = state.strategiCount >= 5 ? 'Luar Biasa!' : state.strategiCount >= 3 ? 'Kerja Bagus!' : 'Tetap Semangat!';
   const total = state.opCount.add + state.opCount.sub + state.opCount.mul + state.opCount.div || 1;
   const pctOf = k => Math.round(state.opCount[k] / total * 100);
   ['add', 'mul', 'sub', 'div'].forEach(k => {
     const p = pctOf(k);
-    document.getElementById('ro' + k.charAt(0).toUpperCase() + k.slice(1)).textContent = p + '%';
-    setTimeout(() => document.getElementById('rb' + k.charAt(0).toUpperCase() + k.slice(1)).style.width = p + '%', 300);
+    if (k === 'add') { el.roAdd.textContent = p + '%'; setTimeout(() => el.rbAdd.style.width = p + '%', 300); }
+    if (k === 'mul') { el.roMul.textContent = p + '%'; setTimeout(() => el.rbMul.style.width = p + '%', 300); }
+    if (k === 'sub') { el.roSub.textContent = p + '%'; setTimeout(() => el.rbSub.style.width = p + '%', 300); }
+    if (k === 'div') { el.roDiv.textContent = p + '%'; setTimeout(() => el.rbDiv.style.width = p + '%', 300); }
   });
-  document.getElementById('resultOverlay').classList.add('open');
+  el.resultOverlay.classList.add('open');
 }
 
 function endGame() {
@@ -761,7 +775,7 @@ function endGame() {
 }
 
 function restartGame() {
-  document.getElementById('resultOverlay').classList.remove('open');
+  el.resultOverlay.classList.remove('open');
   state.tokens = [];
   state.openParens = 0;
   state.submittedExpressions = new Set();
@@ -818,8 +832,8 @@ async function init() {
     el.loadingScreen.classList.add('is-hidden');
 
     // Result buttons
-    document.getElementById('rbtnAgain').addEventListener('click', restartGame);
-    document.getElementById('rbtnDash').addEventListener('click', goToDashboard);
+    el.rbtnAgain.addEventListener('click', restartGame);
+    el.rbtnDash.addEventListener('click', goToDashboard);
 
     window.endGame = endGame;
     window.restartGame = restartGame;
