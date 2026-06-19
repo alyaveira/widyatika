@@ -7,6 +7,7 @@
  *   - Ramuan interaktif
  *   - Badge, insight (Cara Berpikirmu)
  *   - Tanpa "Koleksi Rumusku"
+ *   - Tanpa modal finish – hanya result overlay saat timer habis
  * =============================================================================
  */
 import { supabase } from './supabase-config.js';
@@ -88,14 +89,14 @@ const state = {
   submittedExpressions: new Set(),
   sessionScore: 0,
   strategiCount: 0,
-  finishModalShown: false,
+  // finishModalShown tidak digunakan lagi
   isSubmitting: false,
   opCount: { add: 0, sub: 0, mul: 0, div: 0 },
   allHistory: [],
 };
 
 // ============================================================================
-// MATH PARSER (tidak diubah, tetap sama)
+// MATH PARSER
 // ============================================================================
 function tokenizeExpr(expr) {
   const tokens = [];
@@ -517,11 +518,9 @@ async function handleSubmit() {
   const poin = hitungPoin();
 
   try {
-    // 🔥 PAKAI FETCH MANUAL
     const SUPABASE_URL = 'https://cezzczjzwvnncvygmbog.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
 
-    // Insert detail_strategi
     const insertResponse = await fetch(`${SUPABASE_URL}/rest/v1/detail_strategi`, {
       method: 'POST',
       headers: {
@@ -541,7 +540,6 @@ async function handleSubmit() {
       throw new Error(errData.message || 'Insert detail_strategi gagal');
     }
 
-    // Update total_skor siswa
     const newTotalSkor = state.session.siswa.total_skor + poin;
     const updateResponse = await fetch(`${SUPABASE_URL}/rest/v1/siswa?id_siswa=eq.${state.session.siswa.id_siswa}`, {
       method: 'PATCH',
@@ -584,13 +582,8 @@ async function handleSubmit() {
     setFeedback(`🎉 <strong>${exprStr} = ${state.targetAngka}</strong>! +${poin} Poin!`, 'fb-ok');
     setMascot('correct', 'Keren! 🚀');
 
-    if (state.strategiCount >= STRATEGI_TARGET_MIN && !state.finishModalShown) {
-      state.finishModalShown = true;
-      el.modalFinishScore.textContent = `${state.sessionScore} Poin! 🏆`;
-      const stars = Math.min(Math.floor(state.strategiCount / (STRATEGI_TARGET_MIN / 3)), 3);
-      el.modalFinishStars.innerHTML = '⭐'.repeat(stars) + '🌟'.repeat(3 - stars);
-      setTimeout(() => openModal(el.modalFinish), 400);
-    }
+    // TIDAK ADA MODAL FINISH DISINI – hanya result overlay saat timer habis
+
   } catch (err) {
     console.error('[Game] Submit error:', err);
     showToast('Gagal menyimpan. Periksa koneksi!', 'error');
@@ -615,6 +608,8 @@ function closeModal(modalEl) {
 }
 
 function initModalListeners() {
+  // Tombol "Level Berikutnya" dan "Cari Lebih Banyak" di modal finish tidak akan digunakan,
+  // tapi kita tetap pasang event listener untuk berjaga-jaga jika modal finish muncul dari kode lain.
   el.btnFinishNext.addEventListener('click', async () => {
     closeModal(el.modalFinish);
     const newLevel = (state.session.sesi_game.level_ke || 1) + 1;
@@ -639,7 +634,7 @@ function initModalListeners() {
       });
       if (!response.ok) throw new Error(await response.text());
       const data = await response.json();
-      const newSesi = data[0]; // karena return=representation mengembalikan array
+      const newSesi = data[0];
       patchSession({ sesi_game: { id_sesi: newSesi.id_sesi, level_ke: newSesi.level_ke, target_angka: newSesi.target_angka, status_selesai: newSesi.status_selesai } });
       window.location.reload();
     } catch (err) {
@@ -647,6 +642,13 @@ function initModalListeners() {
       showToast('Gagal membuat level berikutnya.', 'error');
     }
   });
+  el.btnFinishMore.addEventListener('click', () => closeModal(el.modalFinish));
+
+  // Modal lainnya
+  el.btnCloseDuplicate.addEventListener('click', () => closeModal(el.modalDuplicate));
+  el.btnCloseSuccess.addEventListener('click', () => closeModal(el.modalSuccess));
+  el.btnCloseInvalid.addEventListener('click', () => closeModal(el.modalInvalid));
+
   [el.modalDuplicate, el.modalSuccess, el.modalInvalid, el.modalFinish].forEach(modal => {
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); });
   });
@@ -754,7 +756,6 @@ async function loadExistingStrategies() {
       state.strategiCount++;
       el.stratBadge.textContent = `🔎 ${state.strategiCount} cara ditemukan`;
       state.sessionScore += row.poin_didapat;
-      // 🔥 Akumulasi operator untuk insight
       const oc = countOpsInExpr(row.ekspresi_matematika);
       state.opCount.add += oc.add;
       state.opCount.sub += oc.sub;
@@ -770,19 +771,28 @@ async function loadExistingStrategies() {
 }
 
 // ============================================================================
-// RESULT OVERLAY
+// RESULT OVERLAY – HANYA DIPANGGIL SAAT TIMER HABIS ATAU QUIT
 // ============================================================================
 function showResult() {
-  if (state.finishModalShown) return;
-  const acc = state.strategiCount > 0 ? 100 : 0;
+  // Hitung akurasi berdasarkan history (semua percobaan)
+  const totalAttempts = state.allHistory.length;
+  const correctCount = state.allHistory.filter(h => h.ok).length;
+  const acc = totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 0;
+
   el.resPoin.textContent = state.sessionScore;
   el.resStrat.textContent = state.strategiCount;
   el.resAcc.textContent = acc + '%';
+
   const studentName = state.session?.siswa?.nama_panggilan || 'Siswa';
   el.resSub.textContent = `${studentName} menemukan ${state.strategiCount} cara! Total poin: ${state.sessionScore}`;
+
+  // Emoji dan judul berdasarkan jumlah strategi
   const emoji = state.strategiCount >= 5 ? '🏆' : state.strategiCount >= 3 ? '🎉' : '⭐';
+  const title = state.strategiCount >= 5 ? 'Luar Biasa!' : state.strategiCount >= 3 ? 'Kerja Bagus!' : 'Tetap Semangat!';
   el.resEmoji.textContent = emoji;
-  el.resTitle.textContent = state.strategiCount >= 5 ? 'Luar Biasa!' : state.strategiCount >= 3 ? 'Kerja Bagus!' : 'Tetap Semangat!';
+  el.resTitle.textContent = title;
+
+  // Update operasi bars
   const total = state.opCount.add + state.opCount.sub + state.opCount.mul + state.opCount.div || 1;
   const pctOf = k => Math.round(state.opCount[k] / total * 100);
   ['add', 'mul', 'sub', 'div'].forEach(k => {
@@ -792,14 +802,17 @@ function showResult() {
     if (k === 'sub') { el.roSub.textContent = p + '%'; setTimeout(() => el.rbSub.style.width = p + '%', 300); }
     if (k === 'div') { el.roDiv.textContent = p + '%'; setTimeout(() => el.rbDiv.style.width = p + '%', 300); }
   });
+
   el.resultOverlay.classList.add('open');
 }
 
 function endGame() {
+  // Hentikan timer
   if (window._timerInterval) {
     clearInterval(window._timerInterval);
     window._timerInterval = null;
   }
+  // Tampilkan result overlay
   showResult();
 }
 
@@ -810,7 +823,6 @@ function restartGame() {
   state.submittedExpressions = new Set();
   state.strategiCount = 0;
   state.sessionScore = 0;
-  state.finishModalShown = false;
   state.isSubmitting = false;
   state.opCount = { add: 0, sub: 0, mul: 0, div: 0 };
   state.allHistory = [];
