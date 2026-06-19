@@ -11,5 +11,3 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     detectSessionInUrl: false,
   },
 });
-
-export const SUPABASE_PROJECT_URL = SUPABASE_URL;
