@@ -1,6 +1,19 @@
 import { supabase } from './supabase-config.js';
 import { initGuruPage, showToast } from './guru.js';
-import { generateTargetAngka } from './auth.js';
+
+// ========== LEVEL PERMAINAN (dipilih guru sebelum siswa mulai main) ==========
+// Level 1: 0–20 | Level 2: 21–100 | Level 3: 101–500 | Level 4: 501–1000
+const LEVEL_TARGET_RANGES = {
+  1: [0, 20],
+  2: [21, 100],
+  3: [101, 500],
+  4: [501, 1000],
+};
+
+function generateTargetByLevel(level) {
+  const [min, max] = LEVEL_TARGET_RANGES[level] || LEVEL_TARGET_RANGES[1];
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 
 const session = initGuruPage('manajemen');
@@ -50,6 +63,12 @@ const siswaKelasId = document.getElementById('siswaKelasId');
 const btnSubmitSiswa = document.getElementById('btnSubmitSiswa');
 const btnCancelModalSiswa = document.getElementById('btnCancelModalSiswa');
 const btnCloseModalSiswa = document.getElementById('btnCloseModalSiswa');
+
+// Modal Pilih Level
+const modalLevel = document.getElementById('modalLevel');
+const btnCancelModalLevel = document.getElementById('btnCancelModalLevel');
+const btnCloseModalLevel = document.getElementById('btnCloseModalLevel');
+let pendingPlaySiswaId = null;
 
 // ========== LOAD DATA ==========
 async function loadAllData() {
@@ -101,7 +120,15 @@ async function loadAllData() {
     }
     strategiList = strategi;
 
-    renderDaftar();
+    // Jika datang dari card "Kelas Saya" di dashboard (?kelas=ID), langsung
+    // tampilkan halaman detail kelas tersebut tanpa menampilkan daftar kelas.
+    const urlParams = new URLSearchParams(window.location.search);
+    const kelasIdParam = urlParams.get('kelas');
+    if (kelasIdParam && kelasList.find(k => k.id_kelas === kelasIdParam)) {
+      openDetail(kelasIdParam);
+    } else {
+      renderDaftar();
+    }
   } catch (err) {
     console.error('[Kelas] Load data error:', err);
     showToast('Gagal memuat data.', 'error');
@@ -123,17 +150,6 @@ function renderDaftar() {
     `;
     return;
   }
-
-  // Setelah renderDaftar();
-const urlParams = new URLSearchParams(window.location.search);
-const kelasId = urlParams.get('kelas');
-if (kelasId) {
-  const found = kelasList.find(k => k.id_kelas === kelasId);
-  if (found) {
-    // Tunggu sebentar agar render selesai, lalu buka detail
-    setTimeout(() => openDetail(kelasId), 100);
-  }
-}
 
   // Hitung statistik per kelas
   const kelasStats = {};
@@ -244,7 +260,7 @@ function renderSiswa(kelasId) {
       const id = btn.dataset.id;
       const action = btn.dataset.action;
       if (action === 'play') {
-        startGameForSiswa(id);
+        openModalLevel(id);
       } else if (action === 'edit') {
         openEditSiswa(id);
       } else if (action === 'delete') {
@@ -509,7 +525,18 @@ async function deleteSiswa(siswaId) {
   }
 }
 
-async function startGameForSiswa(siswaId) {
+// ========== PILIH LEVEL SEBELUM MAIN ==========
+function openModalLevel(siswaId) {
+  pendingPlaySiswaId = siswaId;
+  modalLevel.classList.add('is-open');
+}
+
+function closeModalLevel() {
+  modalLevel.classList.remove('is-open');
+  pendingPlaySiswaId = null;
+}
+
+async function startGameForSiswa(siswaId, levelKe = 1) {
   try {
     const siswa = siswaList.find(s => s.id_siswa === siswaId);
     if (!siswa) {
@@ -517,8 +544,7 @@ async function startGameForSiswa(siswaId) {
       return;
     }
 
-    const levelKe = 1;
-    const targetAngka = generateTargetAngka(levelKe);
+    const targetAngka = generateTargetByLevel(levelKe);
 
     const { data: sesi, error: insertError } = await supabase
       .from('sesi_game')
@@ -573,8 +599,22 @@ btnCancelModalSiswa.addEventListener('click', closeModalSiswa);
 btnCloseModalSiswa.addEventListener('click', closeModalSiswa);
 btnSubmitSiswa.addEventListener('click', handleSubmitStudent); // <- DISINI TERPAKAI
 
+// Modal Pilih Level
+btnCancelModalLevel.addEventListener('click', closeModalLevel);
+btnCloseModalLevel.addEventListener('click', closeModalLevel);
+modalLevel.querySelectorAll('.level-option-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const level = parseInt(btn.dataset.level, 10) || 1;
+    if (pendingPlaySiswaId) startGameForSiswa(pendingPlaySiswaId, level);
+    closeModalLevel();
+  });
+});
+
 btnBackDaftar.addEventListener('click', () => {
   selectedClassId = null;
+  // Bersihkan query string ?kelas=... agar refresh data tidak membuka detail lagi
+  const cleanUrl = window.location.pathname;
+  window.history.replaceState({}, '', cleanUrl);
   renderDaftar();
 });
 
@@ -589,6 +629,9 @@ modalKelas.addEventListener('click', (e) => {
 });
 modalSiswa.addEventListener('click', (e) => {
   if (e.target === modalSiswa) closeModalSiswa();
+});
+modalLevel.addEventListener('click', (e) => {
+  if (e.target === modalLevel) closeModalLevel();
 });
 
 // Refresh

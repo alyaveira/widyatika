@@ -323,40 +323,6 @@
     /* ============================================================
        DASHBOARD CUSTOM STYLES — Sesuai Gambar
     ============================================================ */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-      margin-bottom: 28px;
-    }
-    .stat-card {
-      background: var(--clr-surface);
-      border: 1px solid var(--clr-border);
-      border-radius: var(--radius-lg);
-      padding: 20px 24px;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .stat-card__label {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      font-weight: 700;
-      color: var(--clr-text-muted);
-      letter-spacing: 0.05em;
-    }
-    .stat-card__value {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--clr-navy);
-      line-height: 1.1;
-    }
-    .stat-card__sub {
-      font-size: 0.8rem;
-      color: var(--clr-text-muted);
-      font-weight: 500;
-    }
 
     /* Aktivitas Belajar + Insight AI grid */
     .insight-grid {
@@ -485,6 +451,7 @@
     .kelas-card {
       background: var(--clr-surface);
       border: 1px solid var(--clr-border);
+      border-left: 4px solid var(--kelas-color, var(--clr-blue));
       border-radius: var(--radius-lg);
       padding: 20px 24px;
       box-shadow: var(--shadow-sm);
@@ -520,7 +487,7 @@
     .kelas-card__bar-inner {
       height: 100%;
       border-radius: 99px;
-      background: var(--clr-blue);
+      background: var(--kelas-color, var(--clr-blue));
       transition: width 0.6s ease;
     }
 
@@ -613,30 +580,6 @@
         <div class="page-header">
           <p class="page-header__title" id="welcomeTitle">Selamat Datang! 👋</p>
           <p class="page-header__subtitle" id="welcomeSubtitle">Yuk pantau perkembangan belajar siswa hari ini.</p>
-        </div>
-
-        <!-- Stat Cards -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <span class="stat-card__label">Total Kelas</span>
-            <span class="stat-card__value" id="statTotalKelas">0</span>
-            <span class="stat-card__sub">kelas aktif</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-card__label">Total Siswa</span>
-            <span class="stat-card__value" id="statTotalSiswa">0</span>
-            <span class="stat-card__sub">terdaftar</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-card__label">Rata-rata Skor</span>
-            <span class="stat-card__value" id="statRataSkor">0%</span>
-            <span class="stat-card__sub">poin</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-card__label">Sesi Selesai</span>
-            <span class="stat-card__value" id="statSesiSelesai">0</span>
-            <span class="stat-card__sub">total sesi</span>
-          </div>
         </div>
 
         <!-- Insight Grid: Aktivitas Belajar + Insight AI -->
@@ -797,7 +740,7 @@
     async function fetchDashboardData() {
       const { data: kelasList, error: kelasErr } = await supabase
         .from('kelas')
-        .select('id_kelas, nama_kelas, tahun_ajaran')
+        .select('id_kelas, nama_kelas, tahun_ajaran, warna, tingkat')
         .eq('id_guru', idGuru);
       if (kelasErr) throw new Error(`Kelas: ${kelasErr.message}`);
 
@@ -814,16 +757,37 @@
         siswaList = sd || [];
       }
 
-      // Sesi untuk menghitung "Sesi Selesai"
+      // Sesi: untuk menghitung "Sesi Selesai" & siapa saja yang sudah main
       let totalSesiSelesai = 0;
+      let siswaSudahMainIds = new Set();
+      let sesiList = [];
       if (siswaList.length > 0) {
         const siswaIds = siswaList.map(s => s.id_siswa);
         const { data: sd2, error: sesiErr } = await supabase
           .from('sesi_game')
-          .select('status_selesai')
+          .select('id_sesi, id_siswa, status_selesai')
           .in('id_siswa', siswaIds);
         if (!sesiErr && sd2) {
+          sesiList = sd2;
           totalSesiSelesai = sd2.filter(s => s.status_selesai).length;
+          sd2.forEach(s => siswaSudahMainIds.add(s.id_siswa));
+        }
+      }
+
+      // Strategi: untuk menghitung jumlah strategi per siswa
+      let strategiBySiswa = {};
+      if (sesiList.length > 0) {
+        const sesiIds = sesiList.map(s => s.id_sesi);
+        const { data: sd3, error: stratErr } = await supabase
+          .from('detail_strategi')
+          .select('id_sesi')
+          .in('id_sesi', sesiIds);
+        if (!stratErr && sd3) {
+          const sesiToSiswa = Object.fromEntries(sesiList.map(s => [s.id_sesi, s.id_siswa]));
+          sd3.forEach(st => {
+            const idSiswa = sesiToSiswa[st.id_sesi];
+            if (idSiswa) strategiBySiswa[idSiswa] = (strategiBySiswa[idSiswa] || 0) + 1;
+          });
         }
       }
 
@@ -832,6 +796,7 @@
       const rataSkor = totalSiswa > 0
         ? Math.round(siswaList.reduce((s, sw) => s + (sw.total_skor || 0), 0) / totalSiswa)
         : 0;
+      const siswaSudahMainCount = siswaSudahMainIds.size;
 
       // Hitung highest/lowest
       const classScores = {};
@@ -849,25 +814,20 @@
         if (avg < lowestAvg) { lowestAvg = avg; lowestClass = nama; }
       });
 
-      return { kelasList, siswaList, totalKelas, totalSiswa, rataSkor, totalSesiSelesai, highestClass, lowestClass, kelasMap };
+      return {
+        kelasList, siswaList, totalKelas, totalSiswa, rataSkor,
+        totalSesiSelesai, siswaSudahMainCount, highestClass, lowestClass,
+        kelasMap, strategiBySiswa,
+      };
     }
 
     function renderDashboard(data) {
-      const { kelasList, siswaList, totalKelas, totalSiswa, rataSkor, totalSesiSelesai, highestClass, lowestClass, kelasMap } = data;
+      const { kelasList, siswaList, totalSiswa, rataSkor, siswaSudahMainCount, kelasMap, strategiBySiswa } = data;
 
-      // Stat
-      document.getElementById('statTotalKelas').textContent = totalKelas;
-      document.getElementById('statTotalSiswa').textContent = totalSiswa;
-      document.getElementById('statRataSkor').textContent = `${rataSkor}%`;
-      document.getElementById('statSesiSelesai').textContent = totalSesiSelesai;
+      dashboardStats = { totalKelas: data.totalKelas, totalSiswa, rataSkor, highestClass: data.highestClass, lowestClass: data.lowestClass };
 
-      dashboardStats = { totalKelas, totalSiswa, rataSkor, highestClass, lowestClass };
-
-      // Aktivitas Belajar: persentase siswa yang sudah punya sesi
-      let progress = 0;
-      if (siswaList.length > 0) {
-        progress = 100;
-      }
+      // Aktivitas Belajar: persentase siswa yang SUDAH PERNAH MAIN (punya sesi_game), sesuai data nyata
+      const progress = totalSiswa > 0 ? Math.round((siswaSudahMainCount / totalSiswa) * 100) : 0;
       // Update circle
       const circle = document.getElementById('progressCircle');
       if (circle) {
@@ -879,21 +839,47 @@
       const progressText = document.querySelector('.activity-card__circle div');
       if (progressText) progressText.textContent = `${progress}%`;
 
-      // Insight AI
-      const insightBody = document.getElementById('insightBody');
-      if (lowestClass && rataSkor < 50) {
-        insightBody.innerHTML = `<strong>${Math.round((1 - (rataSkor/100)) * 100)}%</strong> siswa masih punya strategi terbatas.<br />
-        Coba dorong mereka eksplorasi lebih banyak cara!`;
-      } else if (rataSkor >= 70) {
-        insightBody.innerHTML = `<strong>Bagus!</strong> Rata-rata skor sudah cukup tinggi. <br />
-        Pertahankan dengan variasi latihan Number Talks.`;
-      } else {
-        insightBody.innerHTML = `<strong>${Math.round((1 - (rataSkor/100)) * 100)}%</strong> siswa masih punya strategi terbatas.<br />
-        Coba dorong mereka eksplorasi lebih banyak cara!`;
+      const activityTitle = document.querySelector('.activity-card__info h3');
+      const activityDesc = document.querySelector('.activity-card__info p');
+      if (activityTitle && activityDesc) {
+        if (totalSiswa === 0) {
+          activityTitle.textContent = 'Belum ada siswa';
+          activityDesc.textContent = 'Tambahkan siswa untuk mulai memantau aktivitas belajar.';
+        } else if (progress === 100) {
+          activityTitle.textContent = 'Semua siswa sudah main!';
+          activityDesc.textContent = 'Semua siswa sudah mencoba permainan ini.';
+        } else {
+          activityTitle.textContent = `${siswaSudahMainCount} dari ${totalSiswa} siswa sudah main`;
+          activityDesc.textContent = `${totalSiswa - siswaSudahMainCount} siswa belum pernah mencoba permainan ini.`;
+        }
       }
 
       // ============================================================
-      // KELAS SAYA — Card dengan Event Klik
+      // INSIGHT AI — Detail laporan 1 siswa (yang paling perlu perhatian / skor terendah)
+      // ============================================================
+      const insightBody = document.getElementById('insightBody');
+      const insightTags = document.querySelector('.insight-card__tags');
+      if (!siswaList || siswaList.length === 0) {
+        insightBody.innerHTML = `Belum ada data siswa untuk dianalisis.`;
+        if (insightTags) insightTags.innerHTML = '';
+      } else {
+        const siswaTerlemah = [...siswaList].sort((a, b) => (a.total_skor || 0) - (b.total_skor || 0))[0];
+        const namaKelas = kelasMap[siswaTerlemah.id_kelas]?.nama_kelas || '—';
+        const jmlStrategi = strategiBySiswa[siswaTerlemah.id_siswa] || 0;
+        insightBody.innerHTML = `
+          <strong>${escHtml(siswaTerlemah.nama_panggilan || 'Siswa')}</strong> (${escHtml(namaKelas)}) perlu perhatian lebih.<br />
+          Skor saat ini: <strong>${siswaTerlemah.total_skor || 0}</strong> · Strategi ditemukan: <strong>${jmlStrategi}</strong>
+        `;
+        if (insightTags) {
+          insightTags.innerHTML = `
+            <span class="insight-tag">Dorong eksplorasi strategi</span>
+            <span class="insight-tag">Coba Number Talks</span>
+          `;
+        }
+      }
+
+      // ============================================================
+      // KELAS SAYA — Card dengan Event Klik (warna disesuaikan dengan halaman Kelas)
       // ============================================================
       const grid = document.getElementById('kelasGrid');
       if (!kelasList || kelasList.length === 0) {
@@ -916,11 +902,13 @@
           const stats = classStats[kelas.id_kelas] || { total: 0, count: 0 };
           const avg = stats.count > 0 ? Math.round(stats.total / stats.count) : 0;
           const pct = Math.min(Math.round((avg / 100) * 100), 100);
+          const warna = kelas.warna || '#3B82F6';
+          const tingkat = kelas.tingkat || '';
           return `
-            <div class="kelas-card" data-id="${kelas.id_kelas}">
+            <div class="kelas-card" style="--kelas-color: ${warna};" data-id="${kelas.id_kelas}">
               <div class="kelas-card__name">${escHtml(kelas.nama_kelas)}</div>
               <div class="kelas-card__meta">
-                <span>${stats.count}</span> siswa · rata-rata <span>${avg}%</span>
+                ${tingkat ? `${escHtml(tingkat)} · ` : ''}<span>${stats.count}</span> siswa · rata-rata <span>${avg}%</span>
               </div>
               <div class="kelas-card__bar">
                 <div class="kelas-card__bar-inner" style="width:${pct}%;"></div>
