@@ -74,12 +74,8 @@
       animation: drift linear infinite;
     }
     @keyframes drift {
-      from {
-        transform: translateX(-200px)
-      }
-      to {
-        transform: translateX(110vw)
-      }
+      from { transform: translateX(-200px); }
+      to   { transform: translateX(110vw); }
     }
     /* ===== ROOT ===== */
     .root {
@@ -93,9 +89,7 @@
       gap: 12px;
       align-items: start;
     }
-    .full-row {
-      grid-column: 1/-1;
-    }
+    .full-row { grid-column: 1/-1; }
     /* ===== TOPBAR ===== */
     .topbar {
       background: var(--card);
@@ -126,9 +120,7 @@
       cursor: pointer;
       transition: background .12s;
     }
-    .back-btn:hover {
-      background: #ddd6fe;
-    }
+    .back-btn:hover { background: #ddd6fe; }
     .avatar {
       width: 44px;
       height: 44px;
@@ -171,17 +163,10 @@
       color: var(--p);
       border: 2px solid rgba(108, 62, 244, 0.18);
     }
-    .stat-pill.bump {
-      animation: bump .3s;
-    }
+    .stat-pill.bump { animation: bump .3s; }
     @keyframes bump {
-      0%,
-      100% {
-        transform: scale(1)
-      }
-      50% {
-        transform: scale(1.22)
-      }
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.22); }
     }
 
     /* ===== GAMEPLAY ===== */
@@ -191,9 +176,7 @@
       gap: 11px;
     }
     /* Target */
-    .target-sec {
-      text-align: center;
-    }
+    .target-sec { text-align: center; }
     .target-lbl {
       font-size: 11px;
       font-weight: 800;
@@ -218,13 +201,8 @@
       animation: floatN 3s ease-in-out infinite;
     }
     @keyframes floatN {
-      0%,
-      100% {
-        transform: translateY(0)
-      }
-      50% {
-        transform: translateY(-6px)
-      }
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
     }
     .strat-badge {
       display: inline-flex;
@@ -326,13 +304,8 @@
       filter: drop-shadow(0 8px 14px rgba(108, 62, 244, 0.35));
     }
     @keyframes mFloat {
-      0%,
-      100% {
-        transform: translateY(0) rotate(0)
-      }
-      50% {
-        transform: translateY(-7px) rotate(2deg)
-      }
+      0%, 100% { transform: translateY(0) rotate(0); }
+      50% { transform: translateY(-7px) rotate(2deg); }
     }
     .speech {
       flex: 1;
@@ -411,15 +384,9 @@
       display: inline-block;
       padding: 2px 4px;
     }
-    .formula-token--number {
-      color: var(--p);
-    }
-    .formula-token--operator {
-      color: var(--o);
-    }
-    .formula-token--paren {
-      color: var(--pk);
-    }
+    .formula-token--number { color: var(--p); }
+    .formula-token--operator { color: var(--o); }
+    .formula-token--paren { color: var(--pk); }
     .formula-token--cursor {
       display: inline-block;
       width: 3px;
@@ -430,15 +397,7 @@
       vertical-align: middle;
       margin-left: 2px;
     }
-    @keyframes blink {
-      0%,
-      100% {
-        opacity: 1
-      }
-      50% {
-        opacity: 0
-      }
-    }
+    @keyframes blink { 50% { opacity: 0; } }
     .result-preview {
       display: flex;
       align-items: center;
@@ -448,22 +407,15 @@
       color: var(--sub);
       min-height: 28px;
     }
-    .result-preview .equals {
-      font-weight: 900;
-      color: var(--text);
-    }
+    .result-preview .equals { font-weight: 900; color: var(--text); }
     .result-preview .value {
       font-size: 22px;
       font-weight: 900;
       color: var(--p);
       transition: color .2s;
     }
-    .result-preview .value.state--match {
-      color: var(--g);
-    }
-    .result-preview .value.state--mismatch {
-      color: var(--r);
-    }
+    .result-preview .value.state--match { color: var(--g); }
+    .result-preview .value.state--mismatch { color: var(--r); }
 
     /* Feedback */
     .fb-bar {
@@ -502,27 +454,14 @@
       border: 2px solid #fdba74;
     }
     @keyframes popIn {
-      0% {
-        transform: scale(.93)
-      }
-      60% {
-        transform: scale(1.04)
-      }
-      100% {
-        transform: scale(1)
-      }
+      0% { transform: scale(.93); }
+      60% { transform: scale(1.04); }
+      100% { transform: scale(1); }
     }
     @keyframes shake {
-      0%,
-      100% {
-        transform: translateX(0)
-      }
-      25% {
-        transform: translateX(-7px)
-      }
-      75% {
-        transform: translateX(7px)
-      }
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-7px); }
+      75% { transform: translateX(7px); }
     }
 
     /* ===== KEYPAD ===== */
@@ -545,19 +484,14 @@
       transition: transform .08s, box-shadow .08s;
       user-select: none;
     }
-    .key:active {
-      transform: translateY(4px);
-      box-shadow: none !important;
-    }
+    .key:active { transform: translateY(4px); box-shadow: none !important; }
     .key--digit {
       background: #fff;
       color: var(--p);
       border: 2.5px solid #c4b5fd;
       box-shadow: 0 4px 0 #c4b5fd;
     }
-    .key--digit:hover {
-      background: var(--pp);
-    }
+    .key--digit:hover { background: var(--pp); }
     .key--operator {
       background: var(--ol);
       color: #c2410c;
@@ -565,9 +499,7 @@
       box-shadow: 0 4px 0 #fdba74;
       font-size: 19px;
     }
-    .key--operator:hover {
-      background: #fed7aa;
-    }
+    .key--operator:hover { background: #fed7aa; }
     .key--paren {
       background: var(--pkl);
       color: #9d174d;
@@ -589,18 +521,14 @@
       box-shadow: 0 4px 0 var(--gd);
       font-size: 21px;
     }
-    .key--submit:hover {
-      filter: brightness(1.07);
-    }
+    .key--submit:hover { filter: brightness(1.07); }
     .key--submit:disabled {
       opacity: 0.5;
       cursor: not-allowed;
       transform: none;
       box-shadow: 0 4px 0 var(--gd);
     }
-    .key--span2 {
-      grid-column: span 2;
-    }
+    .key--span2 { grid-column: span 2; }
 
     /* ===== SIDEBAR ===== */
     .sidebar {
@@ -674,17 +602,13 @@
       font-weight: 800;
       color: var(--p);
     }
-    .potion-count span {
-      font-size: 18px;
-    }
+    .potion-count span { font-size: 18px; }
     .potion-stars {
       display: flex;
       gap: 3px;
       font-size: 18px;
     }
-    .potion-stars .star-empty {
-      filter: grayscale(1) opacity(0.3);
-    }
+    .potion-stars .star-empty { filter: grayscale(1) opacity(0.3); }
 
     /* History */
     .hist-list {
@@ -694,13 +618,8 @@
       flex-direction: column;
       gap: 4px;
     }
-    .hist-list::-webkit-scrollbar {
-      width: 4px;
-    }
-    .hist-list::-webkit-scrollbar-thumb {
-      background: #c4b5fd;
-      border-radius: 99px;
-    }
+    .hist-list::-webkit-scrollbar { width: 4px; }
+    .hist-list::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 99px; }
     .hist-item {
       display: flex;
       align-items: center;
@@ -711,10 +630,7 @@
       border-left: 3px solid var(--g);
       font-size: 12px;
     }
-    .hi-expr {
-      font-weight: 800;
-      color: #1f2937;
-    }
+    .hi-expr { font-weight: 800; color: #1f2937; }
     .hi-points {
       font-weight: 800;
       color: var(--g);
@@ -741,27 +657,16 @@
       gap: 8px;
       margin-bottom: 7px;
     }
-    .insight-item:last-child {
-      margin-bottom: 0;
-    }
-    .ii-ico {
-      font-size: 17px;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
+    .insight-item:last-child { margin-bottom: 0; }
+    .ii-ico { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
     .ii-txt {
       font-size: 11px;
       font-weight: 700;
       color: #4c1d95;
       line-height: 1.4;
     }
-    .ii-txt b {
-      color: var(--p);
-      font-weight: 900;
-    }
-    .prog-wrap {
-      margin-top: 4px;
-    }
+    .ii-txt b { color: var(--p); font-weight: 900; }
+    .prog-wrap { margin-top: 4px; }
     .prog-lbl {
       font-size: 10px;
       font-weight: 700;
@@ -776,11 +681,7 @@
       border-radius: 99px;
       overflow: hidden;
     }
-    .prog-fill {
-      height: 100%;
-      border-radius: 99px;
-      transition: width .5s;
-    }
+    .prog-fill { height: 100%; border-radius: 99px; transition: width .5s; }
 
     /* Badge */
     .badge-shelf {
@@ -807,9 +708,7 @@
       border-color: var(--y);
       box-shadow: 0 2px 0 var(--y);
     }
-    .badge-ico {
-      font-size: 19px;
-    }
+    .badge-ico { font-size: 19px; }
     .badge-lbl {
       font-size: 9px;
       font-weight: 800;
@@ -854,25 +753,11 @@
       align-items: center;
       gap: 12px;
     }
-    .modal-overlay.is-open .modal-box {
-      transform: scale(1) translateY(0);
-    }
-    .modal-box--duplicate {
-      border-color: #fbbf24;
-      background: #fffbeb;
-    }
-    .modal-box--success {
-      border-color: #10b981;
-      background: #f0fdf4;
-    }
-    .modal-box--finish {
-      border-color: #ec4899;
-      background: #fff1f2;
-    }
-    .modal-box--error {
-      border-color: #ef4444;
-      background: #fef2f2;
-    }
+    .modal-overlay.is-open .modal-box { transform: scale(1) translateY(0); }
+    .modal-box--duplicate { border-color: #fbbf24; background: #fffbeb; }
+    .modal-box--success { border-color: #10b981; background: #f0fdf4; }
+    .modal-box--finish { border-color: #ec4899; background: #fff1f2; }
+    .modal-box--error { border-color: #ef4444; background: #fef2f2; }
     .modal__emoji {
       font-size: 4rem;
       line-height: 1;
@@ -914,18 +799,9 @@
       background: #fb7185;
       color: #fff;
     }
-    .modal__btn:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0px #1e1e1e;
-    }
-    .modal__btn:active {
-      transform: translate(2px, 2px);
-      box-shadow: 2px 2px 0px #1e1e1e;
-    }
-    .modal__btn--secondary {
-      background: #fff;
-      color: #1e1e1e;
-    }
+    .modal__btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #1e1e1e; }
+    .modal__btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #1e1e1e; }
+    .modal__btn--secondary { background: #fff; color: #1e1e1e; }
     .modal__btn-group {
       display: flex;
       gap: 10px;
@@ -966,32 +842,13 @@
       white-space: nowrap;
       pointer-events: none;
     }
-    .toast--success {
-      background: #10b981;
-      color: #fff;
-    }
-    .toast--error {
-      background: #ef4444;
-      color: #fff;
-    }
-    .toast--warn {
-      background: #fbbf24;
-      color: #1e1e1e;
-    }
-    @keyframes toastIn {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    @keyframes toastOut {
-      to {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-    }
+    .toast--success { background: #10b981; color: #fff; }
+    .toast--error { background: #ef4444; color: #fff; }
+    .toast--warn { background: #fbbf24; color: #1e1e1e; }
+    @keyframes toastIn { to { opacity: 1; transform: translateY(0); } }
+    @keyframes toastOut { to { opacity: 0; transform: translateY(10px); } }
 
-    /* Loading screen (dari game.css) */
+    /* Loading screen */
     .loading-screen {
       position: fixed;
       inset: 0;
@@ -1017,56 +874,134 @@
     .loading-screen__spinner {
       width: 48px;
       height: 48px;
-      border: 4px solid rgba(30, 30, 30, 0.15);
+      border: 4px solid rgba(30,30,30,0.15);
       border-top-color: #fb7185;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .loading-screen__text {
       font-weight: 700;
       font-size: 0.95rem;
       color: #6b7280;
     }
 
-    /* ===== RESPONSIVE ===== */
+    /* Result Overlay */
+    .result-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(30, 27, 75, 0.9);
+      z-index: 850;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+    }
+    .result-overlay.open { display: flex; }
+    .result-box {
+      background: #fff;
+      border-radius: 28px;
+      padding: 32px 36px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+      animation: popIn .3s ease;
+      min-width: 380px;
+      max-width: 96vw;
+    }
+    .result-emoji {
+      font-size: 56px;
+      margin-bottom: 8px;
+      animation: bounce .6s infinite alternate;
+    }
+    @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+    .result-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--p);
+      margin-bottom: 4px;
+    }
+    .result-sub {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--sub);
+      margin-bottom: 20px;
+    }
+    .result-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .rs {
+      background: var(--pp);
+      border-radius: 14px;
+      padding: 12px 8px;
+    }
+    .rs-val {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--p);
+    }
+    .rs-lbl {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--sub);
+      margin-top: 2px;
+    }
+    .result-ops {
+      background: #f9fafb;
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .result-ops-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--sub);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .result-prog { margin-bottom: 6px; }
+    .result-btns {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .rbtn {
+      padding: 11px 22px;
+      border: none;
+      border-radius: 14px;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all .12s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .rbtn-again { background: var(--p); color: #fff; box-shadow: 0 4px 0 var(--pd); }
+    .rbtn-again:hover { transform: translateY(-2px); }
+    .rbtn-dash { background: var(--gl); color: #065f46; border: 2px solid #6ee7b7; }
+    .rbtn-dash:hover { background: #a7f3d0; }
+    .rbtn-next { background: var(--o); color: #fff; box-shadow: 0 4px 0 #ea580c; }
+    .rbtn-next:hover { transform: translateY(-2px); }
+
+    /* Responsive */
     @media(max-width:780px) {
-      .root {
-        grid-template-columns: 1fr;
-      }
-      .sidebar {
-        order: 3;
-      }
-      .th-row {
-        grid-template-columns: 1fr 1fr;
-      }
-      .target-num {
-        font-size: 60px;
-      }
-      .key {
-        height: 48px;
-        font-size: 18px;
-      }
+      .root { grid-template-columns: 1fr; }
+      .sidebar { order: 3; }
+      .th-row { grid-template-columns: 1fr 1fr; }
+      .target-num { font-size: 60px; }
+      .key { height: 48px; font-size: 18px; }
     }
     @media(max-width:440px) {
-      .th-row {
-        grid-template-columns: 1fr;
-      }
-      .stat-pill {
-        font-size: 11px;
-        padding: 5px 10px;
-      }
-      .key {
-        height: 44px;
-        font-size: 16px;
-      }
-      .target-num {
-        font-size: 50px;
-      }
+      .th-row { grid-template-columns: 1fr; }
+      .stat-pill { font-size: 11px; padding: 5px 10px; }
+      .key { height: 44px; font-size: 16px; }
+      .target-num { font-size: 50px; }
     }
   </style>
 </head>
@@ -1155,6 +1090,7 @@
       <!-- Mascot + Speech -->
       <div class="mascot-row">
         <div class="mascot-wrap" id="mascot">
+          <!-- SVG mascot disisipkan di sini (sama seperti sebelumnya) -->
           <svg viewBox="0 0 88 88" xmlns="http://www.w3.org/2000/svg" width="84" height="84">
             <ellipse cx="44" cy="83" rx="20" ry="4" fill="rgba(0,0,0,0.09)" />
             <line x1="44" y1="10" x2="44" y2="18" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" />
@@ -1364,6 +1300,64 @@
   <!-- ===== TOAST CONTAINER ===== -->
   <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
 
+  <!-- ===== RESULT OVERLAY ===== -->
+  <div class="result-overlay" id="result-overlay">
+    <div class="result-box">
+      <div class="result-emoji" id="res-emoji">🎉</div>
+      <div class="result-title" id="res-title">Waktu Habis!</div>
+      <div class="result-sub" id="res-sub">Kamu sudah bermain dengan baik!</div>
+      <div class="result-stats">
+        <div class="rs">
+          <div class="rs-val" id="res-poin">0</div>
+          <div class="rs-lbl">Poin</div>
+        </div>
+        <div class="rs">
+          <div class="rs-val" id="res-strat">0</div>
+          <div class="rs-lbl">Cara Ditemukan</div>
+        </div>
+        <div class="rs">
+          <div class="rs-val" id="res-acc">0%</div>
+          <div class="rs-lbl">Akurasi</div>
+        </div>
+      </div>
+      <div class="result-ops">
+        <div class="result-ops-title">Operasi yang Digunakan</div>
+        <div class="result-prog">
+          <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:3px;">
+            <span>➕ Penjumlahan</span><span id="ro-add">0%</span></div>
+          <div style="height:7px;background:#e5e7eb;border-radius:99px;overflow:hidden;">
+            <div id="rb-add" style="height:100%;border-radius:99px;background:var(--g);width:0%;transition:width .7s;"></div>
+          </div>
+        </div>
+        <div class="result-prog">
+          <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:3px;">
+            <span>✖️ Perkalian</span><span id="ro-mul">0%</span></div>
+          <div style="height:7px;background:#e5e7eb;border-radius:99px;overflow:hidden;">
+            <div id="rb-mul" style="height:100%;border-radius:99px;background:var(--p);width:0%;transition:width .7s;"></div>
+          </div>
+        </div>
+        <div class="result-prog">
+          <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:3px;">
+            <span>➖ Pengurangan</span><span id="ro-sub">0%</span></div>
+          <div style="height:7px;background:#e5e7eb;border-radius:99px;overflow:hidden;">
+            <div id="rb-sub" style="height:100%;border-radius:99px;background:var(--o);width:0%;transition:width .7s;"></div>
+          </div>
+        </div>
+        <div class="result-prog">
+          <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:3px;">
+            <span>➗ Pembagian</span><span id="ro-div">0%</span></div>
+          <div style="height:7px;background:#e5e7eb;border-radius:99px;overflow:hidden;">
+            <div id="rb-div" style="height:100%;border-radius:99px;background:var(--b);width:0%;transition:width .7s;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="result-btns" id="res-btns">
+        <button class="rbtn rbtn-again">🔄 Main Lagi</button>
+        <button class="rbtn rbtn-dash">📊 Ke Dashboard</button>
+      </div>
+    </div>
+  </div>
+
   <!-- =============================================================
        SCRIPTS
   ============================================================= -->
@@ -1390,29 +1384,26 @@
         updateDisplay();
         window._timerInterval = setInterval(() => {
           if (timeLeft <= 0) {
-  clearInterval(window._timerInterval);
-  // Panggil endGame() dari game.js
-  if (typeof endGame === 'function') {
-    endGame();
-  } else {
-    // Fallback: tampilkan toast
-    const container = document.getElementById('toastContainer');
-    if (container) {
-      const toast = document.createElement('div');
-      toast.className = 'toast toast--warn';
-      toast.textContent = '⏰ Waktu habis!';
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    }
-  }
-  return;
-}
+            clearInterval(window._timerInterval);
+            if (typeof endGame === 'function') {
+              endGame();
+            } else {
+              const container = document.getElementById('toastContainer');
+              if (container) {
+                const toast = document.createElement('div');
+                toast.className = 'toast toast--warn';
+                toast.textContent = '⏰ Waktu habis!';
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+              }
+            }
+            return;
+          }
           timeLeft--;
           updateDisplay();
         }, 1000);
       }
 
-      // Reset timer saat halaman dimuat ulang atau game restart (dipanggil dari game.js)
       window._resetTimer = function() {
         timeLeft = TIMER_MAX;
         if (window._timerInterval) {
@@ -1421,10 +1412,8 @@
         startTimer();
       };
 
-      // Mulai timer
       startTimer();
 
-      // Redirect tombol back
       document.getElementById('btnBackDashboard').addEventListener('click', function() {
         if (confirm('Yakin ingin keluar dari permainan?')) {
           window.location.href = 'dashboard.html';
