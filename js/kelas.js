@@ -508,21 +508,17 @@ async function deleteSiswa(siswaId) {
   }
 }
 
-// ========== MULAI GAME UNTUK SISWA ==========
 async function startGameForSiswa(siswaId) {
   try {
-    // 1. Cari data siswa dari state (siswaList)
     const siswa = siswaList.find(s => s.id_siswa === siswaId);
     if (!siswa) {
       showToast('Data siswa tidak ditemukan.', 'error');
       return;
     }
 
-    // 2. Tentukan level (misal level 1)
     const levelKe = 1;
     const targetAngka = generateTargetAngka(levelKe);
 
-    // 3. Buat sesi_game baru
     const { data: sesi, error: insertError } = await supabase
       .from('sesi_game')
       .insert({
@@ -536,7 +532,6 @@ async function startGameForSiswa(siswaId) {
 
     if (insertError) throw insertError;
 
-    // 4. Simpan session ke sessionStorage (format yang sama dengan auth.js)
     const sessionData = {
       role: 'siswa',
       siswa: {
@@ -553,8 +548,6 @@ async function startGameForSiswa(siswaId) {
       },
     };
     sessionStorage.setItem('widyatika_session', JSON.stringify(sessionData));
-
-    // 5. Redirect ke game.html
     window.location.href = 'game.html';
 
   } catch (err) {
