@@ -186,6 +186,29 @@ function renderDaftar() {
     });
   });
 }
+// Di akhir loadAllData(), setelah renderDaftar();
+
+const urlParams = new URLSearchParams(window.location.search);
+const kelasId = urlParams.get('kelas');
+const siswaId = urlParams.get('siswa');
+
+if (kelasId) {
+  const found = kelasList.find(k => k.id_kelas === kelasId);
+  if (found) {
+    setTimeout(() => {
+      openDetail(kelasId);
+      if (siswaId) {
+        setTimeout(() => {
+          const row = document.querySelector(`#tbodyStudents tr[data-siswa-id="${siswaId}"]`);
+          if (row) {
+            row.style.backgroundColor = '#DBEAFE';
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 300);
+      }
+    }, 100);
+  }
+}
 
 // ========== OPEN DETAIL KELAS ==========
 async function openDetail(kelasId) {

@@ -610,7 +610,7 @@
     }
     .potion-stars .star-empty { filter: grayscale(1) opacity(0.3); }
 
-    /* History */
+    /* History (Riwayat Jawaban) */
     .hist-list {
       max-height: 160px;
       overflow-y: auto;
@@ -1207,7 +1207,15 @@
         </div>
       </div>
 
-      <!-- History -->
+      <!-- ===== RIWAYAT JAWABAN (historyAllList) ===== -->
+      <div class="side-card">
+        <div class="side-title">📋 Riwayat Jawaban</div>
+        <div class="hist-list" id="historyAllList">
+          <div class="empty-msg">Belum ada jawaban.<br>Ayo mulai! 💪</div>
+        </div>
+      </div>
+
+      <!-- Koleksi Rumusku (strategi berhasil) -->
       <div class="side-card">
         <div class="side-title">📜 Koleksi Rumusku</div>
         <div class="hist-list" id="strategyList">
@@ -1352,8 +1360,8 @@
         </div>
       </div>
       <div class="result-btns" id="res-btns">
-        <button class="rbtn rbtn-again">🔄 Main Lagi</button>
-        <button class="rbtn rbtn-dash">📊 Ke Dashboard</button>
+        <button class="rbtn rbtn-again" id="rbtn-again">🔄 Main Lagi</button>
+        <button class="rbtn rbtn-dash" id="rbtn-dash">📊 Ke Dashboard</button>
       </div>
     </div>
   </div>
