@@ -125,10 +125,10 @@ function renderData(filterId) {
     : 0;
   const siswaAktif = new Set(filteredSesi.map(s => s.id_siswa)).size;
 
-  elements.totalSesi.textContent = totalSesi;
-  elements.rataSkor.textContent = `${rataSkor}%`;
-  elements.siswaAktif.textContent = siswaAktif;
-  elements.totalStrategi.textContent = totalStrategi;
+  // elements.totalSesi.textContent = totalSesi;
+  // elements.rataSkor.textContent = `${rataSkor}%`;
+  // elements.siswaAktif.textContent = siswaAktif;
+  // elements.totalStrategi.textContent = totalStrategi;
 
   // Render grafik
   renderChartMingguan(filteredSesi);
