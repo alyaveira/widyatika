@@ -2,10 +2,11 @@
  * game.js — Widyatika | Arena Numerasi Siswa
  * =============================================================================
  * Dengan:
- *   - Riwayat semua percobaan (benar/salah)
+ *   - Riwayat semua percobaan (benar/salah) di "Riwayat Jawaban"
  *   - Confetti saat jawaban benar
  *   - Ramuan interaktif
- *   - Badge, insight, koleksi rumus (strategi)
+ *   - Badge, insight (Cara Berpikirmu)
+ *   - Tanpa "Koleksi Rumusku"
  * =============================================================================
  */
 import { supabase } from './supabase-config.js';
@@ -38,8 +39,6 @@ const el = {
   potionCountCurrent: document.getElementById('potionCountCurrent'),
   potionCountMax: document.getElementById('potionCountMax'),
   potionStars: document.getElementById('potionStars'),
-  strategyList: document.getElementById('strategyList'),
-  strategyEmptyMsg: document.getElementById('strategyEmptyMsg'),
   stratBadge: document.getElementById('stratBadge'),
   historyAllList: document.getElementById('historyAllList'),
   modalDuplicate: document.getElementById('modalDuplicate'),
@@ -398,18 +397,6 @@ function updatePotionUI() {
   }
 }
 
-function addStrategyToHistory(formula, poin, index) {
-  if (el.strategyEmptyMsg) el.strategyEmptyMsg.remove();
-  const li = document.createElement('li');
-  li.className = 'strategy-item';
-  li.innerHTML = `
-    <span class="si-expr">${escapeHtml(formula)} = ${state.targetAngka}</span>
-    <span class="si-points">+${poin}</span>
-  `;
-  el.strategyList.appendChild(li);
-  el.strategyList.scrollTop = el.strategyList.scrollHeight;
-}
-
 function renderAllHistory() {
   const list = el.historyAllList;
   if (!state.allHistory.length) {
@@ -483,7 +470,7 @@ function hitungPoin() {
 function countOpsInExpr(s) {
   return {
     add: (s.match(/\+/g) || []).length,
-    sub: (s.match(/−/g) || []).length,    // pakai Unicode minus
+    sub: (s.match(/−/g) || []).length,
     mul: (s.match(/×/g) || []).length,
     div: (s.match(/÷/g) || []).length,
   };
@@ -530,46 +517,46 @@ async function handleSubmit() {
   const poin = hitungPoin();
 
   try {
-// 🔥 PAKAI FETCH MANUAL
-const SUPABASE_URL = 'https://cezzczjzwvnncvygmbog.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
+    // 🔥 PAKAI FETCH MANUAL
+    const SUPABASE_URL = 'https://cezzczjzwvnncvygmbog.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
 
-// Insert detail_strategi
-const insertResponse = await fetch(`${SUPABASE_URL}/rest/v1/detail_strategi`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'apikey': SUPABASE_ANON_KEY,
-    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-    'Prefer': 'return=representation'
-  },
-  body: JSON.stringify({
-    id_sesi: state.idSesi,
-    ekspresi_matematika: exprStr,
-    poin_didapat: poin,
-  }),
-});
-if (!insertResponse.ok) {
-  const errData = await insertResponse.json();
-  throw new Error(errData.message || 'Insert detail_strategi gagal');
-}
+    // Insert detail_strategi
+    const insertResponse = await fetch(`${SUPABASE_URL}/rest/v1/detail_strategi`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        id_sesi: state.idSesi,
+        ekspresi_matematika: exprStr,
+        poin_didapat: poin,
+      }),
+    });
+    if (!insertResponse.ok) {
+      const errData = await insertResponse.json();
+      throw new Error(errData.message || 'Insert detail_strategi gagal');
+    }
 
-// Update total_skor siswa
-const newTotalSkor = state.session.siswa.total_skor + poin;
-const updateResponse = await fetch(`${SUPABASE_URL}/rest/v1/siswa?id_siswa=eq.${state.session.siswa.id_siswa}`, {
-  method: 'PATCH',
-  headers: {
-    'Content-Type': 'application/json',
-    'apikey': SUPABASE_ANON_KEY,
-    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-    'Prefer': 'return=representation'
-  },
-  body: JSON.stringify({ total_skor: newTotalSkor }),
-});
-if (!updateResponse.ok) {
-  const errData = await updateResponse.json();
-  throw new Error(errData.message || 'Update siswa gagal');
-}
+    // Update total_skor siswa
+    const newTotalSkor = state.session.siswa.total_skor + poin;
+    const updateResponse = await fetch(`${SUPABASE_URL}/rest/v1/siswa?id_siswa=eq.${state.session.siswa.id_siswa}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ total_skor: newTotalSkor }),
+    });
+    if (!updateResponse.ok) {
+      const errData = await updateResponse.json();
+      throw new Error(errData.message || 'Update siswa gagal');
+    }
 
     state.submittedExpressions.add(normalized);
     state.strategiCount++;
@@ -586,7 +573,6 @@ if (!updateResponse.ok) {
 
     el.displayScore.textContent = newTotalSkor;
     spawnScorePopup(poin);
-    addStrategyToHistory(exprStr, poin, state.strategiCount);
     updatePotionUI();
     updateInsight();
     updateBadges();
@@ -630,37 +616,37 @@ function closeModal(modalEl) {
 
 function initModalListeners() {
   el.btnFinishNext.addEventListener('click', async () => {
-  closeModal(el.modalFinish);
-  const newLevel = (state.session.sesi_game.level_ke || 1) + 1;
-  const newTarget = generateTargetAngka(newLevel);
-  const SUPABASE_URL = 'https://cezzczjzwvnncvygmbog.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
-  try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/sesi_game`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({
-        id_siswa: state.session.siswa.id_siswa,
-        level_ke: newLevel,
-        target_angka: newTarget,
-        status_selesai: false,
-      }),
-    });
-    if (!response.ok) throw new Error(await response.text());
-    const data = await response.json();
-    const newSesi = data[0]; // karena return=representation mengembalikan array
-    patchSession({ sesi_game: { id_sesi: newSesi.id_sesi, level_ke: newSesi.level_ke, target_angka: newSesi.target_angka, status_selesai: newSesi.status_selesai } });
-    window.location.reload();
-  } catch (err) {
-    console.error('[Level Next] Error:', err);
-    showToast('Gagal membuat level berikutnya.', 'error');
-  }
-});
+    closeModal(el.modalFinish);
+    const newLevel = (state.session.sesi_game.level_ke || 1) + 1;
+    const newTarget = generateTargetAngka(newLevel);
+    const SUPABASE_URL = 'https://cezzczjzwvnncvygmbog.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable__s-RNakT53QIIph7_KN1RA_-RBxMM6e';
+    try {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/sesi_game`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          id_siswa: state.session.siswa.id_siswa,
+          level_ke: newLevel,
+          target_angka: newTarget,
+          status_selesai: false,
+        }),
+      });
+      if (!response.ok) throw new Error(await response.text());
+      const data = await response.json();
+      const newSesi = data[0]; // karena return=representation mengembalikan array
+      patchSession({ sesi_game: { id_sesi: newSesi.id_sesi, level_ke: newSesi.level_ke, target_angka: newSesi.target_angka, status_selesai: newSesi.status_selesai } });
+      window.location.reload();
+    } catch (err) {
+      console.error('[Level Next] Error:', err);
+      showToast('Gagal membuat level berikutnya.', 'error');
+    }
+  });
   [el.modalDuplicate, el.modalSuccess, el.modalInvalid, el.modalFinish].forEach(modal => {
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); });
   });
@@ -768,7 +754,12 @@ async function loadExistingStrategies() {
       state.strategiCount++;
       el.stratBadge.textContent = `🔎 ${state.strategiCount} cara ditemukan`;
       state.sessionScore += row.poin_didapat;
-      addStrategyToHistory(row.ekspresi_matematika, row.poin_didapat, idx + 1);
+      // 🔥 Akumulasi operator untuk insight
+      const oc = countOpsInExpr(row.ekspresi_matematika);
+      state.opCount.add += oc.add;
+      state.opCount.sub += oc.sub;
+      state.opCount.mul += oc.mul;
+      state.opCount.div += oc.div;
     });
     updatePotionUI();
     updateBadges();
@@ -824,7 +815,6 @@ function restartGame() {
   state.opCount = { add: 0, sub: 0, mul: 0, div: 0 };
   state.allHistory = [];
   el.displayScore.textContent = state.session.siswa.total_skor;
-  el.strategyList.innerHTML = `<div class="empty-msg" id="strategyEmptyMsg">Belum ada rumus.<br>Ayo mulai! 💪</div>`;
   renderAllHistory();
   updatePotionUI();
   renderFormula();
