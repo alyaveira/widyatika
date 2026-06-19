@@ -629,6 +629,7 @@ async function handleSubmit() {
     // --- 5. Commit berhasil — update state lokal ---
     state.submittedExpressions.add(normalized);
     state.strategiCount++;
+    updateBadges();
     state.sessionScore += poin;
     state.session.siswa.total_skor = newTotalSkor;
     patchSession({ siswa: state.session.siswa }); // sinkron ke sessionStorage
@@ -930,6 +931,7 @@ async function loadExistingStrategies() {
     const normalized = normalizeExpr(row.ekspresi_matematika);
     state.submittedExpressions.add(normalized);
     state.strategiCount++;
+    updateBadges();
     state.sessionScore += row.poin_didapat;
     addStrategyToHistory(row.ekspresi_matematika, row.poin_didapat, idx + 1);
   });
@@ -1013,3 +1015,144 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
+// ============================================================================
+// §19. TIMER & RESULT OVERLAY
+// ============================================================================
+
+/**
+ * Akhiri permainan (dipanggil saat timer habis atau tombol "Selesai")
+ */
+function endGame() {
+  // Hentikan timer global (jika ada)
+  if (window._timerInterval) {
+    clearInterval(window._timerInterval);
+    window._timerInterval = null;
+  }
+  showResult();
+}
+
+/**
+ * Tampilkan overlay hasil
+ */
+function showResult() {
+  const correct = state.strategiCount;
+  const totalAttempts = state.submittedExpressions.size + (state.strategiCount > 0 ? 0 : 0); // kurang akurat, tapi kita pakai strategiCount saja
+  // Lebih baik kita track total percobaan, tapi untuk sederhana, kita pakai strategiCount sebagai indikator
+
+  // Hitung akurasi (berdasarkan strategi yang berhasil vs total percobaan)
+  // Karena kita tidak track percobaan gagal, kita set akurasi 100% jika ada strategi, 0% jika belum.
+  const acc = state.strategiCount > 0 ? 100 : 0;
+
+  // Isi data ke overlay
+  document.getElementById('res-poin').textContent = state.sessionScore;
+  document.getElementById('res-strat').textContent = state.strategiCount;
+  document.getElementById('res-acc').textContent = acc + '%';
+
+  // Isi nama siswa
+  const studentName = state.session?.siswa?.nama_panggilan || 'Siswa';
+  document.getElementById('res-sub').textContent = `${studentName} menemukan ${state.strategiCount} cara! Total poin: ${state.sessionScore}`;
+
+  // Emoji dan title berdasarkan jumlah strategi
+  const emoji = state.strategiCount >= 5 ? '🏆' : state.strategiCount >= 3 ? '🎉' : '⭐';
+  const title = state.strategiCount >= 5 ? 'Luar Biasa!' : state.strategiCount >= 3 ? 'Kerja Bagus!' : 'Tetap Semangat!';
+  document.getElementById('res-emoji').textContent = emoji;
+  document.getElementById('res-title').textContent = title;
+
+  // Update badge collection (panggil fungsi updateBadges)
+  updateBadges();
+
+  // Tampilkan overlay
+  document.getElementById('result-overlay').classList.add('open');
+}
+
+/**
+ * Perbarui koleksi badge berdasarkan pencapaian
+ */
+function updateBadges() {
+  const badges = {
+    explorer: document.getElementById('badgeExplorer'),
+    thinker: document.getElementById('badgeThinker'),
+    star: document.getElementById('badgeStar'),
+    master: document.getElementById('badgeMaster'),
+  };
+
+  // Reset semua badge
+  Object.values(badges).forEach(el => el?.classList.remove('earned'));
+
+  // Beri badge sesuai kondisi
+  if (state.strategiCount >= 1) badges.explorer?.classList.add('earned');
+  if (state.strategiCount >= 3) badges.thinker?.classList.add('earned');
+  if (state.sessionScore >= 50) badges.star?.classList.add('earned');
+  if (state.strategiCount >= 5) badges.master?.classList.add('earned');
+}
+
+/**
+ * Reset permainan (untuk tombol "Main Lagi")
+ */
+function restartGame() {
+  // Tutup overlay
+  document.getElementById('result-overlay').classList.remove('open');
+
+  // Reset state
+  state.tokens = [];
+  state.openParens = 0;
+  state.submittedExpressions = new Set();
+  state.strategiCount = 0;
+  state.sessionScore = 0;
+  state.finishModalShown = false;
+  state.isSubmitting = false;
+
+  // Reset UI
+  el.displayScore.textContent = state.session.siswa.total_skor;
+  el.strategyList.innerHTML = `<li class="strategy-history__empty" id="strategyEmptyMsg">Belum ada rumus. Yuk, mulai temukan!</li>`;
+  updatePotionUI();
+  renderFormula();
+
+  // Reset timer
+  if (window._resetTimer) {
+    window._resetTimer();
+  }
+
+  // Reset feedback
+  const fb = document.getElementById('feedback');
+  if (fb) {
+    fb.className = 'fb-bar fb-idle';
+    fb.innerHTML = '✏️ Buat ekspresi matematika yang hasilnya target!';
+  }
+
+  // Reset badge
+  updateBadges();
+
+  // Reset target (opsional: generate baru)
+  // state.targetAngka = generateTargetAngka(state.session.sesi_game.level_ke);
+  // document.getElementById('displayTargetNumber').textContent = state.targetAngka;
+}
+
+/**
+ * Kembali ke dashboard
+ */
+function goToDashboard() {
+  window.location.href = 'dashboard.html';
+}
+
+// ============================================================================
+// §20. INIT EVENT LISTENERS UNTUK RESULT OVERLAY
+// ============================================================================
+
+function initResultListeners() {
+  const btnAgain = document.querySelector('.rbtn-again');
+  const btnDashboard = document.querySelector('.rbtn-dash');
+
+  if (btnAgain) {
+    btnAgain.addEventListener('click', restartGame);
+  }
+  if (btnDashboard) {
+    btnDashboard.addEventListener('click', goToDashboard);
+  }
+}
+window.endGame = endGame;
+window.restartGame = restartGame;
+window.goToDashboard = goToDashboard;
+// Panggil initResultListeners di dalam init() setelah DOM siap
+// Atau kita tambahkan di init() nanti.
+initResultListeners();

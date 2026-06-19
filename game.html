@@ -1390,18 +1390,23 @@
         updateDisplay();
         window._timerInterval = setInterval(() => {
           if (timeLeft <= 0) {
-            clearInterval(window._timerInterval);
-            // Tampilkan toast peringatan
-            const container = document.getElementById('toastContainer');
-            if (container) {
-              const toast = document.createElement('div');
-              toast.className = 'toast toast--warn';
-              toast.textContent = '⏰ Waktu habis! Tetap semangat!';
-              container.appendChild(toast);
-              setTimeout(() => toast.remove(), 3000);
-            }
-            return;
-          }
+  clearInterval(window._timerInterval);
+  // Panggil endGame() dari game.js
+  if (typeof endGame === 'function') {
+    endGame();
+  } else {
+    // Fallback: tampilkan toast
+    const container = document.getElementById('toastContainer');
+    if (container) {
+      const toast = document.createElement('div');
+      toast.className = 'toast toast--warn';
+      toast.textContent = '⏰ Waktu habis!';
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+  }
+  return;
+}
           timeLeft--;
           updateDisplay();
         }, 1000);
