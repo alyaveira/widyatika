@@ -56,7 +56,7 @@ const el = {
   btnFinishNext: document.getElementById('btnFinishNext'),
   btnFinishMore: document.getElementById('btnFinishMore'),
   toastContainer: document.getElementById('toastContainer'),
-  confettiLayer: document.getElementById('confettiLayer'),
+  confettiLayer: document.getElementById('confetti-layer'),
   // Result overlay
   resultOverlay: document.getElementById('result-overlay'),
   resPoin: document.getElementById('res-poin'),
